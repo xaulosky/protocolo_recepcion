@@ -74,6 +74,9 @@ class App {
             case 'pagos':
                 content = PagosContent();
                 break;
+            case 'productos':
+                content = ProductosContent();
+                break;
         }
 
         this.mainContent.innerHTML = `
@@ -87,6 +90,9 @@ class App {
         initTabNavigation();
         if (state.activeTab === 'guiones') {
             initGuionesContent();
+        }
+        if (state.activeTab === 'productos') {
+            initProductosContent();
         }
     }
 }

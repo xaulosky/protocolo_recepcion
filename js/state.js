@@ -8,7 +8,8 @@ class AppState {
         this.state = {
             activeTab: 'base',
             scriptCategory: 'Gestion',
-            searchTerm: ''
+            searchTerm: '',
+            productBrand: 'Todas'
         };
         this.listeners = [];
     }
@@ -62,6 +63,10 @@ class AppState {
 
     clearSearch() {
         this.setState({ searchTerm: '' });
+    }
+
+    setProductBrand(brand) {
+        this.setState({ productBrand: brand });
     }
 }
 
