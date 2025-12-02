@@ -28,14 +28,50 @@ function renderCategoryButton(category, activeCategory) {
         'Indicaciones': 'Indicaciones'
     };
 
+    // Colores específicos para cada categoría
+    const categoryColors = {
+        'Gestion': {
+            active: 'bg-blue-100 text-blue-800 border-blue-300',
+            inactive: 'bg-white text-blue-600 border-blue-200 hover:border-blue-300 hover:bg-blue-50',
+            icon: 'briefcase'
+        },
+        'Estetica': {
+            active: 'bg-pink-100 text-pink-800 border-pink-300',
+            inactive: 'bg-white text-pink-600 border-pink-200 hover:border-pink-300 hover:bg-pink-50',
+            icon: 'sparkles'
+        },
+        'Corporal': {
+            active: 'bg-purple-100 text-purple-800 border-purple-300',
+            inactive: 'bg-white text-purple-600 border-purple-200 hover:border-purple-300 hover:bg-purple-50',
+            icon: 'activity'
+        },
+        'Nutricion': {
+            active: 'bg-green-100 text-green-800 border-green-300',
+            inactive: 'bg-white text-green-600 border-green-200 hover:border-green-300 hover:bg-green-50',
+            icon: 'apple'
+        },
+        'Medica': {
+            active: 'bg-red-100 text-red-800 border-red-300',
+            inactive: 'bg-white text-red-600 border-red-200 hover:border-red-300 hover:bg-red-50',
+            icon: 'stethoscope'
+        },
+        'Indicaciones': {
+            active: 'bg-amber-100 text-amber-800 border-amber-300',
+            inactive: 'bg-white text-amber-600 border-amber-200 hover:border-amber-300 hover:bg-amber-50',
+            icon: 'clipboard-list'
+        }
+    };
+
     const isActive = activeCategory === category;
+    const colors = categoryColors[category] || categoryColors['Gestion'];
 
     return `
         <button 
             data-category="${category}"
-            class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap 
-            ${isActive ? 'bg-purple-100 text-purple-800 border-purple-300' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}"
+            class="px-4 py-2 rounded-lg text-sm font-bold transition-all border whitespace-nowrap flex items-center gap-2
+            ${isActive ? colors.active : colors.inactive}"
         >
+            <i data-lucide="${colors.icon}" class="w-4 h-4"></i>
             ${categoryLabels[category] || category}
         </button>
     `;
