@@ -86,6 +86,7 @@ function renderBrandButton(brand, activeBrand) {
     `;
 }
 
+
 function renderProduct(product) {
     const formattedPrice = new Intl.NumberFormat('es-CL', {
         style: 'currency',
@@ -94,7 +95,11 @@ function renderProduct(product) {
     }).format(product.price);
 
     return `
-        <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div 
+            class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-all cursor-pointer hover:border-purple-300"
+            data-product-id="${product.id}"
+            onclick="showProductModal(${product.id})"
+        >
             <div class="flex items-start justify-between mb-3">
                 <div class="flex-1">
                     <div class="flex items-center gap-2 mb-1">
@@ -111,8 +116,129 @@ function renderProduct(product) {
                 <span class="text-lg font-bold text-purple-600">${formattedPrice}</span>
                 <span class="text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded">${product.category}</span>
             </div>
+            
+            <div class="mt-3 text-center">
+                <span class="text-xs text-purple-600 font-medium">
+                    <i data-lucide="eye" class="w-3 h-3 inline"></i>
+                    Ver detalles
+                </span>
+            </div>
         </div>
     `;
+}
+
+/**
+ * Muestra el modal con los detalles del producto
+ */
+function showProductModal(productId) {
+    const product = productsData.find(p => p.id === productId);
+    if (!product) return;
+
+    const formattedPrice = new Intl.NumberFormat('es-CL', {
+        style: 'currency',
+        currency: 'CLP',
+        minimumFractionDigits: 0
+    }).format(product.price);
+
+    const modalHTML = `
+        <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="closeProductModal(event)">
+            <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                <!-- Header -->
+                <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 rounded-t-xl">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-sm font-bold bg-white bg-opacity-20 px-3 py-1 rounded-full">${product.brand}</span>
+                                <span class="text-sm opacity-90">ID: ${product.id}</span>
+                            </div>
+                            <h2 class="text-2xl font-bold leading-tight">${product.name}</h2>
+                        </div>
+                        <button 
+                            onclick="closeProductModal()"
+                            class="ml-4 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+                        >
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="p-6">
+                    <!-- Price -->
+                    <div class="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-purple-700 font-medium">Precio</span>
+                            <span class="text-3xl font-bold text-purple-600">${formattedPrice}</span>
+                        </div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                            <i data-lucide="tag" class="w-4 h-4 text-purple-600"></i>
+                            Categoría
+                        </h3>
+                        <span class="inline-block px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-medium">${product.category}</span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-4 h-4 text-purple-600"></i>
+                            Descripción Completa
+                        </h3>
+                        <p class="text-slate-600 leading-relaxed">${product.description}</p>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg">
+                        <div>
+                            <span class="text-xs text-slate-500 block mb-1">Marca</span>
+                            <span class="text-sm font-bold text-slate-800">${product.brand}</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-500 block mb-1">ID Producto</span>
+                            <span class="text-sm font-bold text-slate-800">${product.id}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 bg-slate-50 rounded-b-xl border-t border-slate-200">
+                    <button 
+                        onclick="closeProductModal()"
+                        class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                        <i data-lucide="check" class="w-5 h-5"></i>
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Agregar modal al body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Inicializar iconos de Lucide
+    lucide.createIcons();
+
+    // Prevenir scroll del body
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Cierra el modal de producto
+ */
+function closeProductModal(event) {
+    // Si se hace clic en el overlay (no en el contenido del modal)
+    if (!event || event.target.id === 'productModal') {
+        const modal = document.getElementById('productModal');
+        if (modal) {
+            modal.remove();
+            document.body.style.overflow = '';
+        }
+    }
 }
 
 /**
