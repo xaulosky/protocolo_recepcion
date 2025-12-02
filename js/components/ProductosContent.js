@@ -5,16 +5,28 @@
 
 // Los productos se cargan desde productsData.js
 
+
 function ProductosContent() {
-    const { productBrand } = appState.getState();
+    const { productBrand, productSearchTerm } = appState.getState();
 
     // Obtener marcas únicas
     const brands = ['Todas', ...new Set(productsData.map(p => p.brand))];
 
     // Filtrar productos por marca
-    const filteredProducts = productBrand === 'Todas'
+    let filteredProducts = productBrand === 'Todas'
         ? productsData
         : productsData.filter(p => p.brand === productBrand);
+
+    // Filtrar por término de búsqueda
+    if (productSearchTerm) {
+        const searchLower = productSearchTerm.toLowerCase();
+        filteredProducts = filteredProducts.filter(p =>
+            p.name.toLowerCase().includes(searchLower) ||
+            p.description.toLowerCase().includes(searchLower) ||
+            p.category.toLowerCase().includes(searchLower) ||
+            p.brand.toLowerCase().includes(searchLower)
+        );
+    }
 
     return `
         <div class="mb-6">
@@ -22,6 +34,28 @@ function ProductosContent() {
                 <i data-lucide="shopping-bag" class="text-purple-600 w-6 h-6"></i>
                 <h3 class="text-xl font-bold text-slate-800">Catálogo de Productos</h3>
                 <span class="text-sm text-slate-500">(${filteredProducts.length} productos)</span>
+            </div>
+
+            <!-- Buscador de Productos -->
+            <div class="mb-4">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input 
+                        type="text" 
+                        id="productSearchInput"
+                        placeholder="Buscar productos por nombre, descripción, marca o categoría..."
+                        value="${productSearchTerm}"
+                        class="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+                    />
+                    ${productSearchTerm ? `
+                        <button 
+                            onclick="clearProductSearch()"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                        >
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    ` : ''}
+                </div>
             </div>
             
             <div class="flex flex-wrap gap-2 mb-4 pb-2 border-b border-slate-100">
@@ -36,7 +70,8 @@ function ProductosContent() {
         ${filteredProducts.length === 0 ? `
             <div class="text-center py-12 text-slate-400">
                 <i data-lucide="package-x" class="w-16 h-16 mx-auto mb-3"></i>
-                <p>No se encontraron productos</p>
+                <p class="font-medium mb-1">No se encontraron productos</p>
+                ${productSearchTerm ? `<p class="text-sm">Intenta con otro término de búsqueda</p>` : ''}
             </div>
         ` : ''}
     `;
@@ -242,7 +277,7 @@ function closeProductModal(event) {
 }
 
 /**
- * Inicializa los event listeners de las marcas
+ * Inicializa los event listeners de las marcas y búsqueda
  */
 function initProductosContent() {
     const brandButtons = document.querySelectorAll('[data-brand]');
@@ -253,4 +288,19 @@ function initProductosContent() {
             appState.setProductBrand(brand);
         });
     });
+
+    // Event listener para el buscador de productos
+    const searchInput = document.getElementById('productSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            appState.setProductSearchTerm(e.target.value);
+        });
+    }
+}
+
+/**
+ * Limpia la búsqueda de productos
+ */
+function clearProductSearch() {
+    appState.setProductSearchTerm('');
 }
