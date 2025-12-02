@@ -6,6 +6,7 @@
 // Los productos se cargan desde productsData.js
 
 
+
 function ProductosContent() {
     const { productBrand, productSearchTerm } = appState.getState();
 
@@ -33,7 +34,7 @@ function ProductosContent() {
             <div class="flex items-center gap-3 mb-4">
                 <i data-lucide="shopping-bag" class="text-purple-600 w-6 h-6"></i>
                 <h3 class="text-xl font-bold text-slate-800">Catálogo de Productos</h3>
-                <span class="text-sm text-slate-500">(${filteredProducts.length} productos)</span>
+                <span id="productCount" class="text-sm text-slate-500">(${filteredProducts.length} productos)</span>
             </div>
 
             <!-- Buscador de Productos -->
@@ -47,14 +48,16 @@ function ProductosContent() {
                         value="${productSearchTerm}"
                         class="w-full pl-10 pr-10 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
                     />
-                    ${productSearchTerm ? `
-                        <button 
-                            onclick="clearProductSearch()"
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                        >
-                            <i data-lucide="x" class="w-4 h-4"></i>
-                        </button>
-                    ` : ''}
+                    <div id="clearSearchButton" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        ${productSearchTerm ? `
+                            <button 
+                                onclick="clearProductSearch()"
+                                class="text-slate-400 hover:text-slate-600"
+                            >
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
             </div>
             
@@ -63,18 +66,83 @@ function ProductosContent() {
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             ${filteredProducts.map(product => renderProduct(product)).join('')}
         </div>
 
-        ${filteredProducts.length === 0 ? `
+        <div id="noResultsMessage">
+            ${filteredProducts.length === 0 ? `
+                <div class="text-center py-12 text-slate-400">
+                    <i data-lucide="package-x" class="w-16 h-16 mx-auto mb-3"></i>
+                    <p class="font-medium mb-1">No se encontraron productos</p>
+                    ${productSearchTerm ? `<p class="text-sm">Intenta con otro término de búsqueda</p>` : ''}
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+/**
+ * Actualiza solo el grid de productos sin re-renderizar todo
+ */
+function updateProductsGrid() {
+    const { productBrand, productSearchTerm } = appState.getState();
+
+    // Filtrar productos por marca
+    let filteredProducts = productBrand === 'Todas'
+        ? productsData
+        : productsData.filter(p => p.brand === productBrand);
+
+    // Filtrar por término de búsqueda
+    if (productSearchTerm) {
+        const searchLower = productSearchTerm.toLowerCase();
+        filteredProducts = filteredProducts.filter(p =>
+            p.name.toLowerCase().includes(searchLower) ||
+            p.description.toLowerCase().includes(searchLower) ||
+            p.category.toLowerCase().includes(searchLower) ||
+            p.brand.toLowerCase().includes(searchLower)
+        );
+    }
+
+    // Actualizar contador
+    const countElement = document.getElementById('productCount');
+    if (countElement) {
+        countElement.textContent = `(${filteredProducts.length} productos)`;
+    }
+
+    // Actualizar grid de productos
+    const gridElement = document.getElementById('productsGrid');
+    if (gridElement) {
+        gridElement.innerHTML = filteredProducts.map(product => renderProduct(product)).join('');
+        lucide.createIcons();
+    }
+
+    // Actualizar mensaje de sin resultados
+    const noResultsElement = document.getElementById('noResultsMessage');
+    if (noResultsElement) {
+        noResultsElement.innerHTML = filteredProducts.length === 0 ? `
             <div class="text-center py-12 text-slate-400">
                 <i data-lucide="package-x" class="w-16 h-16 mx-auto mb-3"></i>
                 <p class="font-medium mb-1">No se encontraron productos</p>
                 ${productSearchTerm ? `<p class="text-sm">Intenta con otro término de búsqueda</p>` : ''}
             </div>
-        ` : ''}
-    `;
+        ` : '';
+        lucide.createIcons();
+    }
+
+    // Actualizar botón de limpiar búsqueda
+    const clearButton = document.getElementById('clearSearchButton');
+    if (clearButton) {
+        clearButton.innerHTML = productSearchTerm ? `
+            <button 
+                onclick="clearProductSearch()"
+                class="text-slate-400 hover:text-slate-600"
+            >
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        ` : '';
+        lucide.createIcons();
+    }
 }
 
 function renderBrandButton(brand, activeBrand) {
@@ -289,11 +357,16 @@ function initProductosContent() {
         });
     });
 
-    // Event listener para el buscador de productos
+    // Event listener para el buscador de productos (optimizado)
     const searchInput = document.getElementById('productSearchInput');
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
-            appState.setProductSearchTerm(e.target.value);
+            // Actualizar el estado sin trigger de re-render completo
+            const currentState = appState.getState();
+            appState.state.productSearchTerm = e.target.value;
+
+            // Actualizar solo el grid de productos
+            updateProductsGrid();
         });
     }
 }
@@ -302,5 +375,11 @@ function initProductosContent() {
  * Limpia la búsqueda de productos
  */
 function clearProductSearch() {
-    appState.setProductSearchTerm('');
+    appState.state.productSearchTerm = '';
+    const searchInput = document.getElementById('productSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    updateProductsGrid();
 }
