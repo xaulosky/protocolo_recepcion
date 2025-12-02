@@ -5,393 +5,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manual de Recepción Cialo v3.1</title>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
 
-        /* Ocultar scrollbar pero permitir scroll */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body class="bg-slate-100 text-slate-800 p-2 md:p-6 min-h-screen">
 
     <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden min-h-[800px] flex flex-col">
 
-        <!-- HEADER -->
-        <div class="bg-slate-900 text-white p-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
-                <div>
-                    <h1 class="text-2xl font-bold flex items-center gap-2">
-                        <i data-lucide="book-open" class="text-purple-400"></i>
-                        Manual de Recepción Cialo v3.1
-                    </h1>
-                    <p class="text-slate-400 text-sm mt-1">Protocolos obligatorios y Guiones de respuesta</p>
-                </div>
-            </div>
+        <!-- HEADER CONTAINER -->
+        <div id="headerContainer"></div>
 
-            <!-- BUSCADOR -->
-            <div class="mt-4 relative">
-                <input type="text" id="searchInput" placeholder="Buscar 'InBody', 'Tatuaje', 'Cancelación'..."
-                    class="w-full pl-10 pr-10 py-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                    oninput="handleSearch(this.value)" />
-                <i data-lucide="search" class="absolute left-3 top-3.5 text-slate-400 w-5 h-5"></i>
-                <button id="clearSearchBtn" class="absolute right-3 top-3.5 text-slate-400 hover:text-white hidden"
-                    onclick="clearSearch()">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- CONTENEDOR PRINCIPAL -->
-        <div id="mainContent" class="flex flex-col flex-grow">
-            <!-- El contenido se renderiza aquí vía JS -->
-        </div>
+        <!-- MAIN CONTENT CONTAINER -->
+        <div id="mainContent" class="flex flex-col flex-grow"></div>
 
     </div>
 
-    <!-- DATA Y LÓGICA -->
-    <script>
-        // --- DATOS ---
-        const protocolRules = [
-            { number: "1", title: "Presentación Inicial", content: `ONLINE: “Hola, hablas con Martina de Clínica Cialo. Estaré encantada de ayudarte y resolver tus dudas 😊”\nPRESENCIAL: Buenos días/tardes, bienvenido/a a Clinica Cialo. ¿En qué te podemos ayudar?` },
-            { number: "2", title: "Nunca dejar en visto", content: `Todos los mensajes se responden. Si no sabes, avisa: “Estoy revisando la información para entregártela enseguida 🙌”` },
-            { number: "3", title: "Tiempo de Respuesta", content: `Máximo 10 min. Si hay carga: “Disculpe la demora en responder, son demasiados los mensajes... Ya te ayudo.”` },
-            { number: "4", title: "Cierre de Respuesta", content: `Siempre terminar con pregunta: “¿Deseas que agendemos tu cita?” / “¿Quieres ver disponibilidad?”` },
-            { number: "5", title: "Escalamiento", content: `Si no sabes, consulta a Natacha, Pablo o Nicolás. NUNCA INVENTAR.` },
-            { number: "6", title: "Manejo de Precios", content: `Si no sabes el valor exacto: “Para confirmarte el valor exacto, voy a consultar de inmediato con el equipo...”` },
-            { number: "7", title: "Estilo Comunicación", content: `Amable, cercano, emojis moderados. PROHIBIDO mensajes secos de una palabra.` },
-            { number: "8", title: "Principios Clave", content: `Disponibilidad total. Empatía activa (“Te entiendo perfectamente”). Lenguaje positivo.` },
-            { number: "9", title: "Ambiente Sala Espera", content: `Música moderada. PROHIBIDO género urbano/reguetón. Reportar suciedad a Aseo inmediatamente.` },
-            { number: "10", title: "Área de Mesón", content: `Ordenado. PROHIBIDO comer (“picotear”) frente a pacientes.` },
-            { number: "11", title: "Uso Computador", content: `Volumen activo para escuchar alertas de Reservo. Atenta a cambios de valores.` },
-            { number: "12", title: "Aviso Suspensión Dr.", content: `Si un paciente cancela a última hora, AVISAR AL DOCTOR DE INMEDIATO para que no espere.` },
-            { number: "13", title: "Suspensión Paciente", content: `Si cancela con tiempo, preguntar CUÁNDO reagenda (dar por hecho). “¿Qué día te acomoda para reagendar?”` },
-            { number: "14", title: "Oferta de Horarios", content: `Dar opciones cerradas: “¿Le acomoda jueves o viernes?” (No preguntar "¿Le gustaría agendar?").` }
-        ];
+    <!-- Application Scripts (Non-module version for file:// protocol) -->
+    <script src="js/data.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/components/Header.js"></script>
+    <script src="js/components/SearchBar.js"></script>
+    <script src="js/components/TabNavigation.js"></script>
+    <script src="js/components/ProtocolBase.js"></script>
+    <script src="js/components/GuionesContent.js"></script>
+    <script src="js/components/PagosContent.js"></script>
+    <script src="js/components/SearchResults.js"></script>
+    <script src="js/app.js"></script>
 
-        const paymentPolicies = [
-            { title: "Política Urología / Dra. Araya / Matrona", content: "Cancelación menos de 24 hrs o No Show requiere Pago TOTAL anticipado para reagendar. El pago se realiza el mismo día ANTES de ingresar.", type: "Medica" },
-            { title: "Política Estética / Dra. Kiss", content: "Cancelación menos de 24 hrs requiere Abono de $10.000 para reagendar. El abono se descuenta del tratamiento.", type: "Estetica" },
-            { title: "Protocolo de Cobro en Vivo", content: "1. Iniciar cordial ('¿Cómo te fue?'). 2. Informar valor COMPLETO ('Ciento veinte mil pesos'). 3. Preguntar medio ('¿Efectivo o tarjeta?'). 4. Despedida.", type: "General" }
-        ];
-
-        const scriptsData = {
-            Gestion: [
-                { title: "Confirmación de Asistencia (Llamado)", content: `“Hola, buenos días/buenas tardes, hablas con ___ de Clínica Cialo. Te llamaba para confirmar tu asistencia a tu cita con ___ el día ___ a las ___ horas.\n¿Confirmas tu asistencia?”`, note: "Realizar 48 horas antes. Máximo 2 intentos. Si no contesta, pasar a WhatsApp." },
-                { title: "Confirmación (WhatsApp - tras no contestar)", content: `“¡Hola! ¿Cómo estás? Te llamábamos desde Clínica Cialo para confirmar tu asistencia a tu cita con ___ el día ___ a las ___ horas.\n¿Confirmas tu cita? En caso de no poder asistir, agradeceríamos cancelarla con anticipación 🙏\nQuedo atenta a tu respuesta”` },
-                { title: "Mensaje de Advertencia (24 hrs antes)", content: `“¡Hola! Hemos intentado comunicarnos contigo vía teléfono, correo y WhatsApp para confirmar tu asistencia a tu cita de mañana.\nAgradeceríamos mucho tu respuesta para que así no figures en nuestro sistema como inasistente sin previo aviso. 🙏”` },
-                { title: "Inasistencia (No Show)", content: `“Hola, ¿cómo estás? Te estuvimos esperando el día de hoy en tu cita.\n¿Ocurrió algo? ¿Te gustaría reagendar tu hora?”`, note: "Si desea reagendar: Informar cobro de abono por inasistencia." },
-                { title: "Cobro de Abono por Inasistencia", content: `“Para reagendar, el sistema nos solicita un abono previo debido a la inasistencia sin aviso.\nEste abono se descuenta del valor de tu consulta o del presupuesto de tu tratamiento el día de la cita.\n¿Deseas que te enviemos los datos para realizar la reserva?”` }
-            ],
-            Estetica: [
-                { title: "Polinucleótidos (Dra. Kiss)", content: `En Clínica Cialo ofrecemos tratamientos con polinucleótidos, una de las terapias más avanzadas en bioestimulación...\n\nValores:\n🔹 Zona periocular: $139.000\n🔹 Full face: $190.000\n\n¿Deseas que agendemos tu cita para comenzar tu tratamiento?` },
-                { title: "Toxina Botulínica (Dysport)", content: `En Clínica Cialo realizamos tratamientos con toxina botulínica Dysport®...\n\nValores Dra. Kiss:\n🔹 1 zona: $100.000\n🔹 Tercio superior: $179.000\n🔹 Full face: $329.000\n\n¿Quieres que coordinemos tu cita?` },
-                { title: "Relleno de Labios", content: `El valor del tratamiento de labios con Dra Mariane es de $180.000\nTrabajamos con marca Juvederm de Allergan.\nDurabilidad: 8-12 meses.\n¿Desea ud una cita para el tratamiento?` },
-                { title: "CoolPeel (Láser CO2)", content: `Se trata de uno de los protocolos más avanzados en rejuvenecimiento facial no invasivo. Combinamos CoolPeel con exosomas...\n\nValor con Dra Mariane: $190.000 por sesión.\n¿Deseas una cita?` },
-                { title: "Promo Polinucleótidos + Botox", content: `Promoción exclusiva Dra. Mariane Kiss:\n✨ Polinucleótidos + 🌟 Toxina Botulínica Dysport® (Tercio superior).\n\nValor promoción: $269.900.\n¿Deseas coordinar tu cita para aprovechar esta combinación?` },
-                { title: "Eliminación de Tatuajes", content: `El valor dependerá del tamaño y color. Si deseas puedes enviarme una foto.\n(REENVIAR FOTO A DR. NICOLÁS PARA VALOR)\n\nEntrega depto: "Contamos con láser Spectra XT... las sesiones son cada 6 semanas".` }
-            ],
-            Corporal: [
-                { title: "Depilación Láser (Soprano Titanium)", content: `En Clínica Cialo trabajamos con Soprano Titanium, el gold standard mundial (Triple onda + ICE Plus).\nLa evaluación es gratuita para determinar tu plan.\n\nPrecios: Tenemos valores por sesión individual y packs. ¿Tienes alguna zona en mente?` },
-                { title: "Tratamientos Reductivos", content: `Contamos con amplia variedad para reductivos, celulitis y flacidez. Protocolos personalizados según IMC y piel.\nLa evaluación es gratuita.\n¿Quieres que agendemos tu evaluación?` },
-                { title: "Post-Láser (Venta Cruzada)", content: `(Preguntar proactivamente): "¿Quieres que te llevemos agua termal o Cicalfate para tu recuperación post láser?"\nLas cremas pueden cambiar según stock.` }
-            ],
-            Nutricion: [
-                { title: "Consulta Nutricional", content: `Contamos con 2 nutricionistas (Valentina Verdejo y Walter Zaror) y calorimetría indirecta Q-NRG Max.\nEsta combinación de especialistas + tecnología convierte tu consulta en una experiencia superior.\n¿Deseas coordinar tu consulta?` },
-                { title: "Examen InBody 970", content: `Contamos con el único InBody 970 de la ciudad. Informe de 7 páginas.\n\nOpciones:\n🔹 Solo examen: $15.000\n🔹 Examen + Interpretación (Consulta Nutri): $40.000\n\n¿Qué opción te acomoda más?` },
-                { title: "Calorimetría Indirecta", content: `Única en Los Ángeles (Equipo Q-NRG Max). Mide tu metabolismo basal exacto.\nValor: $50.000 (Incluye interpretación).\n¿Deseas coordinar tu cita?` }
-            ],
-            Medica: [
-                { title: "Urología (Cita)", content: `Drs. Guillermo Contreras y Frank Ulloa.\nCosto: $50.000 (Reembolsable). Pago el mismo día antes de ingresar.\n\nPolítica: Cancelación <24hrs requiere pago anticipado para reagendar.` },
-                { title: "Agrandamiento de Pene", content: `Realizado exclusivamente por urólogos. Valor desde $800.000 (varía según caso).\n🔒 100% Confidencial.\n¿Deseas coordinar evaluación?` },
-                { title: "Matrona (Ginecoestética)", content: `Salud ginecológica, sexual y estética íntima.\nConsulta: $30.000 (Reembolsable).\n¿Deseas coordinar tu consulta?` },
-                { title: "Láser CO2 Íntimo", content: `Rejuvenecimiento íntimo con Láser TetraPRO. Mejora tonicidad y lubricación.\nValor: Se entrega solo tras evaluación médica ($30.000 la consulta).` },
-                { title: "Salud Capilar (Dra. Javiera Araya)", content: `Especialista en Tricología. Evaluación de alopecia e implante capilar.\nConsulta: $40.000 (Reembolsable).\nPresupuesto de implante se da en la consulta.` }
-            ]
-        };
-
-        // --- ESTADO GLOBAL ---
-        let state = {
-            activeTab: 'base',
-            scriptCategory: 'Gestion',
-            searchTerm: ''
-        };
-
-        // --- FUNCIONES DE RENDERIZADO ---
-
-        function init() {
-            render();
-        }
-
-        function render() {
-            const mainContent = document.getElementById('mainContent');
-            const clearBtn = document.getElementById('clearSearchBtn');
-
-            // Mostrar/Ocultar botón borrar
-            if (state.searchTerm) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
-
-            // Decidir qué vista mostrar
-            if (state.searchTerm.trim() !== '') {
-                mainContent.innerHTML = renderSearchResults(state.searchTerm);
-            } else {
-                mainContent.innerHTML = renderTabsView();
-            }
-
-            // Refrescar iconos
-            lucide.createIcons();
-        }
-
-        // VISTA: Resultados de Búsqueda
-        function renderSearchResults(term) {
-            term = term.toLowerCase();
-            let results = [];
-
-            // Buscar en Protocolos
-            protocolRules.forEach(rule => {
-                if (rule.title.toLowerCase().includes(term) || rule.content.toLowerCase().includes(term)) {
-                    results.push({ ...rule, type: 'Protocolo Base', note: '' });
-                }
-            });
-
-            // Buscar en Guiones
-            Object.keys(scriptsData).forEach(cat => {
-                scriptsData[cat].forEach(script => {
-                    if (script.title.toLowerCase().includes(term) || script.content.toLowerCase().includes(term)) {
-                        results.push({ ...script, type: `Guión (${cat})` });
-                    }
-                });
-            });
-
-            // Buscar en Pagos
-            paymentPolicies.forEach(pol => {
-                if (pol.title.toLowerCase().includes(term) || pol.content.toLowerCase().includes(term)) {
-                    results.push({ ...pol, type: 'Política Pago', note: '' });
-                }
-            });
-
-            if (results.length === 0) {
-                return `
-                    <div class="flex flex-col items-center justify-center py-10 text-slate-500 h-full fade-in">
-                        <i data-lucide="help-circle" class="w-12 h-12 mb-2 opacity-50"></i>
-                        <p class="font-medium">No encontramos nada para "${term}".</p>
-                        <p class="text-sm">Intenta con sinónimos (ej: "pelo" en vez de "tricología").</p>
-                    </div>
-                `;
-            }
-
-            return `
-                <div class="p-6 bg-slate-50 flex-grow fade-in">
-                    <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
-                        <i data-lucide="search" class="w-5 h-5"></i>
-                        Resultados para "${term}" (${results.length})
-                    </h3>
-                    <div class="space-y-4">
-                        ${results.map(item => `
-                            <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
-                                <div class="flex justify-between items-start mb-2">
-                                    <span class="text-xs font-bold uppercase bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                                        ${item.type}
-                                    </span>
-                                    ${item.number ? `<span class="text-xs font-bold text-slate-400">#${item.number}</span>` : ''}
-                                </div>
-                                <h4 class="font-bold text-lg text-slate-800 mb-2">${item.title}</h4>
-                                <div class="text-sm text-slate-600 whitespace-pre-line bg-slate-50 p-3 rounded border border-slate-100">
-                                    ${item.content}
-                                </div>
-                                ${item.note ? `
-                                    <div class="mt-2 text-xs text-orange-700 flex items-center gap-1 bg-orange-50 p-2 rounded">
-                                        <i data-lucide="alert-triangle" class="w-3 h-3"></i> ${item.note}
-                                    </div>
-                                ` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        // VISTA: Tabs Normales
-        function renderTabsView() {
-            return `
-                <div class="flex border-b border-slate-200 bg-slate-50 px-4 pt-2 overflow-x-auto no-scrollbar">
-                    ${renderTabButton('base', 'Protocolo Base', 'check-circle')}
-                    ${renderTabButton('guiones', 'Guiones Técnicos', 'message-circle')}
-                    ${renderTabButton('pagos', 'Pagos y Citas', 'credit-card')}
-                </div>
-                
-                <div class="p-6 flex-grow overflow-y-auto fade-in">
-                    ${state.activeTab === 'base' ? renderBaseContent() : ''}
-                    ${state.activeTab === 'guiones' ? renderGuionesContent() : ''}
-                    ${state.activeTab === 'pagos' ? renderPagosContent() : ''}
-                </div>
-            `;
-        }
-
-        // --- SUB-COMPONENTES DE RENDERIZADO ---
-
-        function renderTabButton(id, label, icon) {
-            const isActive = state.activeTab === id;
-            return `
-                <button onclick="setActiveTab('${id}')" 
-                    class="flex items-center gap-2 px-4 py-3 text-sm font-bold rounded-t-lg transition-colors border-b-2 whitespace-nowrap 
-                    ${isActive ? 'bg-white text-purple-700 border-purple-600' : 'bg-slate-50 text-slate-500 border-transparent hover:bg-slate-100'}">
-                    <i data-lucide="${icon}" class="w-4 h-4"></i> ${label}
-                </button>
-            `;
-        }
-
-        function renderBaseContent() {
-            return `
-                <div class="bg-red-50 text-red-800 p-3 rounded mb-4 text-xs font-bold border border-red-100 flex items-center gap-2">
-                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
-                    ESTRICTO CUMPLIMIENTO: No se permiten modificaciones sin autorización de Dirección.
-                </div>
-                <div class="space-y-0 divide-y divide-slate-100 border border-slate-100 rounded-lg">
-                    ${protocolRules.map(rule => `
-                        <div class="flex gap-4 p-4 hover:bg-slate-50 transition-colors bg-white">
-                            <div class="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center font-bold text-sm">
-                                ${rule.number}
-                            </div>
-                            <div>
-                                <h5 class="font-bold text-slate-800 text-sm mb-1">${rule.title}</h5>
-                                <div class="text-sm text-slate-600 whitespace-pre-line">${rule.content}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function renderGuionesContent() {
-            const categories = Object.keys(scriptsData);
-            return `
-                <div class="flex flex-wrap gap-2 mb-4 pb-2 border-b border-slate-100">
-                    ${categories.map(cat => `
-                        <button onclick="setCategory('${cat}')" 
-                            class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap 
-                            ${state.scriptCategory === cat ? 'bg-purple-100 text-purple-800 border-purple-300' : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'}">
-                            ${cat === 'Gestion' ? 'Gestión' : cat === 'Estetica' ? 'Estética' : cat === 'Medica' ? 'Médica' : cat === 'Nutricion' ? 'Nutrición' : cat}
-                        </button>
-                    `).join('')}
-                </div>
-
-                <div class="space-y-4">
-                    ${scriptsData[state.scriptCategory].map(script => `
-                        <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
-                            <h4 class="font-bold text-slate-800 flex items-center gap-2 mb-3 text-lg">
-                                <i data-lucide="message-circle" class="text-purple-500 w-5 h-5"></i>
-                                ${script.title}
-                            </h4>
-                            <div class="bg-slate-50 p-4 rounded border border-slate-100 whitespace-pre-line text-sm text-slate-700 leading-relaxed font-medium">
-                                ${script.content}
-                            </div>
-                            ${script.note ? `
-                                <div class="mt-3 text-xs text-orange-700 bg-orange-50 p-2 rounded border border-orange-100 flex items-start gap-2">
-                                    <i data-lucide="alert-triangle" class="w-4 h-4 mt-0.5"></i>
-                                    <span>${script.note}</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function renderPagosContent() {
-            const general = paymentPolicies.filter(p => p.type === 'General');
-            const others = paymentPolicies.filter(p => p.type !== 'General');
-
-            return `
-                <div class="space-y-6">
-                    ${general.map(p => `
-                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                            <h3 class="font-bold text-purple-900 mb-2">${p.title}</h3>
-                            <p class="text-sm text-purple-800 font-medium whitespace-pre-line">${p.content}</p>
-                        </div>
-                    `).join('')}
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        ${others.map(p => `
-                            <div class="border p-4 rounded-lg bg-white">
-                                <h4 class="font-bold mb-2 text-sm uppercase text-slate-500">${p.title}</h4>
-                                <p class="text-sm whitespace-pre-line text-slate-700">${p.content}</p>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="bg-slate-50 p-4 rounded text-sm text-slate-600 border border-slate-200">
-                        <strong>Mensaje Base Confirmación (Agendado):</strong><br/>
-                        "(Nombre), quedó agendada tu cita para el día [Fecha] a las [Hora].<br/>
-                        Dirección: Bulnes 220, of 509, Edificio Puerto Mayor II.<br/>
-                        Ubicación: https://maps.app.goo.gl/PyeYcr4JdqW7iJ4G9<br/>
-                        [Insertar Política de Cancelación correspondiente aquí]"
-                    </div>
-                </div>
-            `;
-        }
-
-        // --- MANEJADORES DE EVENTOS ---
-
-        function handleSearch(val) {
-            state.searchTerm = val;
-            render();
-        }
-
-        function clearSearch() {
-            state.searchTerm = '';
-            document.getElementById('searchInput').value = '';
-            render();
-        }
-
-        function setActiveTab(tab) {
-            state.activeTab = tab;
-            render();
-        }
-
-        function setCategory(cat) {
-            state.scriptCategory = cat;
-            render();
-        }
-
-        // --- INICIO ---
-        init();
-
-    </script>
 </body>
 
 </html>
