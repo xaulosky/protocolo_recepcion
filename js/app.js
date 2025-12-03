@@ -189,24 +189,51 @@ function copyScriptContent(scriptId) {
  * Mostrar tooltip de éxito al copiar
  */
 function showCopyTooltip(button) {
+    // Remover tooltip anterior si existe
+    const existingTooltip = document.getElementById('copyTooltip');
+    if (existingTooltip) {
+        existingTooltip.remove();
+    }
+
     const tooltip = document.createElement('div');
-    tooltip.className = 'fixed bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
-    tooltip.style.top = '20px';
-    tooltip.style.right = '20px';
+    tooltip.id = 'copyTooltip';
+    tooltip.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        background: #16a34a;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        opacity: 0;
+        transition: all 0.3s ease;
+    `;
+
     tooltip.innerHTML = `
-        <div class="flex items-center gap-2">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <span class="font-medium">¡Texto copiado al portapapeles!</span>
-        </div>
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        <span>¡Texto copiado correctamente!</span>
     `;
 
     document.body.appendChild(tooltip);
     lucide.createIcons();
 
+    // Animar entrada
+    setTimeout(() => {
+        tooltip.style.opacity = '1';
+        tooltip.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+
     // Remover después de 3 segundos
     setTimeout(() => {
         tooltip.style.opacity = '0';
-        tooltip.style.transition = 'opacity 0.3s';
+        tooltip.style.transform = 'translateX(-50%) translateY(-20px)';
         setTimeout(() => tooltip.remove(), 300);
     }, 3000);
 }
@@ -215,24 +242,51 @@ function showCopyTooltip(button) {
  * Mostrar tooltip de error
  */
 function showErrorTooltip(button) {
+    // Remover tooltip anterior si existe
+    const existingTooltip = document.getElementById('errorTooltip');
+    if (existingTooltip) {
+        existingTooltip.remove();
+    }
+
     const tooltip = document.createElement('div');
-    tooltip.className = 'fixed bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in';
-    tooltip.style.top = '20px';
-    tooltip.style.right = '20px';
+    tooltip.id = 'errorTooltip';
+    tooltip.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        background: #dc2626;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        opacity: 0;
+        transition: all 0.3s ease;
+    `;
+
     tooltip.innerHTML = `
-        <div class="flex items-center gap-2">
-            <i data-lucide="x-circle" class="w-5 h-5"></i>
-            <span class="font-medium">Error al copiar. Intenta de nuevo.</span>
-        </div>
+        <i data-lucide="x-circle" class="w-5 h-5"></i>
+        <span>Error al copiar. Intenta de nuevo.</span>
     `;
 
     document.body.appendChild(tooltip);
     lucide.createIcons();
 
+    // Animar entrada
+    setTimeout(() => {
+        tooltip.style.opacity = '1';
+        tooltip.style.transform = 'translateX(-50%) translateY(0)';
+    }, 10);
+
     // Remover después de 3 segundos
     setTimeout(() => {
         tooltip.style.opacity = '0';
-        tooltip.style.transition = 'opacity 0.3s';
+        tooltip.style.transform = 'translateX(-50%) translateY(-20px)';
         setTimeout(() => tooltip.remove(), 300);
     }, 3000);
 }
