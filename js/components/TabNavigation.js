@@ -10,7 +10,8 @@ function TabNavigation() {
         { id: 'base', label: 'Protocolo Base', icon: 'check-circle' },
         { id: 'guiones', label: 'Guiones Técnicos', icon: 'message-circle' },
         { id: 'pagos', label: 'Pagos y Citas', icon: 'credit-card' },
-        { id: 'productos', label: 'Productos', icon: 'shopping-bag' }
+        { id: 'productos', label: 'Productos', icon: 'shopping-bag' },
+        { id: 'consentimientos', label: 'Consentimientos', icon: 'file-text' }
     ];
 
     return `

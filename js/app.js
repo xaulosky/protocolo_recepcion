@@ -77,6 +77,9 @@ class App {
             case 'productos':
                 content = ProductosContent();
                 break;
+            case 'consentimientos':
+                content = ConsentimientosContent();
+                break;
         }
 
         this.mainContent.innerHTML = `

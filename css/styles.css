@@ -29,3 +29,69 @@ body {
         transform: translateY(0);
     }
 }
+
+/* Estilos para impresión de consentimientos */
+@media print {
+
+    /* Ocultar elementos de navegación y UI */
+    header,
+    nav,
+    button:not(.print-only),
+    .no-print {
+        display: none !important;
+    }
+
+    /* Mostrar solo el contenido del consentimiento */
+    body {
+        background: white;
+        margin: 0;
+        padding: 20mm;
+    }
+
+    /* Mostrar logo solo en impresión */
+    .print-only {
+        display: block !important;
+    }
+
+    /* Formato de página */
+    @page {
+        size: A4;
+        margin: 20mm;
+    }
+
+    /* Estilos del documento */
+    #printableConsent {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    /* Evitar saltos de página en elementos importantes */
+    h1,
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+
+    ul,
+    ol {
+        page-break-inside: avoid;
+    }
+
+    /* Asegurar que las firmas estén en la misma página */
+    .grid {
+        page-break-inside: avoid;
+    }
+
+    /* Colores para impresión */
+    * {
+        color: black !important;
+        background: white !important;
+    }
+
+    /* Bordes visibles */
+    .border,
+    .border-t,
+    .border-b {
+        border-color: black !important;
+    }
+}
