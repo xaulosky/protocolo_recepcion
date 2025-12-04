@@ -1,11 +1,18 @@
 /**
- * ProfesionalesContent Component
- * Muestra información de profesionales de Clínica Cialo
+ * ProfesionalesContent Component - Rediseñado
+ * Soporta 3 modos de visualización: Lista, Grid, Tarjetas
  */
 
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
 function ProfesionalesContent() {
+    const { profesionalViewMode } = appState.getState();
+
     return `
         <div class="space-y-6">
+            <!-- Header Info -->
             <div class="bg-purple-50 p-4 rounded-lg border border-purple-100 flex items-start gap-3">
                 <i data-lucide="info" class="text-purple-600 w-5 h-5 mt-0.5"></i>
                 <div class="flex-grow">
@@ -14,12 +21,12 @@ function ProfesionalesContent() {
                 </div>
             </div>
 
-            <!-- Buscador de Profesionales -->
+            <!-- Buscador -->
             <div class="relative">
                 <input 
                     type="text" 
                     id="profesionalSearchInput" 
-                    placeholder="Buscar profesional por nombre, especialidad, servicio, certificación..."
+                    placeholder="Buscar profesional por nombre, especialidad, servicio..."
                     class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all text-slate-800 placeholder-slate-400"
                 />
                 <i data-lucide="search" class="absolute left-3 top-3.5 text-purple-500 w-5 h-5"></i>
@@ -31,178 +38,194 @@ function ProfesionalesContent() {
                 </button>
             </div>
 
-            <!-- Contenedor de resultados que se actualizará dinámicamente -->
-            <div id="profesionalesResultsContainer">
-                <div class="grid grid-cols-1 gap-6">
-                    ${profesionalesData.map(profesional => renderProfesionalCard(profesional)).join('')}
+            <!-- Selector de Vista -->
+            <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-600"></i>
+                    <span class="text-sm font-medium text-slate-700">Vista:</span>
                 </div>
+                <div class="flex gap-2">
+                    <button 
+                        id="viewModeList"
+                        class="px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${profesionalViewMode === 'list' ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'}"
+                        title="Vista de Lista"
+                    >
+                        <i data-lucide="list" class="w-4 h-4"></i>
+                        <span class="text-sm font-medium">Lista</span>
+                    </button>
+                    <button 
+                        id="viewModeGrid"
+                        class="px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${profesionalViewMode === 'grid' ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'}"
+                        title="Vista de Grid"
+                    >
+                        <i data-lucide="grid-3x3" class="w-4 h-4"></i>
+                        <span class="text-sm font-medium">Grid</span>
+                    </button>
+                    <button 
+                        id="viewModeCards"
+                        class="px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${profesionalViewMode === 'cards' ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'}"
+                        title="Vista de Tarjetas"
+                    >
+                        <i data-lucide="square-stack" class="w-4 h-4"></i>
+                        <span class="text-sm font-medium">Tarjetas</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenedor de Resultados -->
+            <div id="profesionalesResultsContainer">
+                ${renderProfesionales('', profesionalViewMode)}
             </div>
         </div>
     `;
 }
 
-/**
- * Actualiza solo el contenedor de resultados sin tocar el input
- */
-function updateProfesionalesResults(searchTerm) {
-    const container = document.getElementById('profesionalesResultsContainer');
-    if (!container) return;
+// ============================================================================
+// RENDERIZADO DE RESULTADOS
+// ============================================================================
 
+function renderProfesionales(searchTerm, viewMode) {
     const profesionalesFiltrados = filterProfesionales(searchTerm);
 
     let html = '';
 
+    // Sin resultados
     if (searchTerm && profesionalesFiltrados.length === 0) {
-        // No hay resultados
-        html = `
+        return `
             <div class="flex flex-col items-center justify-center py-12 text-slate-500">
                 <i data-lucide="user-x" class="w-16 h-16 mb-4 opacity-50"></i>
                 <p class="font-bold text-lg mb-1">No se encontraron profesionales</p>
                 <p class="text-sm">Intenta con otro término de búsqueda</p>
             </div>
         `;
-    } else {
-        // Mostrar resultados
-        if (searchTerm) {
-            html += `
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
-                    <i data-lucide="filter" class="w-4 h-4 text-blue-600"></i>
-                    <p class="text-sm text-blue-900">
-                        <span class="font-bold">${profesionalesFiltrados.length}</span> 
-                        profesional${profesionalesFiltrados.length !== 1 ? 'es' : ''} encontrado${profesionalesFiltrados.length !== 1 ? 's' : ''}
-                    </p>
-                </div>
-            `;
-        }
+    }
 
+    // Contador de resultados
+    if (searchTerm) {
         html += `
-            <div class="grid grid-cols-1 gap-6">
-                ${profesionalesFiltrados.map(profesional => renderProfesionalCard(profesional)).join('')}
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 mb-6">
+                <i data-lucide="filter" class="w-4 h-4 text-blue-600"></i>
+                <p class="text-sm text-blue-900">
+                    <span class="font-bold">${profesionalesFiltrados.length}</span> 
+                    profesional${profesionalesFiltrados.length !== 1 ? 'es' : ''} encontrado${profesionalesFiltrados.length !== 1 ? 's' : ''}
+                </p>
             </div>
         `;
     }
 
-    container.innerHTML = html;
+    // Renderizar según vista
+    switch (viewMode) {
+        case 'list':
+            html += renderListView(profesionalesFiltrados);
+            break;
+        case 'grid':
+            html += renderGridView(profesionalesFiltrados);
+            break;
+        default:
+            html += renderCardsView(profesionalesFiltrados);
+    }
 
-    // Refrescar iconos de Lucide
-    lucide.createIcons();
+    return html;
+}
+
+// ============================================================================
+// VISTAS ESPECÍFICAS
+// ============================================================================
+
+/**
+ * Vista de Lista - Compacta en filas
+ */
+function renderListView(profesionales) {
+    return `
+        <div class="space-y-3">
+            ${profesionales.map(prof => `
+                <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 flex-grow">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user" class="w-6 h-6 text-purple-600"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-slate-900 truncate">${prof.nombreCompleto}</h3>
+                            <p class="text-sm text-slate-600 truncate">${prof.especialidad}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <div class="text-right hidden md:block">
+                            <p class="text-xs text-slate-500">Servicios</p>
+                            <p class="font-bold text-purple-600">${prof.prestaciones.servicios.length}</p>
+                        </div>
+                        <button 
+                            onclick="showProfesionalDetails('${prof.id}')"
+                            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                        >
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Ver</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 /**
- * Filtra profesionales según el término de búsqueda
+ * Vista de Grid - Cuadrícula compacta
  */
-function filterProfesionales(searchTerm) {
-    if (!searchTerm || searchTerm.trim() === '') {
-        return profesionalesData;
-    }
-
-    const term = searchTerm.toLowerCase().trim();
-
-    return profesionalesData.filter(profesional => {
-        // Buscar en información básica
-        if (profesional.nombreCompleto.toLowerCase().includes(term)) return true;
-        if (profesional.especialidad.toLowerCase().includes(term)) return true;
-        if (profesional.rut.includes(term)) return true;
-        if (profesional.telefono.includes(term)) return true;
-        if (profesional.email.toLowerCase().includes(term)) return true;
-
-        // Buscar en formación
-        if (profesional.formacion) {
-            if (profesional.formacion.pregrado && profesional.formacion.pregrado.toLowerCase().includes(term)) return true;
-            if (profesional.formacion.especialidad && profesional.formacion.especialidad.toLowerCase().includes(term)) return true;
-            if (profesional.formacion.subespecialidad && profesional.formacion.subespecialidad.toLowerCase().includes(term)) return true;
-
-            // Buscar en certificaciones
-            if (profesional.formacion.certificaciones) {
-                if (profesional.formacion.certificaciones.some(cert => cert.toLowerCase().includes(term))) return true;
-            }
-
-            // Buscar en membresías
-            if (profesional.formacion.membresias) {
-                if (profesional.formacion.membresias.some(memb => memb.toLowerCase().includes(term))) return true;
-            }
-
-            if (profesional.formacion.registro && profesional.formacion.registro.toLowerCase().includes(term)) return true;
-        }
-
-        // Buscar en disponibilidad
-        if (profesional.disponibilidad.dias.some(dia => dia.toLowerCase().includes(term))) return true;
-        if (profesional.disponibilidad.horario.toLowerCase().includes(term)) return true;
-        if (profesional.disponibilidad.frecuencia.toLowerCase().includes(term)) return true;
-
-        // Buscar en servicios
-        const servicios = profesional.prestaciones.servicios;
-        if (Array.isArray(servicios)) {
-            // Verificar si es array de strings o de objetos
-            if (typeof servicios[0] === 'string') {
-                if (servicios.some(serv => serv.toLowerCase().includes(term))) return true;
-            } else {
-                // Array de objetos
-                for (const servicio of servicios) {
-                    if (servicio.nombre && servicio.nombre.toLowerCase().includes(term)) return true;
-                    if (servicio.valor && servicio.valor.toLowerCase().includes(term)) return true;
-                    if (servicio.notas && servicio.notas.toLowerCase().includes(term)) return true;
-                    if (servicio.insumos && servicio.insumos.toLowerCase().includes(term)) return true;
-                    if (servicio.equipo && servicio.equipo.toLowerCase().includes(term)) return true;
-                    if (servicio.espacio && servicio.espacio.toLowerCase().includes(term)) return true;
-                }
-            }
-        }
-
-        // Buscar en requisitos logísticos
-        if (profesional.requisitosLogisticos.insumosRequeridos.some(ins => ins.toLowerCase().includes(term))) return true;
-        if (profesional.requisitosLogisticos.espacioEspecial && profesional.requisitosLogisticos.espacioEspecial.toLowerCase().includes(term)) return true;
-        if (profesional.requisitosLogisticos.notasEspeciales && profesional.requisitosLogisticos.notasEspeciales.toLowerCase().includes(term)) return true;
-        if (profesional.requisitosLogisticos.tipoAsistente && profesional.requisitosLogisticos.tipoAsistente.toLowerCase().includes(term)) return true;
-
-        // Buscar en pendientes administrativos
-        if (profesional.pendientesAdministrativos) {
-            if (profesional.pendientesAdministrativos.some(pend => pend.toLowerCase().includes(term))) return true;
-        }
-
-        return false;
-    });
+function renderGridView(profesionales) {
+    return `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${profesionales.map(prof => `
+                <div class="bg-white border-2 border-slate-200 rounded-xl p-5 hover:shadow-lg hover:border-purple-300 transition-all">
+                    <div class="flex flex-col items-center text-center mb-4">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center mb-3">
+                            <i data-lucide="user-circle" class="w-10 h-10 text-white"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-900 mb-1">${prof.nombreCompleto}</h3>
+                        <p class="text-xs text-slate-600 mb-2">${prof.especialidad}</p>
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                            <i data-lucide="briefcase" class="w-3 h-3"></i>
+                            <span>${prof.prestaciones.servicios.length} servicio${prof.prestaciones.servicios.length !== 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center gap-2 text-xs text-slate-600">
+                            <i data-lucide="phone" class="w-3 h-3 text-purple-600"></i>
+                            <span class="truncate">${prof.telefono}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-slate-600">
+                            <i data-lucide="mail" class="w-3 h-3 text-purple-600"></i>
+                            <span class="truncate">${prof.email}</span>
+                        </div>
+                    </div>
+                    <button 
+                        onclick="showProfesionalDetails('${prof.id}')"
+                        class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
+                    >
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                        Ver detalles
+                    </button>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 /**
- * Inicializa los event listeners del buscador de profesionales
+ * Vista de Tarjetas - Detallada (vista original)
  */
-function initProfesionalesSearch() {
-    const searchInput = document.getElementById('profesionalSearchInput');
-    const clearBtn = document.getElementById('clearProfesionalSearchBtn');
-
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value;
-
-            // Actualizar solo los resultados, NO el input
-            updateProfesionalesResults(searchTerm);
-
-            // Mostrar/ocultar botón de limpiar
-            if (clearBtn) {
-                if (searchTerm) {
-                    clearBtn.classList.remove('hidden');
-                } else {
-                    clearBtn.classList.add('hidden');
-                }
-            }
-        });
-    }
-
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            if (searchInput) {
-                searchInput.value = '';
-                searchInput.focus();
-                updateProfesionalesResults('');
-                clearBtn.classList.add('hidden');
-            }
-        });
-    }
+function renderCardsView(profesionales) {
+    return `
+        <div class="grid grid-cols-1 gap-6">
+            ${profesionales.map(profesional => renderProfesionalCard(profesional)).join('')}
+        </div>
+    `;
 }
+
+// ============================================================================
+// TARJETA DETALLADA (para vista Cards y Modal)
+// ============================================================================
 
 function renderProfesionalCard(profesional) {
-    // Detectar si tiene formación académica
     const tieneFormacion = profesional.formacion !== undefined;
     const tienePendientes = profesional.pendientesAdministrativos !== undefined;
 
@@ -256,13 +279,6 @@ function renderProfesionalCard(profesional) {
                                 <p class="text-sm font-bold text-slate-800 break-all">${profesional.email}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-lg">
-                            <i data-lucide="credit-card" class="w-4 h-4 text-slate-500"></i>
-                            <div>
-                                <p class="text-xs text-slate-500 font-medium">RUT</p>
-                                <p class="text-sm font-bold text-slate-800">${profesional.rut}</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -270,28 +286,41 @@ function renderProfesionalCard(profesional) {
                 <div>
                     <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
                         <i data-lucide="calendar-clock" class="w-4 h-4 text-purple-600"></i>
-                        Disponibilidad y Horarios
+                        Disponibilidad
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg">
-                            <p class="text-xs text-blue-600 font-bold mb-1 uppercase">Días de Atención</p>
-                            <p class="text-sm font-bold text-blue-900">${profesional.disponibilidad.dias.join(', ')}</p>
-                        </div>
-                        <div class="bg-green-50 border border-green-100 p-3 rounded-lg">
-                            <p class="text-xs text-green-600 font-bold mb-1 uppercase">Frecuencia</p>
-                            <p class="text-sm font-bold text-green-900">${profesional.disponibilidad.frecuencia}</p>
+                    <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg">
+                        <p class="text-sm font-bold text-blue-900">${profesional.disponibilidad.dias.join(', ')}</p>
+                    </div>
+                </div>
+
+                <!-- Prestaciones Resumen -->
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                        <i data-lucide="clipboard-list" class="w-4 h-4 text-purple-600"></i>
+                        Servicios (${profesional.prestaciones.servicios.length})
+                    </h4>
+                    <div class="bg-purple-50 border border-purple-100 p-4 rounded-lg">
+                        <div class="space-y-2">
+                            ${profesional.prestaciones.servicios.slice(0, 3).map(servicio => {
+        const nombre = typeof servicio === 'string' ? servicio : servicio.nombre;
+        return `
+                                    <div class="flex items-start gap-2 text-sm text-purple-900">
+                                        <i data-lucide="check-circle" class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0"></i>
+                                        <span class="font-medium">${nombre}</span>
+                                    </div>
+                                `;
+    }).join('')}
+                            ${profesional.prestaciones.servicios.length > 3 ? `
+                                <p class="text-xs text-purple-700 font-medium mt-2">
+                                    + ${profesional.prestaciones.servicios.length - 3} servicio(s) más
+                                </p>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
 
-                <!-- Prestaciones (Vista resumida) -->
-                ${renderPrestacionesResumen(profesional)}
-
-                <!-- Requisitos Logísticos -->
-                ${renderRequisitosLogisticos(profesional)}
-
                 ${tienePendientes ? `
-                    <!-- Pendientes Administrativos -->
+                    <!-- Pendientes -->
                     <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded">
                         <div class="flex items-start gap-2">
                             <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600 mt-0.5"></i>
@@ -314,102 +343,10 @@ function renderProfesionalCard(profesional) {
     `;
 }
 
-function renderPrestacionesResumen(profesional) {
-    const servicios = profesional.prestaciones.servicios;
+// ============================================================================
+// MODAL DE DETALLES
+// ============================================================================
 
-    // Verificar si es array de strings o array de objetos
-    const esArraySimple = typeof servicios[0] === 'string';
-
-    if (esArraySimple) {
-        return `
-            <div>
-                <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
-                    <i data-lucide="clipboard-list" class="w-4 h-4 text-purple-600"></i>
-                    Prestaciones y Servicios
-                </h4>
-                <div class="bg-purple-50 border border-purple-100 p-4 rounded-lg">
-                    <p class="text-xs text-purple-600 font-bold mb-2 uppercase">Servicios Ofrecidos</p>
-                    <ul class="space-y-1">
-                        ${servicios.map(servicio => `
-                            <li class="flex items-center gap-2 text-sm text-purple-900">
-                                <i data-lucide="check-circle" class="w-4 h-4 text-purple-600"></i>
-                                <span class="font-medium">${servicio}</span>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            </div>
-        `;
-    } else {
-        // Array de objetos con detalles
-        return `
-            <div>
-                <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
-                    <i data-lucide="clipboard-list" class="w-4 h-4 text-purple-600"></i>
-                    Prestaciones y Servicios (${servicios.length})
-                </h4>
-                <div class="bg-purple-50 border border-purple-100 p-4 rounded-lg">
-                    <p class="text-xs text-purple-600 font-bold mb-3 uppercase">Servicios Ofrecidos</p>
-                    <div class="space-y-2">
-                        ${servicios.slice(0, 3).map(servicio => `
-                            <div class="flex items-start gap-2 text-sm text-purple-900">
-                                <i data-lucide="check-circle" class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0"></i>
-                                <div>
-                                    <span class="font-bold">${servicio.nombre}</span>
-                                    ${servicio.duracion ? `<span class="text-purple-700"> (${servicio.duracion})</span>` : ''}
-                                    ${servicio.valor ? `<span class="text-purple-800 font-bold"> - ${servicio.valor}</span>` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
-                        ${servicios.length > 3 ? `
-                            <p class="text-xs text-purple-700 font-medium mt-2">
-                                + ${servicios.length - 3} servicio(s) más. Ver detalles completos.
-                            </p>
-                        ` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-}
-
-function renderRequisitosLogisticos(profesional) {
-    const req = profesional.requisitosLogisticos;
-
-    return `
-        <div>
-            <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
-                <i data-lucide="package" class="w-4 h-4 text-purple-600"></i>
-                Requisitos Logísticos
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg">
-                    <p class="text-xs text-slate-600 font-bold mb-1 uppercase">Necesita Asistente</p>
-                    <p class="text-sm font-bold ${req.necesitaAsistente ? 'text-green-700' : 'text-red-700'}">
-                        ${req.necesitaAsistente ? `SÍ${req.tipoAsistente ? ` (${req.tipoAsistente})` : ''}` : 'NO'}
-                    </p>
-                </div>
-                <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg">
-                    <p class="text-xs text-slate-600 font-bold mb-1 uppercase">Insumos Requeridos</p>
-                    <p class="text-sm font-medium text-slate-800">${req.insumosRequeridos.join(', ')}</p>
-                </div>
-                ${req.espacioEspecial ? `
-                    <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg md:col-span-2">
-                        <p class="text-xs text-amber-600 font-bold mb-1 uppercase flex items-center gap-1">
-                            <i data-lucide="map-pin" class="w-3 h-3"></i>
-                            Espacio Especial
-                        </p>
-                        <p class="text-sm font-medium text-amber-900">${req.espacioEspecial}</p>
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Muestra el modal con los detalles completos del profesional
- */
 function showProfesionalDetails(profesionalId) {
     const profesional = profesionalesData.find(p => p.id === profesionalId);
     if (!profesional) return;
@@ -475,15 +412,15 @@ function renderProfesionalFullDetails(profesional) {
             </div>
 
             ${tieneFormacion ? `
-                <!-- Formación y Credenciales -->
+                <!-- Formación -->
                 <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
                     <h3 class="font-bold text-indigo-900 mb-3 flex items-center gap-2">
                         <i data-lucide="graduation-cap" class="w-5 h-5 text-indigo-600"></i>
                         Formación y Credenciales
                     </h3>
                     <div class="space-y-2 text-sm text-indigo-900">
-                        <p><span class="font-bold">Pregrado:</span> ${profesional.formacion.pregrado}</p>
-                        <p><span class="font-bold">Especialidad:</span> ${profesional.formacion.especialidad}</p>
+                        ${profesional.formacion.pregrado ? `<p><span class="font-bold">Pregrado:</span> ${profesional.formacion.pregrado}</p>` : ''}
+                        ${profesional.formacion.especialidad ? `<p><span class="font-bold">Especialidad:</span> ${profesional.formacion.especialidad}</p>` : ''}
                         ${profesional.formacion.subespecialidad ? `<p><span class="font-bold">Subespecialidad:</span> ${profesional.formacion.subespecialidad}</p>` : ''}
                         ${profesional.formacion.certificaciones ? `
                             <div>
@@ -493,8 +430,6 @@ function renderProfesionalFullDetails(profesional) {
                                 </ul>
                             </div>
                         ` : ''}
-                        ${profesional.formacion.membresias ? `<p><span class="font-bold">Membresías:</span> ${profesional.formacion.membresias.join(', ')}</p>` : ''}
-                        ${profesional.formacion.registro ? `<p><span class="font-bold">Registro:</span> ${profesional.formacion.registro}</p>` : ''}
                     </div>
                 </div>
             ` : ''}
@@ -509,33 +444,19 @@ function renderProfesionalFullDetails(profesional) {
                     <p><span class="font-bold">Días:</span> ${profesional.disponibilidad.dias.join(', ')}</p>
                     <p><span class="font-bold">Horario:</span> ${profesional.disponibilidad.horario}</p>
                     <p><span class="font-bold">Frecuencia:</span> ${profesional.disponibilidad.frecuencia}</p>
-                    ${profesional.disponibilidad.flexibilidad ? `
-                        <p><span class="font-bold">Flexibilidad:</span> ${profesional.disponibilidad.flexibilidad}</p>
-                    ` : ''}
                 </div>
             </div>
 
-            <!-- Prestaciones Detalladas -->
+            <!-- Servicios Detallados -->
             <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <h3 class="font-bold text-purple-900 mb-3 flex items-center gap-2">
                     <i data-lucide="clipboard-list" class="w-5 h-5 text-purple-600"></i>
-                    Prestaciones y Servicios Detallados
+                    Servicios Detallados
                 </h3>
                 ${esArraySimple ? `
-                    <div class="space-y-3 text-sm text-purple-900">
-                        <div>
-                            <p class="font-bold mb-1">Servicios:</p>
-                            <ul class="list-disc list-inside space-y-1 ml-2">
-                                ${servicios.map(s => `<li>${s}</li>`).join('')}
-                            </ul>
-                        </div>
-                        ${profesional.prestaciones.duracionPromedio ? `
-                            <p><span class="font-bold">Duración promedio:</span> ${profesional.prestaciones.duracionPromedio}</p>
-                        ` : ''}
-                        ${profesional.prestaciones.esquemaControles ? `
-                            <p><span class="font-bold">Esquema de controles:</span> ${profesional.prestaciones.esquemaControles}</p>
-                        ` : ''}
-                    </div>
+                    <ul class="list-disc list-inside space-y-1 ml-2 text-sm text-purple-900">
+                        ${servicios.map(s => `<li>${s}</li>`).join('')}
+                    </ul>
                 ` : `
                     <div class="space-y-4">
                         ${servicios.map(servicio => `
@@ -544,15 +465,7 @@ function renderProfesionalFullDetails(profesional) {
                                 <div class="space-y-1 text-sm text-purple-800">
                                     ${servicio.duracion ? `<p><span class="font-bold">Duración:</span> ${servicio.duracion}</p>` : ''}
                                     ${servicio.valor ? `<p><span class="font-bold">Valor:</span> ${servicio.valor}</p>` : ''}
-                                    ${servicio.insumos ? `<p><span class="font-bold">Insumos:</span> ${servicio.insumos}</p>` : ''}
-                                    ${servicio.equipo ? `<p><span class="font-bold">Equipo:</span> ${servicio.equipo}</p>` : ''}
-                                    ${servicio.espacio ? `<p><span class="font-bold">Espacio:</span> ${servicio.espacio}</p>` : ''}
-                                    ${servicio.notas ? `
-                                        <div class="mt-2 p-2 bg-purple-100 rounded text-xs">
-                                            <p class="font-bold text-purple-900">Notas:</p>
-                                            <p class="text-purple-800">${servicio.notas}</p>
-                                        </div>
-                                    ` : ''}
+                                    ${servicio.notas ? `<p class="text-xs mt-2 p-2 bg-purple-100 rounded">${servicio.notas}</p>` : ''}
                                 </div>
                             </div>
                         `).join('')}
@@ -560,29 +473,8 @@ function renderProfesionalFullDetails(profesional) {
                 `}
             </div>
 
-            <!-- Requisitos Logísticos -->
-            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h3 class="font-bold text-green-900 mb-3 flex items-center gap-2">
-                    <i data-lucide="package" class="w-5 h-5 text-green-600"></i>
-                    Requisitos Logísticos
-                </h3>
-                <div class="space-y-2 text-sm text-green-900">
-                    <p><span class="font-bold">Necesita Asistente:</span> ${profesional.requisitosLogisticos.necesitaAsistente ? `SÍ${profesional.requisitosLogisticos.tipoAsistente ? ` (${profesional.requisitosLogisticos.tipoAsistente})` : ''}` : 'NO'}</p>
-                    <p><span class="font-bold">Insumos requeridos:</span> ${profesional.requisitosLogisticos.insumosRequeridos.join(', ')}</p>
-                    ${profesional.requisitosLogisticos.espacioEspecial ? `
-                        <p><span class="font-bold">Espacio especial:</span> ${profesional.requisitosLogisticos.espacioEspecial}</p>
-                    ` : ''}
-                    ${profesional.requisitosLogisticos.notasEspeciales ? `
-                        <div class="mt-2 p-2 bg-green-100 rounded">
-                            <p class="font-bold">Notas especiales:</p>
-                            <p>${profesional.requisitosLogisticos.notasEspeciales}</p>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
-
             ${tienePendientes ? `
-                <!-- Pendientes Administrativos -->
+                <!-- Pendientes -->
                 <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
                     <h3 class="font-bold text-orange-900 mb-3 flex items-center gap-2">
                         <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600"></i>
@@ -602,12 +494,137 @@ function renderProfesionalFullDetails(profesional) {
     `;
 }
 
-/**
- * Cierra el modal de profesional
- */
 function closeProfesionalModal() {
     const modal = document.getElementById('profesionalModal');
-    if (modal) {
-        modal.remove();
+    if (modal) modal.remove();
+}
+
+// ============================================================================
+// FILTRADO
+// ============================================================================
+
+function filterProfesionales(searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') {
+        return profesionalesData;
     }
+
+    const term = searchTerm.toLowerCase().trim();
+
+    return profesionalesData.filter(profesional => {
+        // Buscar en información básica
+        if (profesional.nombreCompleto.toLowerCase().includes(term)) return true;
+        if (profesional.especialidad.toLowerCase().includes(term)) return true;
+        if (profesional.rut.includes(term)) return true;
+        if (profesional.telefono.includes(term)) return true;
+        if (profesional.email.toLowerCase().includes(term)) return true;
+
+        // Buscar en formación
+        if (profesional.formacion) {
+            if (profesional.formacion.pregrado && profesional.formacion.pregrado.toLowerCase().includes(term)) return true;
+            if (profesional.formacion.especialidad && profesional.formacion.especialidad.toLowerCase().includes(term)) return true;
+            if (profesional.formacion.certificaciones && profesional.formacion.certificaciones.some(cert => cert.toLowerCase().includes(term))) return true;
+        }
+
+        // Buscar en disponibilidad
+        if (profesional.disponibilidad.dias.some(dia => dia.toLowerCase().includes(term))) return true;
+        if (profesional.disponibilidad.horario.toLowerCase().includes(term)) return true;
+
+        // Buscar en servicios
+        const servicios = profesional.prestaciones.servicios;
+        if (Array.isArray(servicios)) {
+            if (typeof servicios[0] === 'string') {
+                if (servicios.some(serv => serv.toLowerCase().includes(term))) return true;
+            } else {
+                for (const servicio of servicios) {
+                    if (servicio.nombre && servicio.nombre.toLowerCase().includes(term)) return true;
+                    if (servicio.valor && servicio.valor.toLowerCase().includes(term)) return true;
+                    if (servicio.notas && servicio.notas.toLowerCase().includes(term)) return true;
+                }
+            }
+        }
+
+        return false;
+    });
+}
+
+// ============================================================================
+// EVENT LISTENERS
+// ============================================================================
+
+function initProfesionalesListeners() {
+    const searchInput = document.getElementById('profesionalSearchInput');
+    const clearBtn = document.getElementById('clearProfesionalSearchBtn');
+    const viewModeList = document.getElementById('viewModeList');
+    const viewModeGrid = document.getElementById('viewModeGrid');
+    const viewModeCards = document.getElementById('viewModeCards');
+
+    // Buscador
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value;
+            updateProfesionalesView(searchTerm);
+
+            if (clearBtn) {
+                clearBtn.classList.toggle('hidden', !searchTerm);
+            }
+        });
+    }
+
+    // Botón limpiar
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+                updateProfesionalesView('');
+                clearBtn.classList.add('hidden');
+            }
+        });
+    }
+
+    // Botones de vista
+    if (viewModeList) {
+        viewModeList.addEventListener('click', () => changeViewMode('list'));
+    }
+    if (viewModeGrid) {
+        viewModeGrid.addEventListener('click', () => changeViewMode('grid'));
+    }
+    if (viewModeCards) {
+        viewModeCards.addEventListener('click', () => changeViewMode('cards'));
+    }
+}
+
+function changeViewMode(mode) {
+    appState.setProfesionalViewMode(mode);
+    updateViewButtons(mode);
+    const searchInput = document.getElementById('profesionalSearchInput');
+    updateProfesionalesView(searchInput ? searchInput.value : '');
+}
+
+function updateViewButtons(activeMode) {
+    const buttons = {
+        list: document.getElementById('viewModeList'),
+        grid: document.getElementById('viewModeGrid'),
+        cards: document.getElementById('viewModeCards')
+    };
+
+    Object.keys(buttons).forEach(mode => {
+        const btn = buttons[mode];
+        if (btn) {
+            if (mode === activeMode) {
+                btn.className = 'px-3 py-2 rounded-lg flex items-center gap-2 transition-all bg-purple-600 text-white';
+            } else {
+                btn.className = 'px-3 py-2 rounded-lg flex items-center gap-2 transition-all bg-white text-slate-600 hover:bg-purple-50';
+            }
+        }
+    });
+}
+
+function updateProfesionalesView(searchTerm) {
+    const container = document.getElementById('profesionalesResultsContainer');
+    if (!container) return;
+
+    const viewMode = appState.getState().profesionalViewMode;
+    container.innerHTML = renderProfesionales(searchTerm, viewMode);
+    lucide.createIcons();
 }

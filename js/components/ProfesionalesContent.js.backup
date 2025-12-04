@@ -1,0 +1,613 @@
+/**
+ * ProfesionalesContent Component
+ * Muestra información de profesionales de Clínica Cialo
+ */
+
+function ProfesionalesContent() {
+    return `
+        <div class="space-y-6">
+            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100 flex items-start gap-3">
+                <i data-lucide="info" class="text-purple-600 w-5 h-5 mt-0.5"></i>
+                <div class="flex-grow">
+                    <h3 class="font-bold text-purple-900 mb-1">Directorio de Profesionales</h3>
+                    <p class="text-sm text-purple-800">Información de contacto, horarios y prestaciones de nuestros especialistas.</p>
+                </div>
+            </div>
+
+            <!-- Buscador de Profesionales -->
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="profesionalSearchInput" 
+                    placeholder="Buscar profesional por nombre, especialidad, servicio, certificación..."
+                    class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all text-slate-800 placeholder-slate-400"
+                />
+                <i data-lucide="search" class="absolute left-3 top-3.5 text-purple-500 w-5 h-5"></i>
+                <button 
+                    id="clearProfesionalSearchBtn" 
+                    class="absolute right-3 top-3.5 text-slate-400 hover:text-purple-600 transition-colors hidden"
+                >
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Contenedor de resultados que se actualizará dinámicamente -->
+            <div id="profesionalesResultsContainer">
+                <div class="grid grid-cols-1 gap-6">
+                    ${profesionalesData.map(profesional => renderProfesionalCard(profesional)).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Actualiza solo el contenedor de resultados sin tocar el input
+ */
+function updateProfesionalesResults(searchTerm) {
+    const container = document.getElementById('profesionalesResultsContainer');
+    if (!container) return;
+
+    const profesionalesFiltrados = filterProfesionales(searchTerm);
+
+    let html = '';
+
+    if (searchTerm && profesionalesFiltrados.length === 0) {
+        // No hay resultados
+        html = `
+            <div class="flex flex-col items-center justify-center py-12 text-slate-500">
+                <i data-lucide="user-x" class="w-16 h-16 mb-4 opacity-50"></i>
+                <p class="font-bold text-lg mb-1">No se encontraron profesionales</p>
+                <p class="text-sm">Intenta con otro término de búsqueda</p>
+            </div>
+        `;
+    } else {
+        // Mostrar resultados
+        if (searchTerm) {
+            html += `
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4 text-blue-600"></i>
+                    <p class="text-sm text-blue-900">
+                        <span class="font-bold">${profesionalesFiltrados.length}</span> 
+                        profesional${profesionalesFiltrados.length !== 1 ? 'es' : ''} encontrado${profesionalesFiltrados.length !== 1 ? 's' : ''}
+                    </p>
+                </div>
+            `;
+        }
+
+        html += `
+            <div class="grid grid-cols-1 gap-6">
+                ${profesionalesFiltrados.map(profesional => renderProfesionalCard(profesional)).join('')}
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+
+    // Refrescar iconos de Lucide
+    lucide.createIcons();
+}
+
+/**
+ * Filtra profesionales según el término de búsqueda
+ */
+function filterProfesionales(searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') {
+        return profesionalesData;
+    }
+
+    const term = searchTerm.toLowerCase().trim();
+
+    return profesionalesData.filter(profesional => {
+        // Buscar en información básica
+        if (profesional.nombreCompleto.toLowerCase().includes(term)) return true;
+        if (profesional.especialidad.toLowerCase().includes(term)) return true;
+        if (profesional.rut.includes(term)) return true;
+        if (profesional.telefono.includes(term)) return true;
+        if (profesional.email.toLowerCase().includes(term)) return true;
+
+        // Buscar en formación
+        if (profesional.formacion) {
+            if (profesional.formacion.pregrado && profesional.formacion.pregrado.toLowerCase().includes(term)) return true;
+            if (profesional.formacion.especialidad && profesional.formacion.especialidad.toLowerCase().includes(term)) return true;
+            if (profesional.formacion.subespecialidad && profesional.formacion.subespecialidad.toLowerCase().includes(term)) return true;
+
+            // Buscar en certificaciones
+            if (profesional.formacion.certificaciones) {
+                if (profesional.formacion.certificaciones.some(cert => cert.toLowerCase().includes(term))) return true;
+            }
+
+            // Buscar en membresías
+            if (profesional.formacion.membresias) {
+                if (profesional.formacion.membresias.some(memb => memb.toLowerCase().includes(term))) return true;
+            }
+
+            if (profesional.formacion.registro && profesional.formacion.registro.toLowerCase().includes(term)) return true;
+        }
+
+        // Buscar en disponibilidad
+        if (profesional.disponibilidad.dias.some(dia => dia.toLowerCase().includes(term))) return true;
+        if (profesional.disponibilidad.horario.toLowerCase().includes(term)) return true;
+        if (profesional.disponibilidad.frecuencia.toLowerCase().includes(term)) return true;
+
+        // Buscar en servicios
+        const servicios = profesional.prestaciones.servicios;
+        if (Array.isArray(servicios)) {
+            // Verificar si es array de strings o de objetos
+            if (typeof servicios[0] === 'string') {
+                if (servicios.some(serv => serv.toLowerCase().includes(term))) return true;
+            } else {
+                // Array de objetos
+                for (const servicio of servicios) {
+                    if (servicio.nombre && servicio.nombre.toLowerCase().includes(term)) return true;
+                    if (servicio.valor && servicio.valor.toLowerCase().includes(term)) return true;
+                    if (servicio.notas && servicio.notas.toLowerCase().includes(term)) return true;
+                    if (servicio.insumos && servicio.insumos.toLowerCase().includes(term)) return true;
+                    if (servicio.equipo && servicio.equipo.toLowerCase().includes(term)) return true;
+                    if (servicio.espacio && servicio.espacio.toLowerCase().includes(term)) return true;
+                }
+            }
+        }
+
+        // Buscar en requisitos logísticos
+        if (profesional.requisitosLogisticos.insumosRequeridos.some(ins => ins.toLowerCase().includes(term))) return true;
+        if (profesional.requisitosLogisticos.espacioEspecial && profesional.requisitosLogisticos.espacioEspecial.toLowerCase().includes(term)) return true;
+        if (profesional.requisitosLogisticos.notasEspeciales && profesional.requisitosLogisticos.notasEspeciales.toLowerCase().includes(term)) return true;
+        if (profesional.requisitosLogisticos.tipoAsistente && profesional.requisitosLogisticos.tipoAsistente.toLowerCase().includes(term)) return true;
+
+        // Buscar en pendientes administrativos
+        if (profesional.pendientesAdministrativos) {
+            if (profesional.pendientesAdministrativos.some(pend => pend.toLowerCase().includes(term))) return true;
+        }
+
+        return false;
+    });
+}
+
+/**
+ * Inicializa los event listeners del buscador de profesionales
+ */
+function initProfesionalesSearch() {
+    const searchInput = document.getElementById('profesionalSearchInput');
+    const clearBtn = document.getElementById('clearProfesionalSearchBtn');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value;
+
+            // Actualizar solo los resultados, NO el input
+            updateProfesionalesResults(searchTerm);
+
+            // Mostrar/ocultar botón de limpiar
+            if (clearBtn) {
+                if (searchTerm) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+                updateProfesionalesResults('');
+                clearBtn.classList.add('hidden');
+            }
+        });
+    }
+}
+
+function renderProfesionalCard(profesional) {
+    // Detectar si tiene formación académica
+    const tieneFormacion = profesional.formacion !== undefined;
+    const tienePendientes = profesional.pendientesAdministrativos !== undefined;
+
+    return `
+        <div class="bg-white border-2 border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+            <!-- Header del profesional -->
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
+                <div class="flex items-start justify-between flex-wrap gap-4">
+                    <div class="flex items-start gap-4">
+                        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+                            <i data-lucide="user-circle" class="w-10 h-10"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-1">${profesional.nombreCompleto}</h3>
+                            <p class="text-purple-100 font-medium flex items-center gap-2">
+                                <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                                ${profesional.especialidad}
+                            </p>
+                        </div>
+                    </div>
+                    <button 
+                        onclick="showProfesionalDetails('${profesional.id}')"
+                        class="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                    >
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                        Ver detalles
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenido del profesional -->
+            <div class="p-6 space-y-6">
+                <!-- Información de Contacto -->
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                        <i data-lucide="contact" class="w-4 h-4 text-purple-600"></i>
+                        Información de Contacto
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-lg">
+                            <i data-lucide="phone" class="w-4 h-4 text-slate-500"></i>
+                            <div>
+                                <p class="text-xs text-slate-500 font-medium">Teléfono</p>
+                                <p class="text-sm font-bold text-slate-800">${profesional.telefono}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-lg">
+                            <i data-lucide="mail" class="w-4 h-4 text-slate-500"></i>
+                            <div>
+                                <p class="text-xs text-slate-500 font-medium">Email</p>
+                                <p class="text-sm font-bold text-slate-800 break-all">${profesional.email}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-lg">
+                            <i data-lucide="credit-card" class="w-4 h-4 text-slate-500"></i>
+                            <div>
+                                <p class="text-xs text-slate-500 font-medium">RUT</p>
+                                <p class="text-sm font-bold text-slate-800">${profesional.rut}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disponibilidad -->
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                        <i data-lucide="calendar-clock" class="w-4 h-4 text-purple-600"></i>
+                        Disponibilidad y Horarios
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg">
+                            <p class="text-xs text-blue-600 font-bold mb-1 uppercase">Días de Atención</p>
+                            <p class="text-sm font-bold text-blue-900">${profesional.disponibilidad.dias.join(', ')}</p>
+                        </div>
+                        <div class="bg-green-50 border border-green-100 p-3 rounded-lg">
+                            <p class="text-xs text-green-600 font-bold mb-1 uppercase">Frecuencia</p>
+                            <p class="text-sm font-bold text-green-900">${profesional.disponibilidad.frecuencia}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prestaciones (Vista resumida) -->
+                ${renderPrestacionesResumen(profesional)}
+
+                <!-- Requisitos Logísticos -->
+                ${renderRequisitosLogisticos(profesional)}
+
+                ${tienePendientes ? `
+                    <!-- Pendientes Administrativos -->
+                    <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600 mt-0.5"></i>
+                            <div>
+                                <h4 class="font-bold text-orange-900 text-sm mb-2">Pendientes Administrativos</h4>
+                                <ul class="space-y-1 text-sm text-orange-800">
+                                    ${profesional.pendientesAdministrativos.map(p => `
+                                        <li class="flex items-start gap-2">
+                                            <span class="text-orange-600 mt-1">•</span>
+                                            <span>${p}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function renderPrestacionesResumen(profesional) {
+    const servicios = profesional.prestaciones.servicios;
+
+    // Verificar si es array de strings o array de objetos
+    const esArraySimple = typeof servicios[0] === 'string';
+
+    if (esArraySimple) {
+        return `
+            <div>
+                <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                    <i data-lucide="clipboard-list" class="w-4 h-4 text-purple-600"></i>
+                    Prestaciones y Servicios
+                </h4>
+                <div class="bg-purple-50 border border-purple-100 p-4 rounded-lg">
+                    <p class="text-xs text-purple-600 font-bold mb-2 uppercase">Servicios Ofrecidos</p>
+                    <ul class="space-y-1">
+                        ${servicios.map(servicio => `
+                            <li class="flex items-center gap-2 text-sm text-purple-900">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-purple-600"></i>
+                                <span class="font-medium">${servicio}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+    } else {
+        // Array de objetos con detalles
+        return `
+            <div>
+                <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                    <i data-lucide="clipboard-list" class="w-4 h-4 text-purple-600"></i>
+                    Prestaciones y Servicios (${servicios.length})
+                </h4>
+                <div class="bg-purple-50 border border-purple-100 p-4 rounded-lg">
+                    <p class="text-xs text-purple-600 font-bold mb-3 uppercase">Servicios Ofrecidos</p>
+                    <div class="space-y-2">
+                        ${servicios.slice(0, 3).map(servicio => `
+                            <div class="flex items-start gap-2 text-sm text-purple-900">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0"></i>
+                                <div>
+                                    <span class="font-bold">${servicio.nombre}</span>
+                                    ${servicio.duracion ? `<span class="text-purple-700"> (${servicio.duracion})</span>` : ''}
+                                    ${servicio.valor ? `<span class="text-purple-800 font-bold"> - ${servicio.valor}</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${servicios.length > 3 ? `
+                            <p class="text-xs text-purple-700 font-medium mt-2">
+                                + ${servicios.length - 3} servicio(s) más. Ver detalles completos.
+                            </p>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function renderRequisitosLogisticos(profesional) {
+    const req = profesional.requisitosLogisticos;
+
+    return `
+        <div>
+            <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                <i data-lucide="package" class="w-4 h-4 text-purple-600"></i>
+                Requisitos Logísticos
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg">
+                    <p class="text-xs text-slate-600 font-bold mb-1 uppercase">Necesita Asistente</p>
+                    <p class="text-sm font-bold ${req.necesitaAsistente ? 'text-green-700' : 'text-red-700'}">
+                        ${req.necesitaAsistente ? `SÍ${req.tipoAsistente ? ` (${req.tipoAsistente})` : ''}` : 'NO'}
+                    </p>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg">
+                    <p class="text-xs text-slate-600 font-bold mb-1 uppercase">Insumos Requeridos</p>
+                    <p class="text-sm font-medium text-slate-800">${req.insumosRequeridos.join(', ')}</p>
+                </div>
+                ${req.espacioEspecial ? `
+                    <div class="bg-amber-50 border border-amber-200 p-3 rounded-lg md:col-span-2">
+                        <p class="text-xs text-amber-600 font-bold mb-1 uppercase flex items-center gap-1">
+                            <i data-lucide="map-pin" class="w-3 h-3"></i>
+                            Espacio Especial
+                        </p>
+                        <p class="text-sm font-medium text-amber-900">${req.espacioEspecial}</p>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Muestra el modal con los detalles completos del profesional
+ */
+function showProfesionalDetails(profesionalId) {
+    const profesional = profesionalesData.find(p => p.id === profesionalId);
+    if (!profesional) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'profesionalModal';
+    modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+    modal.onclick = (e) => {
+        if (e.target === modal) closeProfesionalModal();
+    };
+
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Header -->
+            <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 flex items-center justify-between z-10">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                        <i data-lucide="user-circle" class="w-10 h-10"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold">${profesional.nombreCompleto}</h2>
+                        <p class="text-purple-100">${profesional.especialidad}</p>
+                    </div>
+                </div>
+                <button 
+                    onclick="closeProfesionalModal()"
+                    class="bg-white/20 hover:bg-white/30 backdrop-blur-sm p-2 rounded-lg transition-all"
+                >
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Contenido completo -->
+            <div class="p-6 space-y-6">
+                ${renderProfesionalFullDetails(profesional)}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    lucide.createIcons();
+}
+
+function renderProfesionalFullDetails(profesional) {
+    const tieneFormacion = profesional.formacion !== undefined;
+    const tienePendientes = profesional.pendientesAdministrativos !== undefined;
+    const servicios = profesional.prestaciones.servicios;
+    const esArraySimple = typeof servicios[0] === 'string';
+
+    return `
+        <div class="space-y-6">
+            <!-- Contacto -->
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i data-lucide="contact" class="w-5 h-5 text-purple-600"></i>
+                    Información de Contacto
+                </h3>
+                <div class="space-y-2 text-sm">
+                    <p><span class="font-bold">RUT:</span> ${profesional.rut}</p>
+                    <p><span class="font-bold">Teléfono:</span> ${profesional.telefono}</p>
+                    <p><span class="font-bold">Email:</span> ${profesional.email}</p>
+                </div>
+            </div>
+
+            ${tieneFormacion ? `
+                <!-- Formación y Credenciales -->
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                    <h3 class="font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                        <i data-lucide="graduation-cap" class="w-5 h-5 text-indigo-600"></i>
+                        Formación y Credenciales
+                    </h3>
+                    <div class="space-y-2 text-sm text-indigo-900">
+                        <p><span class="font-bold">Pregrado:</span> ${profesional.formacion.pregrado}</p>
+                        <p><span class="font-bold">Especialidad:</span> ${profesional.formacion.especialidad}</p>
+                        ${profesional.formacion.subespecialidad ? `<p><span class="font-bold">Subespecialidad:</span> ${profesional.formacion.subespecialidad}</p>` : ''}
+                        ${profesional.formacion.certificaciones ? `
+                            <div>
+                                <p class="font-bold mb-1">Certificaciones:</p>
+                                <ul class="list-disc list-inside space-y-1 ml-2">
+                                    ${profesional.formacion.certificaciones.map(c => `<li>${c}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${profesional.formacion.membresias ? `<p><span class="font-bold">Membresías:</span> ${profesional.formacion.membresias.join(', ')}</p>` : ''}
+                        ${profesional.formacion.registro ? `<p><span class="font-bold">Registro:</span> ${profesional.formacion.registro}</p>` : ''}
+                    </div>
+                </div>
+            ` : ''}
+
+            <!-- Disponibilidad -->
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 class="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                    <i data-lucide="calendar-clock" class="w-5 h-5 text-blue-600"></i>
+                    Disponibilidad y Horarios
+                </h3>
+                <div class="space-y-2 text-sm text-blue-900">
+                    <p><span class="font-bold">Días:</span> ${profesional.disponibilidad.dias.join(', ')}</p>
+                    <p><span class="font-bold">Horario:</span> ${profesional.disponibilidad.horario}</p>
+                    <p><span class="font-bold">Frecuencia:</span> ${profesional.disponibilidad.frecuencia}</p>
+                    ${profesional.disponibilidad.flexibilidad ? `
+                        <p><span class="font-bold">Flexibilidad:</span> ${profesional.disponibilidad.flexibilidad}</p>
+                    ` : ''}
+                </div>
+            </div>
+
+            <!-- Prestaciones Detalladas -->
+            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h3 class="font-bold text-purple-900 mb-3 flex items-center gap-2">
+                    <i data-lucide="clipboard-list" class="w-5 h-5 text-purple-600"></i>
+                    Prestaciones y Servicios Detallados
+                </h3>
+                ${esArraySimple ? `
+                    <div class="space-y-3 text-sm text-purple-900">
+                        <div>
+                            <p class="font-bold mb-1">Servicios:</p>
+                            <ul class="list-disc list-inside space-y-1 ml-2">
+                                ${servicios.map(s => `<li>${s}</li>`).join('')}
+                            </ul>
+                        </div>
+                        ${profesional.prestaciones.duracionPromedio ? `
+                            <p><span class="font-bold">Duración promedio:</span> ${profesional.prestaciones.duracionPromedio}</p>
+                        ` : ''}
+                        ${profesional.prestaciones.esquemaControles ? `
+                            <p><span class="font-bold">Esquema de controles:</span> ${profesional.prestaciones.esquemaControles}</p>
+                        ` : ''}
+                    </div>
+                ` : `
+                    <div class="space-y-4">
+                        ${servicios.map(servicio => `
+                            <div class="bg-white p-4 rounded-lg border border-purple-200">
+                                <h4 class="font-bold text-purple-900 mb-2">${servicio.nombre}</h4>
+                                <div class="space-y-1 text-sm text-purple-800">
+                                    ${servicio.duracion ? `<p><span class="font-bold">Duración:</span> ${servicio.duracion}</p>` : ''}
+                                    ${servicio.valor ? `<p><span class="font-bold">Valor:</span> ${servicio.valor}</p>` : ''}
+                                    ${servicio.insumos ? `<p><span class="font-bold">Insumos:</span> ${servicio.insumos}</p>` : ''}
+                                    ${servicio.equipo ? `<p><span class="font-bold">Equipo:</span> ${servicio.equipo}</p>` : ''}
+                                    ${servicio.espacio ? `<p><span class="font-bold">Espacio:</span> ${servicio.espacio}</p>` : ''}
+                                    ${servicio.notas ? `
+                                        <div class="mt-2 p-2 bg-purple-100 rounded text-xs">
+                                            <p class="font-bold text-purple-900">Notas:</p>
+                                            <p class="text-purple-800">${servicio.notas}</p>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `}
+            </div>
+
+            <!-- Requisitos Logísticos -->
+            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h3 class="font-bold text-green-900 mb-3 flex items-center gap-2">
+                    <i data-lucide="package" class="w-5 h-5 text-green-600"></i>
+                    Requisitos Logísticos
+                </h3>
+                <div class="space-y-2 text-sm text-green-900">
+                    <p><span class="font-bold">Necesita Asistente:</span> ${profesional.requisitosLogisticos.necesitaAsistente ? `SÍ${profesional.requisitosLogisticos.tipoAsistente ? ` (${profesional.requisitosLogisticos.tipoAsistente})` : ''}` : 'NO'}</p>
+                    <p><span class="font-bold">Insumos requeridos:</span> ${profesional.requisitosLogisticos.insumosRequeridos.join(', ')}</p>
+                    ${profesional.requisitosLogisticos.espacioEspecial ? `
+                        <p><span class="font-bold">Espacio especial:</span> ${profesional.requisitosLogisticos.espacioEspecial}</p>
+                    ` : ''}
+                    ${profesional.requisitosLogisticos.notasEspeciales ? `
+                        <div class="mt-2 p-2 bg-green-100 rounded">
+                            <p class="font-bold">Notas especiales:</p>
+                            <p>${profesional.requisitosLogisticos.notasEspeciales}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            ${tienePendientes ? `
+                <!-- Pendientes Administrativos -->
+                <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                    <h3 class="font-bold text-orange-900 mb-3 flex items-center gap-2">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-orange-600"></i>
+                        Pendientes Administrativos
+                    </h3>
+                    <ul class="space-y-2 text-sm text-orange-800">
+                        ${profesional.pendientesAdministrativos.map(p => `
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="square" class="w-4 h-4 text-orange-600 mt-0.5"></i>
+                                <span>${p}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+/**
+ * Cierra el modal de profesional
+ */
+function closeProfesionalModal() {
+    const modal = document.getElementById('profesionalModal');
+    if (modal) {
+        modal.remove();
+    }
+}

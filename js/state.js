@@ -11,7 +11,8 @@ class AppState {
             searchTerm: '',
             productBrand: 'Todas',
             productSearchTerm: '',
-            profesionalSearchTerm: ''
+            profesionalSearchTerm: '',
+            profesionalViewMode: 'cards' // 'list', 'grid', 'cards'
         };
         this.listeners = [];
     }
@@ -77,6 +78,10 @@ class AppState {
 
     setProfesionalSearchTerm(term) {
         this.setState({ profesionalSearchTerm: term });
+    }
+
+    setProfesionalViewMode(mode) {
+        this.setState({ profesionalViewMode: mode });
     }
 }
 

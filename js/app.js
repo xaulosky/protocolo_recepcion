@@ -101,7 +101,7 @@ class App {
             initProductosContent();
         }
         if (state.activeTab === 'profesionales') {
-            initProfesionalesSearch();
+            initProfesionalesListeners();
         }
     }
 }
