@@ -274,6 +274,93 @@ const productsData = [
         "name": "Suplemento Glisodin",
         "price": 44000,
         "category": "Suplemento",
-        "description": "Antioxidante oral. Cápsulas de SOD para preparar la piel ante el sol y reducir la inflamación post-quirúrgica."
+    },
+    {
+        "id": 200001,
+        "brand": "ISDIN",
+        "name": "Foto Ultra 100 Active Unify SPF 50+ (50 ml)",
+        "price": 21990,
+        "category": "Dermocosmética",
+        "description": "Fotoprotector despigmentante. Protección solar muy alta con acción despigmentante. Previene y reduce las manchas causadas por el sol."
+    },
+    {
+        "id": 200002,
+        "brand": "ISDIN",
+        "name": "Fusion Water Magic Color Medium SPF50 (50 ml)",
+        "price": 21990,
+        "category": "Dermocosmética",
+        "description": "Fotoprotector con color. Textura ultraligera tipo agua con tono medio que unifica el tono de piel mientras protege del sol."
+    },
+    {
+        "id": 200003,
+        "brand": "ISDIN",
+        "name": "Fotoprotector UV Mineral Brush SPF50",
+        "price": 22490,
+        "category": "Dermocosmética",
+        "description": "Protector solar en brocha. Filtros 100% minerales en formato brocha para aplicación fácil y retoques durante el día."
+    },
+    {
+        "id": 200004,
+        "brand": "ISDIN",
+        "name": "Fotoultra Redness FPS50 (50 ml)",
+        "price": 22990,
+        "category": "Dermocosmética",
+        "description": "Fotoprotector anti-rojeces. Específico para pieles con rosácea o rojeces. Protege y calma la piel reactiva."
+    },
+    {
+        "id": 200005,
+        "brand": "ISDIN",
+        "name": "Glicoisdin Gel 10 (50 mg)",
+        "price": 29990,
+        "category": "Dermocosmética",
+        "description": "Exfoliante suave. Gel con ácido glicólico al 10% para renovación celular suave. Ideal para iniciar tratamientos exfoliantes."
+    },
+    {
+        "id": 200006,
+        "brand": "ISDIN",
+        "name": "Glicoisdin Gel 15 (50 mg)",
+        "price": 31990,
+        "category": "Dermocosmética",
+        "description": "Exfoliante moderado. Gel con ácido glicólico al 15% para renovación celular moderada. Mejora textura y luminosidad."
+    },
+    {
+        "id": 200007,
+        "brand": "ISDIN",
+        "name": "Glicoisdin Gel 25 (50 mg)",
+        "price": 34990,
+        "category": "Dermocosmética",
+        "description": "Exfoliante intensivo. Gel con ácido glicólico al 25% para renovación celular profunda. Tratamiento intensivo de manchas y arrugas."
+    },
+    {
+        "id": 200008,
+        "brand": "ISDIN",
+        "name": "Reparador Labial Stick Granate (4g)",
+        "price": 7990,
+        "category": "Dermocosmética",
+        "description": "Protector labial. Stick reparador para labios secos y agrietados con color granate. Hidratación y protección."
+    },
+    {
+        "id": 200009,
+        "brand": "ISDIN",
+        "name": "Flavo-C Serum (30 ml)",
+        "price": 35990,
+        "category": "Dermocosmética",
+        "description": "Antioxidante intensivo. Serum con Vitamina C pura que ilumina, previene el envejecimiento y protege contra radicales libres."
+    },
+    {
+        "id": 200010,
+        "brand": "ISDIN",
+        "name": "Hyaluronic Concentrate",
+        "price": 32990,
+        "category": "Dermocosmética",
+        "description": "Hidratación profunda. Concentrado de ácido hialurónico que rellena arrugas desde el interior y proporciona hidratación intensa."
+    },
+    {
+        "id": 200011,
+        "brand": "ISDIN",
+        "name": "Melaclear Advanced 3%",
+        "price": 43990,
+        "category": "Dermocosmética",
+        "description": "Despigmentante avanzado. Tratamiento intensivo con 3% de activos despigmentantes para manchas resistentes y melasma."
     }
 ];
