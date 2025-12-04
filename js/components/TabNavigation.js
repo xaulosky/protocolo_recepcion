@@ -11,7 +11,8 @@ function TabNavigation() {
         { id: 'guiones', label: 'Guiones Técnicos', icon: 'message-circle' },
         { id: 'pagos', label: 'Pagos y Citas', icon: 'credit-card' },
         { id: 'productos', label: 'Productos', icon: 'shopping-bag' },
-        { id: 'consentimientos', label: 'Consentimientos', icon: 'file-text' }
+        { id: 'consentimientos', label: 'Consentimientos', icon: 'file-text' },
+        { id: 'profesionales', label: 'Profesionales', icon: 'users' }
     ];
 
     return `

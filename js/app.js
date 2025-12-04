@@ -80,6 +80,9 @@ class App {
             case 'consentimientos':
                 content = ConsentimientosContent();
                 break;
+            case 'profesionales':
+                content = ProfesionalesContent();
+                break;
         }
 
         this.mainContent.innerHTML = `
@@ -96,6 +99,9 @@ class App {
         }
         if (state.activeTab === 'productos') {
             initProductosContent();
+        }
+        if (state.activeTab === 'profesionales') {
+            initProfesionalesSearch();
         }
     }
 }

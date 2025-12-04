@@ -10,7 +10,8 @@ class AppState {
             scriptCategory: 'Gestion',
             searchTerm: '',
             productBrand: 'Todas',
-            productSearchTerm: ''
+            productSearchTerm: '',
+            profesionalSearchTerm: ''
         };
         this.listeners = [];
     }
@@ -72,6 +73,10 @@ class AppState {
 
     setProductSearchTerm(term) {
         this.setState({ productSearchTerm: term });
+    }
+
+    setProfesionalSearchTerm(term) {
+        this.setState({ profesionalSearchTerm: term });
     }
 }
 
