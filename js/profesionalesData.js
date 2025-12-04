@@ -422,5 +422,104 @@ const profesionalesData = [
         pendientesAdministrativos: [
             'Tiene consentimientos propios, pero solicita respaldo institucional del centro'
         ]
+    },
+    {
+        id: 'maria-villarroel',
+        nombreCompleto: 'María Laura Villarroel Reyes',
+        especialidad: 'Ginecología y Obstetricia – Especialista en Ginecoestética y Rejuvenecimiento Vaginal',
+        rut: '26.408.119-K',
+        telefono: '+56 9 3573 8075',
+        email: 'marylaura863@gmail.com',
+        formacion: {
+            pregrado: 'Médico Cirujano',
+            especialidad: 'Obstetricia y Ginecología',
+            subespecialidad: 'Ginecoestética y Rejuvenecimiento Vaginal',
+            certificaciones: [
+                'Obstetricia y Ginecología (Universidad del Zulia / CONACEM aprobado)',
+                'Láser Estética Técnica de Rejuvenecimiento Vaginal',
+                'Labioplastia Segura (World Society of Cosmetic Gynecology)',
+                'Cirugía Vulvar (Sociedad Iberoamericana)',
+                'Ultrasonografía',
+                'Histeroscopía'
+            ]
+        },
+        disponibilidad: {
+            dias: ['Pendiente de confirmar'],
+            horario: 'Pendiente de confirmar por la doctora',
+            frecuencia: 'Por definir',
+            flexibilidad: 'Sí'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Tratamiento Láser - Atrofia (Climaterio)',
+                    equipo: 'Láser Ginecoestético',
+                    notas: 'Tratamiento de atrofia vaginal en menopausia'
+                },
+                {
+                    nombre: 'Tratamiento Láser - Post-parto',
+                    equipo: 'Láser Ginecoestético',
+                    notas: 'Recuperación vaginal post-parto'
+                },
+                {
+                    nombre: 'Rejuvenecimiento Vaginal Láser',
+                    equipo: 'Láser Ginecoestético',
+                    notas: 'Rejuvenecimiento vaginal con láser'
+                },
+                {
+                    nombre: 'Lifting Vulvar Láser',
+                    equipo: 'Láser Ginecoestético',
+                    notas: 'Lifting de zona vulvar con láser'
+                },
+                {
+                    nombre: 'Blanqueamiento Genital Láser',
+                    equipo: 'Láser Ginecoestético',
+                    notas: 'Blanqueamiento de zona íntima'
+                },
+                {
+                    nombre: 'Tratamiento Láser - Estrías',
+                    equipo: 'Láser Ginecoestético',
+                    notas: 'Tratamiento de estrías en zona genital'
+                },
+                {
+                    nombre: 'Ninfoplastia (Labioplastia) Láser',
+                    espacio: 'Pabellón Menor',
+                    equipo: 'Láser Ginecoestético',
+                    notas: 'Cirugía estética de labios menores con láser. Requiere TENS/Matrona.'
+                },
+                {
+                    nombre: 'Manejo Glándula de Bartolino',
+                    espacio: 'Pabellón Menor',
+                    notas: 'Tratamiento de quistes o abscesos. Requiere TENS/Matrona.'
+                },
+                {
+                    nombre: 'Biopsia Vulva/Vagina',
+                    espacio: 'Box ginecológico o Pabellón Menor',
+                    notas: 'Procedimiento diagnóstico. Requiere TENS/Matrona.'
+                },
+                {
+                    nombre: 'Extirpación de Condilomas',
+                    espacio: 'Box ginecológico o Pabellón Menor',
+                    notas: 'Eliminación de verrugas genitales'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: true,
+            tipoAsistente: 'TENS/Matrona (para procedimientos mayores: Ninfoplastia, Biopsias)',
+            insumosRequeridos: [
+                'Láser Ginecoestético',
+                'Material de biopsia',
+                'Instrumental quirúrgico ginecológico',
+                'Anestesia local'
+            ],
+            espacioEspecial: 'Box ginecológico y Pabellón menor (según procedimiento)',
+            notasEspeciales: 'Requiere láser ginecoestético para la mayoría de procedimientos. Procedimientos mayores requieren pabellón menor.'
+        },
+        pendientesAdministrativos: [
+            'Confirmar horarios de disponibilidad',
+            'Definir precios de servicios',
+            'Preparar consentimientos informados'
+        ]
     }
 ];
