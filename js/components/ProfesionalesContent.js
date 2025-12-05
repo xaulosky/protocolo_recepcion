@@ -139,28 +139,33 @@ function renderListView(profesionales) {
     return `
         <div class="space-y-3">
             ${profesionales.map(prof => `
-                <div class="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-4 flex-grow">
-                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <i data-lucide="user" class="w-6 h-6 text-purple-600"></i>
+                <div class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start sm:items-center gap-3">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user" class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600"></i>
                         </div>
                         <div class="flex-grow min-w-0">
-                            <h3 class="font-bold text-slate-900 truncate">${prof.nombreCompleto}</h3>
-                            <p class="text-sm text-slate-600 truncate">${prof.especialidad}</p>
+                            <h3 class="font-bold text-slate-900 text-sm sm:text-base truncate pr-2">${prof.nombreCompleto}</h3>
+                            <p class="text-xs sm:text-sm text-slate-600 truncate pr-2">${prof.especialidad}</p>
+                            <div class="flex items-center gap-2 mt-1 sm:hidden">
+                                <i data-lucide="briefcase" class="w-3 h-3 text-slate-400"></i>
+                                <span class="text-xs text-slate-500">${prof.prestaciones.servicios.length} servicio${prof.prestaciones.servicios.length !== 1 ? 's' : ''}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex items-center gap-3 flex-shrink-0">
-                        <div class="text-right hidden md:block">
-                            <p class="text-xs text-slate-500">Servicios</p>
-                            <p class="font-bold text-purple-600">${prof.prestaciones.servicios.length}</p>
+                        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                            <div class="text-right hidden sm:block">
+                                <p class="text-xs text-slate-500">Servicios</p>
+                                <p class="font-bold text-purple-600">${prof.prestaciones.servicios.length}</p>
+                            </div>
+                            <button 
+                                onclick="showProfesionalDetails('${prof.id}')"
+                                class="bg-purple-600 hover:bg-purple-700 text-white p-2 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 sm:gap-2"
+                                title="Ver detalles"
+                            >
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                                <span class="hidden sm:inline">Ver</span>
+                            </button>
                         </div>
-                        <button 
-                            onclick="showProfesionalDetails('${prof.id}')"
-                            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
-                        >
-                            <i data-lucide="eye" class="w-4 h-4"></i>
-                            <span class="hidden sm:inline">Ver</span>
-                        </button>
                     </div>
                 </div>
             `).join('')}
@@ -173,27 +178,27 @@ function renderListView(profesionales) {
  */
 function renderGridView(profesionales) {
     return `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             ${profesionales.map(prof => `
-                <div class="bg-white border-2 border-slate-200 rounded-xl p-5 hover:shadow-lg hover:border-purple-300 transition-all">
-                    <div class="flex flex-col items-center text-center mb-4">
-                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center mb-3">
-                            <i data-lucide="user-circle" class="w-10 h-10 text-white"></i>
+                <div class="bg-white border-2 border-slate-200 rounded-xl p-4 sm:p-5 hover:shadow-lg hover:border-purple-300 transition-all">
+                    <div class="flex flex-col items-center text-center mb-3 sm:mb-4">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center mb-2 sm:mb-3">
+                            <i data-lucide="user-circle" class="w-8 h-8 sm:w-10 sm:h-10 text-white"></i>
                         </div>
-                        <h3 class="font-bold text-slate-900 mb-1">${prof.nombreCompleto}</h3>
-                        <p class="text-xs text-slate-600 mb-2">${prof.especialidad}</p>
+                        <h3 class="font-bold text-slate-900 mb-1 text-sm sm:text-base w-full truncate px-2">${prof.nombreCompleto}</h3>
+                        <p class="text-xs text-slate-600 mb-2 w-full truncate px-2">${prof.especialidad}</p>
                         <div class="flex items-center gap-2 text-xs text-slate-500">
                             <i data-lucide="briefcase" class="w-3 h-3"></i>
                             <span>${prof.prestaciones.servicios.length} servicio${prof.prestaciones.servicios.length !== 1 ? 's' : ''}</span>
                         </div>
                     </div>
-                    <div class="space-y-2 mb-4">
+                    <div class="space-y-2 mb-3 sm:mb-4">
                         <div class="flex items-center gap-2 text-xs text-slate-600">
-                            <i data-lucide="phone" class="w-3 h-3 text-purple-600"></i>
+                            <i data-lucide="phone" class="w-3 h-3 text-purple-600 flex-shrink-0"></i>
                             <span class="truncate">${prof.telefono}</span>
                         </div>
                         <div class="flex items-center gap-2 text-xs text-slate-600">
-                            <i data-lucide="mail" class="w-3 h-3 text-purple-600"></i>
+                            <i data-lucide="mail" class="w-3 h-3 text-purple-600 flex-shrink-0"></i>
                             <span class="truncate">${prof.email}</span>
                         </div>
                     </div>
@@ -232,23 +237,23 @@ function renderProfesionalCard(profesional) {
     return `
         <div class="bg-white border-2 border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
             <!-- Header del profesional -->
-            <div class="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
-                <div class="flex items-start justify-between flex-wrap gap-4">
-                    <div class="flex items-start gap-4">
-                        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm flex-shrink-0">
-                            <i data-lucide="user-circle" class="w-10 h-10"></i>
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-3 sm:gap-4">
+                    <div class="flex items-start gap-3 sm:gap-4 w-full sm:w-auto">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+                            <i data-lucide="user-circle" class="w-8 h-8 sm:w-10 sm:h-10"></i>
                         </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-1">${profesional.nombreCompleto}</h3>
-                            <p class="text-purple-100 font-medium flex items-center gap-2">
-                                <i data-lucide="stethoscope" class="w-4 h-4"></i>
-                                ${profesional.especialidad}
+                        <div class="flex-grow min-w-0">
+                            <h3 class="text-lg sm:text-2xl font-bold mb-1 break-words">${profesional.nombreCompleto}</h3>
+                            <p class="text-purple-100 font-medium flex items-center gap-2 text-sm sm:text-base">
+                                <i data-lucide="stethoscope" class="w-4 h-4 flex-shrink-0"></i>
+                                <span class="truncate">${profesional.especialidad}</span>
                             </p>
                         </div>
                     </div>
                     <button 
                         onclick="showProfesionalDetails('${profesional.id}')"
-                        class="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+                        class="w-full sm:w-auto bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
                     >
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                         Ver detalles
