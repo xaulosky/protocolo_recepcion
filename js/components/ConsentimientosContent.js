@@ -66,7 +66,7 @@ function showConsentPreview(consentId) {
     previewContainer.innerHTML = `
         <div class="bg-white border-2 border-indigo-200 rounded-xl overflow-hidden">
             <!-- Header con botones -->
-            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 flex items-center justify-between">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <i data-lucide="file-text" class="w-6 h-6"></i>
                     <div>
@@ -74,7 +74,14 @@ function showConsentPreview(consentId) {
                         <p class="text-sm text-indigo-100">Consentimiento Informado</p>
                     </div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
+                    <button 
+                        onclick="openSignatureModal('${consent.id}')"
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors flex items-center gap-2"
+                    >
+                        <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                        Firmar
+                    </button>
                     <button 
                         onclick="printConsent('${consent.id}')"
                         class="px-4 py-2 bg-white text-indigo-600 rounded-lg font-medium hover:bg-indigo-50 transition-colors flex items-center gap-2"
