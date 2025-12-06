@@ -12,7 +12,8 @@ function TabNavigation() {
         { id: 'pagos', label: 'Pagos y Citas', icon: 'credit-card' },
         { id: 'productos', label: 'Productos', icon: 'shopping-bag' },
         { id: 'consentimientos', label: 'Consentimientos', icon: 'file-text' },
-        { id: 'profesionales', label: 'Profesionales', icon: 'users' }
+        { id: 'profesionales', label: 'Profesionales', icon: 'users' },
+        { id: 'boxes', label: 'Boxes', icon: 'door-open' }
     ];
 
     return `

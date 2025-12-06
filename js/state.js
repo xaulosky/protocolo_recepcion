@@ -12,7 +12,10 @@ class AppState {
             productBrand: 'Todas',
             productSearchTerm: '',
             profesionalSearchTerm: '',
-            profesionalViewMode: 'cards' // 'list', 'grid', 'cards'
+            profesionalViewMode: 'cards', // 'list', 'grid', 'cards'
+            boxSearchTerm: '',
+            boxCategory: 'todas',
+            boxViewMode: 'cards' // 'cards', 'list'
         };
         this.listeners = [];
     }

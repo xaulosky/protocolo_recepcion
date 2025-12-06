@@ -83,6 +83,9 @@ class App {
             case 'profesionales':
                 content = ProfesionalesContent();
                 break;
+            case 'boxes':
+                content = BoxesContent();
+                break;
         }
 
         this.mainContent.innerHTML = `
@@ -102,6 +105,9 @@ class App {
         }
         if (state.activeTab === 'profesionales') {
             initProfesionalesListeners();
+        }
+        if (state.activeTab === 'boxes') {
+            initBoxesContent();
         }
     }
 }

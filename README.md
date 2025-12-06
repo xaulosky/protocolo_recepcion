@@ -1,6 +1,6 @@
-# Manual de Recepción Cialo v3.1
+# Cialo Hub
 
-Aplicación web para gestión de protocolos de recepción, guiones técnicos y políticas de pago de Clínica Cialo.
+Sistema integral de información de Clínica Cialo. Centraliza protocolos, guiones, políticas de pago, productos, consentimientos, profesionales y boxes.
 
 ## 📁 Estructura del Proyecto
 

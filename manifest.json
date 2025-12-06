@@ -1,7 +1,7 @@
 {
-  "name": "Manual de Recepción Cialo",
-  "short_name": "Cialo",
-  "description": "Manual de Recepción Cialo v3.1 - Guía completa de protocolos, productos y consentimientos",
+  "name": "Cialo Hub",
+  "short_name": "Cialo Hub",
+  "description": "Cialo Hub - Sistema integral de información de Clínica Cialo",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
