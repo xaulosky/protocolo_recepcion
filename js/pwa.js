@@ -176,37 +176,223 @@ class PWAManager {
     }
 
     showUpdateNotification() {
-        // Crear notificación de actualización
+        // Remover notificación anterior si existe
+        const existingNotification = document.getElementById('pwa-update-notification');
+        if (existingNotification) existingNotification.remove();
+
+        // Crear notificación de actualización mejorada
         const notification = document.createElement('div');
         notification.id = 'pwa-update-notification';
         notification.innerHTML = `
-      <div class="flex items-center justify-between p-4 bg-blue-600 text-white rounded-lg shadow-lg">
-        <div class="flex items-center">
-          <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          <span class="font-medium">Nueva versión disponible</span>
-        </div>
-        <button id="pwa-update-btn" class="ml-4 px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors">
-          Actualizar
-        </button>
-      </div>
-    `;
-        notification.className = 'fixed top-6 right-6 z-50 max-w-md animate-slide-in';
+            <div class="update-notification-content">
+                <div class="update-notification-icon">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </div>
+                <div class="update-notification-text">
+                    <p class="update-notification-title">¡Nueva versión disponible!</p>
+                    <p class="update-notification-subtitle">Actualiza para obtener las últimas mejoras</p>
+                </div>
+                <div class="update-notification-actions">
+                    <button id="pwa-update-btn" class="update-btn-primary">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                        Actualizar
+                    </button>
+                    <button id="pwa-update-dismiss" class="update-btn-dismiss">
+                        Después
+                    </button>
+                </div>
+            </div>
+        `;
+        notification.className = 'pwa-update-notification';
+
+        // Agregar estilos para la notificación
+        if (!document.getElementById('pwa-update-styles')) {
+            const style = document.createElement('style');
+            style.id = 'pwa-update-styles';
+            style.textContent = `
+                .pwa-update-notification {
+                    position: fixed;
+                    bottom: 24px;
+                    left: 50%;
+                    transform: translateX(-50%) translateY(100px);
+                    z-index: 9999;
+                    animation: slideUp 0.5s ease-out forwards, pulse-glow 2s ease-in-out infinite 0.5s;
+                }
+                
+                @media (min-width: 640px) {
+                    .pwa-update-notification {
+                        bottom: auto;
+                        top: 24px;
+                        transform: translateX(-50%) translateY(-100px);
+                        animation: slideDown 0.5s ease-out forwards, pulse-glow 2s ease-in-out infinite 0.5s;
+                    }
+                }
+                
+                @keyframes slideUp {
+                    to { transform: translateX(-50%) translateY(0); }
+                }
+                
+                @keyframes slideDown {
+                    to { transform: translateX(-50%) translateY(0); }
+                }
+                
+                @keyframes pulse-glow {
+                    0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 10px 40px rgba(0, 0, 0, 0.3); }
+                    50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5), 0 10px 40px rgba(0, 0, 0, 0.3); }
+                }
+                
+                .update-notification-content {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 20px 24px;
+                    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+                    border-radius: 16px;
+                    border: 1px solid rgba(139, 92, 246, 0.3);
+                    color: white;
+                    min-width: 280px;
+                    max-width: 360px;
+                }
+                
+                @media (min-width: 640px) {
+                    .update-notification-content {
+                        flex-direction: row;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        min-width: 400px;
+                    }
+                }
+                
+                .update-notification-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 48px;
+                    height: 48px;
+                    background: rgba(139, 92, 246, 0.3);
+                    border-radius: 12px;
+                    animation: spin-slow 3s linear infinite;
+                }
+                
+                @keyframes spin-slow {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                
+                .update-notification-text {
+                    text-align: center;
+                    flex: 1;
+                }
+                
+                @media (min-width: 640px) {
+                    .update-notification-text {
+                        text-align: left;
+                    }
+                }
+                
+                .update-notification-title {
+                    font-weight: 600;
+                    font-size: 1rem;
+                    margin: 0;
+                    color: white;
+                }
+                
+                .update-notification-subtitle {
+                    font-size: 0.8rem;
+                    margin: 4px 0 0 0;
+                    color: rgba(255, 255, 255, 0.7);
+                }
+                
+                .update-notification-actions {
+                    display: flex;
+                    gap: 8px;
+                    width: 100%;
+                    justify-content: center;
+                }
+                
+                @media (min-width: 640px) {
+                    .update-notification-actions {
+                        width: auto;
+                    }
+                }
+                
+                .update-btn-primary {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 10px 20px;
+                    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+                    color: white;
+                    border: none;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    flex: 1;
+                }
+                
+                @media (min-width: 640px) {
+                    .update-btn-primary {
+                        flex: none;
+                    }
+                }
+                
+                .update-btn-primary:hover {
+                    background: linear-gradient(135deg, #7c3aed, #9333ea);
+                    transform: scale(1.05);
+                }
+                
+                .update-btn-dismiss {
+                    padding: 10px 16px;
+                    background: transparent;
+                    color: rgba(255, 255, 255, 0.7);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    border-radius: 10px;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                
+                .update-btn-dismiss:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
+                }
+                
+                .pwa-update-notification.hiding {
+                    animation: fadeOut 0.3s ease-out forwards;
+                }
+                
+                @keyframes fadeOut {
+                    to { 
+                        opacity: 0;
+                        transform: translateX(-50%) translateY(20px);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
 
         document.body.appendChild(notification);
 
+        // Event listener para actualizar
         document.getElementById('pwa-update-btn').addEventListener('click', () => {
             this.applyUpdate();
         });
+        
+        // Event listener para descartar
+        document.getElementById('pwa-update-dismiss').addEventListener('click', () => {
+            notification.classList.add('hiding');
+            setTimeout(() => notification.remove(), 300);
+        });
 
-        // Auto-ocultar después de 10 segundos
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.remove();
-            }
-        }, 10000);
+        // NO auto-ocultar - dejar que el usuario decida
     }
 
     applyUpdate() {
