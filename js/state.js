@@ -15,7 +15,10 @@ class AppState {
             profesionalViewMode: 'cards', // 'list', 'grid', 'cards'
             boxSearchTerm: '',
             boxCategory: 'todas',
-            boxViewMode: 'cards' // 'cards', 'list'
+            boxViewMode: 'cards', // 'cards', 'list'
+            // Sidebar states
+            sidebarCollapsed: false,
+            expandedCategories: ['general', 'guiones', 'clinica', 'documentos']
         };
         this.listeners = [];
     }

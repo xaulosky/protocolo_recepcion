@@ -1,6 +1,6 @@
 // Service Worker para PWA - Cialo Hub
-const CACHE_NAME = 'cialo-hub-v1.0.0';
-const RUNTIME_CACHE = 'cialo-hub-runtime-v1.0.0';
+const CACHE_NAME = 'cialo-hub-v1.1.0';
+const RUNTIME_CACHE = 'cialo-hub-runtime-v1.1.0';
 
 // Archivos esenciales para cachear durante la instalación
 const ESSENTIAL_FILES = [
@@ -13,6 +13,7 @@ const ESSENTIAL_FILES = [
     '/js/consentimientosData.js',
     '/js/profesionalesData.js',
     '/js/boxesData.js',
+    '/js/components/Sidebar.js',
     '/js/components/Header.js',
     '/js/components/SearchBar.js',
     '/js/components/TabNavigation.js',

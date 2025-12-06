@@ -5,98 +5,189 @@
 
 class App {
     constructor() {
-        this.headerContainer = null;
+        this.sidebarNav = null;
         this.mainContent = null;
+        this.lastSidebarState = null;
+        this.isInitialized = false;
     }
 
     /**
      * Inicializa la aplicación
      */
     init() {
-        this.headerContainer = document.getElementById('headerContainer');
+        this.sidebarNav = document.getElementById('sidebarNav');
         this.mainContent = document.getElementById('mainContent');
 
-        // Renderizar header (estático)
-        this.renderHeader();
+        // Renderizar navegación del sidebar
+        this.renderSidebarNav();
+        
+        // Inicializar iconos de Lucide para elementos estáticos
+        lucide.createIcons();
+        
+        // Guardar estado inicial del sidebar
+        const state = appState.getState();
+        this.lastSidebarState = this.getSidebarStateKey(state);
+
+        // Inicializar listeners del sidebar (solo una vez)
+        initSidebarListeners();
 
         // Suscribirse a cambios de estado
-        appState.subscribe(() => this.render());
+        appState.subscribe(() => this.onStateChange());
 
-        // Renderizado inicial
-        this.render();
+        // Renderizado inicial del contenido
+        this.renderContent();
+        
+        this.isInitialized = true;
     }
 
     /**
-     * Renderiza el header (solo una vez)
+     * Obtiene la clave del estado del sidebar para comparación
      */
-    renderHeader() {
-        if (this.headerContainer) {
-            this.headerContainer.innerHTML = Header() + SearchBar();
-            initSearchBar();
-            lucide.createIcons();
+    getSidebarStateKey(state) {
+        return JSON.stringify({
+            activeTab: state.activeTab,
+            scriptCategory: state.scriptCategory,
+            sidebarCollapsed: state.sidebarCollapsed,
+            expandedCategories: state.expandedCategories
+        });
+    }
+
+    /**
+     * Verifica si el sidebar necesita re-renderizarse
+     */
+    shouldUpdateSidebar(state) {
+        const currentKey = this.getSidebarStateKey(state);
+        if (this.lastSidebarState !== currentKey) {
+            this.lastSidebarState = currentKey;
+            return true;
         }
+        return false;
     }
 
     /**
-     * Renderiza el contenido principal basado en el estado
+     * Renderiza solo la navegación del sidebar (no recrea el input)
      */
-    render() {
+    renderSidebarNav() {
+        if (this.sidebarNav) {
+            this.sidebarNav.innerHTML = SidebarNavigation();
+            lucide.createIcons({ nodes: [this.sidebarNav] });
+        }
+        // Actualizar estado visual (colapsado/expandido)
+        updateSidebarVisualState();
+    }
+
+    /**
+     * Maneja cambios de estado
+     */
+    onStateChange() {
         if (!this.mainContent) return;
 
         const state = appState.getState();
 
-        // Si hay búsqueda activa, mostrar resultados
-        if (state.searchTerm.trim() !== '') {
-            this.mainContent.innerHTML = SearchResults(state.searchTerm);
-        } else {
-            // Mostrar vista de pestañas
-            this.renderTabsView(state);
+        // Solo actualizar navegación del sidebar si cambió algo relevante (NO searchTerm)
+        if (this.shouldUpdateSidebar(state)) {
+            this.renderSidebarNav();
         }
 
-        // Refrescar iconos de Lucide
+        // Siempre actualizar contenido
+        this.renderContent();
+    }
+
+    /**
+     * Renderiza solo el contenido principal
+     */
+    renderContent() {
+        if (!this.mainContent) return;
+        
+        const state = appState.getState();
+
+        // Si hay búsqueda activa, mostrar resultados
+        if (state.searchTerm && state.searchTerm.trim() !== '') {
+            this.mainContent.innerHTML = `
+                <div class="fade-in">
+                    ${SearchResults(state.searchTerm)}
+                </div>
+            `;
+        } else {
+            // Mostrar vista de contenido
+            this.renderContentView(state);
+        }
+
+        // Refrescar iconos de Lucide en el contenido
         lucide.createIcons();
     }
 
     /**
-     * Renderiza la vista de pestañas
+     * Renderiza la vista de contenido (sin tabs)
      */
-    renderTabsView(state) {
+    renderContentView(state) {
         let content = '';
+        let title = '';
+        let icon = '';
 
-        // Renderizar contenido según pestaña activa
+        // Renderizar contenido según sección activa
         switch (state.activeTab) {
             case 'base':
+                title = 'Protocolo Base';
+                icon = 'check-circle';
                 content = ProtocolBase();
                 break;
             case 'guiones':
+                title = 'Guiones Técnicos';
+                icon = 'message-circle';
                 content = GuionesContent();
                 break;
             case 'pagos':
+                title = 'Pagos y Citas';
+                icon = 'credit-card';
                 content = PagosContent();
                 break;
             case 'productos':
+                title = 'Productos';
+                icon = 'shopping-bag';
                 content = ProductosContent();
                 break;
             case 'consentimientos':
+                title = 'Consentimientos';
+                icon = 'file-signature';
                 content = ConsentimientosContent();
                 break;
             case 'profesionales':
+                title = 'Profesionales';
+                icon = 'users';
                 content = ProfesionalesContent();
                 break;
             case 'boxes':
+                title = 'Boxes y Pabellón';
+                icon = 'door-open';
                 content = BoxesContent();
                 break;
+            default:
+                title = 'Protocolo Base';
+                icon = 'check-circle';
+                content = ProtocolBase();
         }
 
         this.mainContent.innerHTML = `
-            ${TabNavigation()}
-            <div class="p-6 flex-grow overflow-y-auto fade-in">
-                ${content}
+            <div class="fade-in">
+                <!-- Header de sección -->
+                <div class="mb-6 pb-4 border-b border-slate-200">
+                    <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                        <div class="p-2 bg-purple-100 rounded-lg">
+                            <i data-lucide="${icon}" class="w-6 h-6 text-purple-600"></i>
+                        </div>
+                        ${title}
+                    </h1>
+                </div>
+                
+                <!-- Contenido -->
+                <div class="content-area">
+                    ${content}
+                </div>
             </div>
         `;
 
-        // Inicializar event listeners
-        initTabNavigation();
+        // Inicializar event listeners específicos
         if (state.activeTab === 'guiones') {
             initGuionesContent();
         }
