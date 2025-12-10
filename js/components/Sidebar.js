@@ -30,6 +30,7 @@ const sidebarNavigation = {
         title: 'Clínica',
         icon: 'building-2',
         items: [
+            { id: 'consultas', label: 'Consultas', icon: 'calendar-check' },
             { id: 'boxes', label: 'Boxes', icon: 'door-open' },
             { id: 'profesionales', label: 'Profesionales', icon: 'users' },
             { id: 'productos', label: 'Productos', icon: 'shopping-bag' }
@@ -53,7 +54,7 @@ function SidebarNavigation() {
     const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos'];
     const isCollapsed = state.sidebarCollapsed || false;
 
-    return Object.entries(sidebarNavigation).map(([key, category]) => 
+    return Object.entries(sidebarNavigation).map(([key, category]) =>
         renderSidebarCategory(key, category, state.activeTab, expandedCategories, isCollapsed)
     ).join('');
 }
@@ -69,7 +70,7 @@ function updateSidebarVisualState() {
     const searchContainer = document.getElementById('sidebarSearchContainer');
     const footer = document.getElementById('sidebarFooter');
     const toggleIcon = document.getElementById('sidebarToggleIcon');
-    
+
     if (sidebar) {
         if (isCollapsed) {
             sidebar.classList.add('sidebar-collapsed');
@@ -77,7 +78,7 @@ function updateSidebarVisualState() {
             sidebar.classList.remove('sidebar-collapsed');
         }
     }
-    
+
     [logo, searchContainer, footer].forEach(el => {
         if (el) {
             if (isCollapsed) {
@@ -87,7 +88,7 @@ function updateSidebarVisualState() {
             }
         }
     });
-    
+
     if (toggleIcon) {
         toggleIcon.setAttribute('data-lucide', isCollapsed ? 'panel-left-open' : 'panel-left-close');
         lucide.createIcons({ nodes: [toggleIcon] });
@@ -122,9 +123,9 @@ function Sidebar() {
 
             <!-- Navegación -->
             <nav class="sidebar-nav">
-                ${Object.entries(sidebarNavigation).map(([key, category]) => 
-                    renderSidebarCategory(key, category, state.activeTab, expandedCategories, isCollapsed)
-                ).join('')}
+                ${Object.entries(sidebarNavigation).map(([key, category]) =>
+        renderSidebarCategory(key, category, state.activeTab, expandedCategories, isCollapsed)
+    ).join('')}
             </nav>
 
             <!-- Footer del Sidebar -->
@@ -218,7 +219,7 @@ function renderSidebarCategory(key, category, activeTab, expandedCategories, isC
 function renderSidebarItem(item, activeTab) {
     const state = appState.getState();
     let isActive = false;
-    
+
     // Determinar si está activo
     if (item.category) {
         isActive = activeTab === 'guiones' && state.scriptCategory === item.category;
@@ -273,14 +274,14 @@ function toggleSidebar() {
 function toggleSidebarCategory(categoryKey) {
     const state = appState.getState();
     const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos'];
-    
+
     let newExpanded;
     if (expandedCategories.includes(categoryKey)) {
         newExpanded = expandedCategories.filter(c => c !== categoryKey);
     } else {
         newExpanded = [...expandedCategories, categoryKey];
     }
-    
+
     appState.setState({ expandedCategories: newExpanded });
 }
 
@@ -290,21 +291,21 @@ function toggleSidebarCategory(categoryKey) {
 function navigateToSection(sectionId, category = null) {
     // Cerrar sidebar en móvil
     closeMobileSidebar();
-    
+
     // Si es un guion con categoría específica
     if (sectionId.startsWith('guiones-') && category) {
-        appState.setState({ 
+        appState.setState({
             activeTab: 'guiones',
             scriptCategory: category,
             searchTerm: ''
         });
     } else if (sectionId === 'guiones') {
-        appState.setState({ 
+        appState.setState({
             activeTab: 'guiones',
             searchTerm: ''
         });
     } else {
-        appState.setState({ 
+        appState.setState({
             activeTab: sectionId,
             searchTerm: ''
         });
@@ -328,7 +329,7 @@ function expandSidebarAndNavigate(sectionId) {
 function openMobileSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
-    
+
     if (sidebar) {
         sidebar.classList.add('mobile-open');
     }
@@ -344,7 +345,7 @@ function openMobileSidebar() {
 function closeMobileSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
-    
+
     if (sidebar) {
         sidebar.classList.remove('mobile-open');
     }
@@ -378,7 +379,7 @@ function initSidebarListeners() {
     // Solo inicializar una vez
     if (globalListenersInitialized) return;
     globalListenersInitialized = true;
-    
+
     const searchInput = document.getElementById('globalSearchInput');
     if (searchInput) {
         // Búsqueda en tiempo real con debounce
@@ -406,7 +407,7 @@ function initSidebarListeners() {
  */
 function handleSearchInput(e) {
     const value = e.target.value;
-    
+
     // Mostrar/ocultar botón de limpiar inmediatamente
     const clearBtn = document.getElementById('clearSearchBtn');
     if (clearBtn) {
@@ -416,12 +417,12 @@ function handleSearchInput(e) {
             clearBtn.classList.add('hidden');
         }
     }
-    
+
     // Limpiar timer anterior
     if (searchDebounceTimer) {
         clearTimeout(searchDebounceTimer);
     }
-    
+
     // Debounce de 250ms para búsqueda
     searchDebounceTimer = setTimeout(() => {
         appState.setState({ searchTerm: value });

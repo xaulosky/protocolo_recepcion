@@ -20,10 +20,10 @@ class App {
 
         // Renderizar navegación del sidebar
         this.renderSidebarNav();
-        
+
         // Inicializar iconos de Lucide para elementos estáticos
         lucide.createIcons();
-        
+
         // Guardar estado inicial del sidebar
         const state = appState.getState();
         this.lastSidebarState = this.getSidebarStateKey(state);
@@ -36,7 +36,7 @@ class App {
 
         // Renderizado inicial del contenido
         this.renderContent();
-        
+
         this.isInitialized = true;
     }
 
@@ -98,7 +98,7 @@ class App {
      */
     renderContent() {
         if (!this.mainContent) return;
-        
+
         const state = appState.getState();
 
         // Si hay búsqueda activa, mostrar resultados
@@ -162,6 +162,11 @@ class App {
                 icon = 'door-open';
                 content = BoxesContent();
                 break;
+            case 'consultas':
+                title = 'Consultas y Evaluaciones';
+                icon = 'calendar-check';
+                content = ConsultasContent();
+                break;
             default:
                 title = 'Protocolo Base';
                 icon = 'check-circle';
@@ -199,6 +204,9 @@ class App {
         }
         if (state.activeTab === 'boxes') {
             initBoxesContent();
+        }
+        if (state.activeTab === 'consultas') {
+            initConsultasContent();
         }
     }
 }

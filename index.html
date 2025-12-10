@@ -7,8 +7,7 @@
     <title>Cialo Hub</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="description"
-        content="Cialo Hub - Sistema integral de información de Clínica Cialo">
+    <meta name="description" content="Cialo Hub - Sistema integral de información de Clínica Cialo">
     <meta name="theme-color" content="#0f172a">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -51,7 +50,7 @@
 
     <!-- App Container with Sidebar -->
     <div class="app-container">
-        
+
         <!-- SIDEBAR (estructura fija, contenido dinámico) -->
         <aside id="sidebar" class="sidebar" role="navigation">
             <!-- Header del Sidebar (fijo) -->
@@ -68,19 +67,12 @@
             <!-- Búsqueda (fija, nunca se re-renderiza) -->
             <div class="sidebar-search" id="sidebarSearchContainer">
                 <div class="relative">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                    <input 
-                        type="text" 
-                        id="globalSearchInput"
-                        placeholder="Buscar..." 
-                        class="sidebar-search-input"
-                        autocomplete="off"
-                    >
-                    <button 
-                        id="clearSearchBtn"
-                        onclick="clearGlobalSearch()" 
-                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300 hidden"
-                    >
+                    <i data-lucide="search"
+                        class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" id="globalSearchInput" placeholder="Buscar..." class="sidebar-search-input"
+                        autocomplete="off">
+                    <button id="clearSearchBtn" onclick="clearGlobalSearch()"
+                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300 hidden">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -127,6 +119,7 @@
     <script src="js/components/ConsentSignature.js"></script>
     <script src="js/components/ProfesionalesContent.js"></script>
     <script src="js/components/BoxesContent.js"></script>
+    <script src="js/components/ConsultasContent.js"></script>
     <script src="js/components/SearchResults.js"></script>
     <script src="js/pwa.js"></script>
     <script src="js/app.js"></script>
