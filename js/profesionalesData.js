@@ -94,7 +94,7 @@ const profesionalesData = [
     {
         id: 'stefania-kuncar',
         nombreCompleto: 'Stefania Leticia Kuncar Ferrón',
-        especialidad: 'Matrona, Especialista en Ginecoestética y Rejuvenecimiento Íntimo',
+        especialidad: 'Matrona - Especialista en Ginecoestética y Rejuvenecimiento Íntimo',
         rut: '20.161.174-1',
         telefono: '+56 9 6306 6212',
         email: 'stefaniakuncar@gmail.com',
@@ -104,13 +104,14 @@ const profesionalesData = [
             certificaciones: [
                 'Técnico operador de Láser CO2',
                 'Especialización en Ginecoestética',
-                'Certificada en inserción/extracción de dispositivos intrauterinos (Mirena, Asertia, Kyleena)',
-                'Certificada en inserción/extracción de implantes (Implanon, Jadelle)'
+                'Certificada en inserción/extracción de DIU (Mirena, Asertia, Kyleena)',
+                'Certificada en inserción/extracción de implantes Implanon',
+                'Certificada en inserción/extracción de implantes Jadelle'
             ]
         },
         disponibilidad: {
-            dias: ['Lunes (todo el día)', 'Jueves (todo el día)', 'Viernes (todo el día)', 'Sábado (todo el día)', 'Martes (desde 16:00 hrs)'],
-            horario: 'Lunes, Jueves, Viernes y Sábado: Todo el día / Martes: Desde 16:00 hrs',
+            dias: ['Lunes (todo el día)', 'Martes (desde 16:00)', 'Jueves (todo el día)', 'Viernes (todo el día)', 'Sábado (todo el día)'],
+            horario: 'Lunes, Jueves, Viernes y Sábado: Todo el día / Martes: Desde 16:00',
             frecuencia: 'Semanal',
             flexibilidad: 'Sí'
         },
@@ -118,46 +119,93 @@ const profesionalesData = [
             servicios: [
                 {
                     nombre: 'Rejuvenecimiento Íntimo Láser CO2',
+                    descripcion: 'Procedimiento no quirúrgico que estimula la producción de colágeno en la mucosa vaginal mediante energía láser. Mejora tonicidad, lubricación y sensibilidad. Para mujeres con sequedad vaginal, laxitud, incontinencia urinaria leve, molestias postmenopausia o postparto.',
                     duracion: '40 min',
-                    equipo: 'Láser CO2 Tetra Pro (requiere traslado previo al box)',
-                    notas: 'Protocolo: 3 sesiones iniciales (mensuales) + mantención anual'
+                    espacio: 'Box con camilla ginecológica',
+                    equipos: 'Láser CO2 Tetra Pro con pieza ginecológica, lámpara ginecológica',
+                    insumos: 'Guantes de procedimiento, espéculo vaginal, bata de procedimientos',
+                    protocolo: '3 sesiones iniciales (cada 1 mes), mantención cada 6-12 meses',
+                    notas: 'Requiere traslado previo del equipo láser al box'
                 },
                 {
-                    nombre: 'Control Ginecológico (PAP, VPH, mamas, consejería)',
-                    duracion: '30-40 min',
-                    valor: '$40.000',
-                    notas: 'Sin exámenes incluidos'
+                    nombre: 'Control Ginecológico',
+                    descripcion: 'Evaluación clínica completa de salud ginecológica: toma de PAP, VPH, examen de mamas, evaluación de flujo vaginal, consejería anticonceptiva, planificación familiar, climaterio y menopausia.',
+                    duracion: '30 min',
+                    espacio: 'Box con camilla ginecológica',
+                    equipos: 'Lámpara ginecológica, toma presión, pesa',
+                    insumos: 'Guantes de procedimiento, espéculo, citofijador (para PAP)',
+                    valor: '$40.000 (sin exámenes incluidos)',
+                    protocolo: 'Anual o ante molestias. Puede requerir control para revisión de exámenes'
                 },
                 {
-                    nombre: 'Implantes Anticonceptivos - Inserción',
-                    duracion: '20-30 min',
-                    valor: '$50.000',
-                    notas: 'Sin implante incluido. Implantes: Implanon, Jadelle'
+                    nombre: 'Inserción de Implante Anticonceptivo',
+                    descripcion: 'Procedimiento ambulatorio para colocar implante anticonceptivo en el brazo. Método de anticoncepción de larga duración, altamente eficaz.',
+                    duracion: '40 min',
+                    espacio: 'Box',
+                    insumos: 'Lidocaína 2%, guantes procedimiento y estériles, gasa estéril 5x5, alcohol 70%, jeringa 3ml, aguja 21G, parche curita redondo estéril, Tegaderm 10x12, hoja bisturí N°11 (Jadelle/Levoplant)',
+                    valor: '$50.000 (sin implante incluido)',
+                    protocolo: 'Control en 7 días, 3 meses, 1 año'
                 },
                 {
-                    nombre: 'Implantes Anticonceptivos - Extracción',
-                    duracion: '20-30 min',
-                    valor: '$55.000'
+                    nombre: 'Extracción de Implante Anticonceptivo',
+                    descripcion: 'Procedimiento ambulatorio para extraer implante anticonceptivo del brazo.',
+                    duracion: '40 min',
+                    espacio: 'Box',
+                    insumos: 'Lidocaína 2%, guantes procedimiento y estériles, gasa estéril 5x5, alcohol 70%, jeringa 3ml, aguja 21G, parche curita, Tegaderm 10x12, hoja bisturí N°11, pinza mosquito estéril, pinza anatómica estéril',
+                    valor: '$55.000',
+                    protocolo: 'Control en 7 días'
                 },
                 {
-                    nombre: 'DIU/Mirena/T Cobre - Inserción',
-                    duracion: '30-40 min',
-                    valor: '$70.000',
-                    notas: 'Sin dispositivo incluido. Dispositivos: Mirena, Asertia, Kyleena, T de Cobre'
+                    nombre: 'Inserción DIU Hormonal (Asertia/Mirena/Kyleena)',
+                    descripcion: 'Colocación de DIU hormonal de larga duración. Asertia y Kyleena: 5 años, Mirena: hasta 8 años. Método eficaz, cómodo y reversible.',
+                    duracion: '40 min',
+                    espacio: 'Box con camilla ginecológica',
+                    equipos: 'Lámpara ginecológica',
+                    insumos: 'Pinza Pozzi estéril, tijera Metzenbaum, histerómetro, guantes procedimiento y estériles, espéculo, gasa estéril 5x5',
+                    valor: '$70.000 (sin dispositivo incluido)',
+                    protocolo: 'Control en 7 días, 1 mes, 6 meses, anual'
                 },
                 {
-                    nombre: 'DIU/Mirena/T Cobre - Extracción',
-                    duracion: '20-30 min',
+                    nombre: 'Inserción T de Cobre',
+                    descripcion: 'Inserción de DIU no hormonal de cobre, anticonceptivo por hasta 10 años. Recomendado para quienes desean evitar hormonas.',
+                    duracion: '40 min',
+                    espacio: 'Box con camilla ginecológica',
+                    equipos: 'Lámpara ginecológica',
+                    insumos: 'Pinza Pozzi estéril, tijera Metzenbaum, histerómetro, guantes procedimiento y estériles, espéculo, gasa estéril 5x5',
+                    valor: '$70.000 (sin dispositivo incluido)',
+                    protocolo: 'Control en 7 días, 1 mes, 6 meses, anual'
+                },
+                {
+                    nombre: 'Extracción de DIU',
+                    descripcion: 'Extracción de dispositivos intrauterinos: T de Cobre, Mirena, Kyleena, Asertia.',
+                    duracion: '30 min',
+                    espacio: 'Box con camilla ginecológica',
+                    equipos: 'Lámpara ginecológica',
+                    insumos: 'Guantes procedimiento, espéculo, pinza Bozeman, gasa estéril 5x5',
                     valor: '$50.000'
                 },
                 {
-                    nombre: 'Control 7 días post DIU',
-                    duracion: '15-20 min',
+                    nombre: 'Control 7 días Post Inserción/Extracción Implante',
+                    descripcion: 'Evaluación clínica para verificar correcta cicatrización, ausencia de hematomas o infecciones, y resolución de dudas.',
+                    duracion: '15 min',
+                    espacio: 'Box',
+                    insumos: 'Guantes procedimiento',
+                    valor: 'Incluido en procedimiento'
+                },
+                {
+                    nombre: 'Control 7 días Post Inserción DIU',
+                    descripcion: 'Evaluación ginecológica para verificar correcta posición del dispositivo, observar vástagos, revisar síntomas. Se entrega solicitud de ecografía ginecológica para control en 1 mes.',
+                    duracion: '15 min',
+                    espacio: 'Box con camilla ginecológica',
+                    equipos: 'Lámpara ginecológica',
+                    insumos: 'Espéculo, guantes procedimiento',
                     valor: '$20.000'
                 },
                 {
-                    nombre: 'Revisión de Exámenes',
-                    duracion: '20-30 min',
+                    nombre: 'Revisión de Resultados Ginecológicos',
+                    descripcion: 'Consulta para analizar resultados de PAP, Test VPH, mamografía o ecografías ginecológicas. Incluye interpretación, indicaciones y resolución de dudas.',
+                    duracion: '30 min',
+                    espacio: 'Box',
                     valor: '$25.000'
                 }
             ]
@@ -165,18 +213,38 @@ const profesionalesData = [
         requisitosLogisticos: {
             necesitaAsistente: false,
             insumosRequeridos: [
-                'Espéculos',
+                'Espéculos vaginales',
                 'Guantes de procedimiento',
                 'Guantes estériles',
-                'Gasas',
+                'Gasas estériles 5x5',
                 'Lidocaína 2%',
-                'Instrumental estéril (Pozzi, Histerómetro, Pinza Bozeman, Tijera Metzenbaum)'
+                'Alcohol 70%',
+                'Jeringas 3ml',
+                'Agujas 21G',
+                'Parches curita redondos estériles',
+                'Tegaderm 10x12',
+                'Hojas bisturí N°11',
+                'Citofijador',
+                'Batas de procedimiento',
+                'Pinza Pozzi estéril',
+                'Histerómetro',
+                'Pinza Bozeman',
+                'Tijera Metzenbaum',
+                'Pinza mosquito estéril',
+                'Pinza anatómica estéril'
+            ],
+            equiposCriticos: [
+                'Láser CO2 Tetra Pro con pieza ginecológica',
+                'Lámpara ginecológica',
+                'Camilla ginecológica',
+                'Toma presión',
+                'Pesa'
             ],
             espacioEspecial: 'Box con camilla ginecológica y lámpara ginecológica',
             notasEspeciales: 'Láser CO2 Tetra Pro requiere traslado previo al box antes de la atención'
         },
         pendientesAdministrativos: [
-            'Necesita que Clínica Cialo prepare modelos de Consentimiento Informado'
+            'Preparar modelos de Consentimiento Informado para todos los procedimientos'
         ]
     },
     {
@@ -348,17 +416,17 @@ const profesionalesData = [
     },
     {
         id: 'guillermo-contreras',
-        nombreCompleto: 'Guillermo Jesús Contreras Rodríguez',
+        nombreCompleto: 'Dr. Guillermo Jesús Contreras Rodríguez',
         especialidad: 'Urólogo – Especialista en Estética Íntima Masculina',
         rut: '26.232.417-6',
         telefono: '+56 9 4086 5810',
         email: 'dr.guillermocontreras@gmail.com',
         formacion: {
             pregrado: 'Médico Cirujano',
-            especialidad: 'Urología',
+            especialidad: 'Urología (Inscrito en Superintendencia de Salud)',
             certificaciones: [
-                'Especialidad en Urología',
-                'Certificación en Estética Masculina'
+                'Especialidad médica en Urología',
+                'Certificación en procedimientos estéticos masculinos con ácido hialurónico'
             ]
         },
         disponibilidad: {
@@ -370,40 +438,63 @@ const profesionalesData = [
         prestaciones: {
             servicios: [
                 {
-                    nombre: 'Bioplastía de Engrosamiento Peniano',
+                    nombre: 'Bioplastía de Engrosamiento Peniano con Ácido Hialurónico',
+                    descripcion: 'Procedimiento ambulatorio de estética íntima masculina que aumenta grosor y longitud aparente del pene, mejorando la confianza y satisfacción sexual.',
                     duracion: '30 min',
-                    insumos: 'Ácido Hialurónico certificado (10cc)',
-                    notas: 'Procedimiento estético con ácido hialurónico'
+                    espacio: 'Sala de procedimientos',
+                    equipos: '04 Jeringas de 3mL, cánula atraumática 80G x 70-100mm, aguja 18G, jeringa 5cc para lidocaína, guantes estériles 7.5, campo quirúrgico estéril abierto y cerrado, gasa estéril',
+                    insumos: '10cc de ácido hialurónico certificado, lidocaína 2%, agua estéril 5cc o SF 0.9%',
+                    protocolo: 'Procedimiento único, control consulta a los 15 días, posible retoque a los 3 ó 6 meses, luego anual'
                 },
                 {
                     nombre: 'Circuncisión',
+                    descripcion: 'Cirugía menor urológica ambulatoria que consiste en la resección del prepucio, indicada por razones médicas o estéticas.',
                     duracion: '40 min',
                     espacio: 'Pabellón Menor',
-                    notas: 'Resección de prepucio. Cirugía ambulatoria. Requiere TENS.'
+                    equipos: 'Caja de cirugía menor (pinzas, bisturí, set básico), Electrobisturí lápiz estéril punta paleta',
+                    insumos: 'Suturas absorbibles ácido poliglicólico 3-0, anestesia local, material de curación, guantes, campos estériles',
+                    protocolo: 'Procedimiento único con controles a 7 y 30 días',
+                    notas: 'Requiere TENS'
                 },
                 {
                     nombre: 'Vasectomía',
+                    descripcion: 'Cirugía ambulatoria de esterilización masculina, segura y definitiva.',
                     duracion: '30 min',
                     espacio: 'Pabellón Menor',
-                    notas: 'Esterilización masculina. Cirugía ambulatoria. Requiere TENS.'
+                    equipos: 'Caja de cirugía menor con pinzas y set de vasectomía, bisturí',
+                    insumos: 'Suturas absorbibles ácido poliglicólico 3-0, anestesia local, guantes, campos estériles, material de curación',
+                    protocolo: 'Procedimiento único, control a las 2 semanas',
+                    notas: 'Requiere TENS'
                 },
                 {
                     nombre: 'Frenuloplastía',
+                    descripcion: 'Cirugía menor para resección parcial o elongación del frenillo prepucial corto, indicada para mejorar función, estética o reducir dolor durante actividad sexual.',
                     duracion: '15 min',
-                    espacio: 'Pabellón Menor',
-                    notas: 'Elongación de frenillo. Cirugía ambulatoria. Requiere TENS.'
+                    espacio: 'Sala de procedimientos o Pabellón Menor',
+                    equipos: 'Caja de cirugía menor (pinzas, bisturí, instrumental básico)',
+                    insumos: 'Suturas absorbibles ácido poliglicólico 3-0, lidocaína 2%, campos estériles, guantes estériles',
+                    protocolo: 'Procedimiento único, control a los 7 y 30 días',
+                    notas: 'Requiere TENS'
                 },
                 {
                     nombre: 'Cistoscopia Diagnóstica',
+                    descripcion: 'Examen endoscópico que permite visualizar tracto urinario bajo (uretra y vejiga), indicado en pacientes con hematuria, litiasis vesical, síntomas urinarios, sospecha de tumores o control de tumores vesicales.',
                     duracion: '15 min',
-                    equipo: 'Cistoscopio flexible, Torre de endoscopía',
-                    notas: 'Visualización tracto urinario. Procedimiento diagnóstico. Requiere TENS.'
+                    espacio: 'Sala de procedimientos o Pabellón Menor',
+                    equipos: 'Cistoscopio flexible, Torre de endoscopía',
+                    insumos: 'Guantes estériles, Instillagel, lidocaína gel, material de asepsia, campos estériles abierto y cerrado, bajada de suero, SF 0.9% 500cc',
+                    protocolo: 'Procedimiento único según indicación clínica',
+                    notas: 'Requiere TENS'
                 },
                 {
                     nombre: 'Varicocelectomía',
+                    descripcion: 'Procedimiento quirúrgico indicado en pacientes con varicocele sintomático o asociado a infertilidad. Puede mejorar parámetros seminales y aliviar dolor escrotal.',
                     duracion: '45-60 min',
                     espacio: 'Pabellón con apoyo anestésico (Sedación VEV)',
-                    notas: 'Tratamiento de varicocele. Cirugía Mayor Ambulatoria. Requiere sedación.'
+                    equipos: 'Caja de cirugía menor y bisturí',
+                    insumos: 'Suturas absorbibles: Vicryl 3-0 y ácido poliglactil (Safil) 3-0 para planos superficiales, anestesia local o sedación endovenosa, campos quirúrgicos, guantes estériles',
+                    protocolo: 'Procedimiento único, control postoperatorio a 7 y 30 días',
+                    notas: 'Requiere sedación endovenosa'
                 }
             ]
         },
@@ -412,15 +503,31 @@ const profesionalesData = [
             tipoAsistente: 'TENS (en cirugías menores y cistoscopías)',
             insumosRequeridos: [
                 'Ácido Hialurónico certificado (10cc)',
-                'Suturas absorbibles',
+                'Suturas absorbibles ácido poliglicólico 3-0',
+                'Suturas Vicryl 3-0',
+                'Suturas Safil 3-0',
                 'Instillagel',
-                'Lidocaína'
+                'Lidocaína 2%',
+                'Lidocaína gel',
+                'SF 0.9% 500cc',
+                'Campos estériles',
+                'Guantes estériles 7.5',
+                'Gasas estériles',
+                'Material de curación'
             ],
             espacioEspecial: 'Sala de procedimientos o Pabellón Menor. Varicocelectomía requiere Pabellón con apoyo anestésico (Sedación VEV)',
-            notasEspeciales: 'Equipos críticos: Cistoscopio flexible, Torre de endoscopía, Electrobisturí. Requiere tiempo extra de limpieza (15-20 min) y recuperación (30-60 min)'
+            equiposCriticos: [
+                'Cistoscopio flexible',
+                'Torre de endoscopía',
+                'Electrobisturí',
+                'Caja de cirugía menor'
+            ],
+            tiempoRecuperacion: '30-60 min en procedimientos quirúrgicos menores',
+            tiempoLimpieza: '15-20 min entre sesiones',
+            sedacion: 'Requerida en varicocelectomía, opcional en procedimientos seleccionados'
         },
         pendientesAdministrativos: [
-            'Tiene consentimientos propios, pero solicita respaldo institucional del centro'
+            'Tiene consentimientos propios, requiere respaldo institucional del centro'
         ]
     },
     {
@@ -520,6 +627,616 @@ const profesionalesData = [
             'Confirmar horarios de disponibilidad',
             'Definir precios de servicios',
             'Preparar consentimientos informados'
+        ]
+    },
+    {
+        id: 'frank-ulloa',
+        nombreCompleto: 'Dr. Frank Ulloa Carrasco',
+        especialidad: 'Médico Urólogo',
+        rut: '13.958.038-9',
+        telefono: '+56 9 7667 4494',
+        email: 'doctorulloa@gmail.com',
+        formacion: {
+            pregrado: 'Médico Cirujano',
+            especialidad: 'Urología',
+            certificaciones: [
+                'Especialista en Urología'
+            ]
+        },
+        disponibilidad: {
+            dias: ['Lunes (19:00 hrs)', 'Jueves (19:00 hrs)'],
+            horario: 'Lunes y Jueves desde las 19:00 hrs',
+            frecuencia: 'Semanal',
+            flexibilidad: 'Sí'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Cistoscopia Flexible',
+                    descripcion: 'Endoscopía urológica para visualización del tracto urinario.',
+                    duracion: '20 min',
+                    espacio: 'Sala de procedimientos o Pabellón',
+                    equipos: 'Cistoscopio Flexible',
+                    insumos: 'Endogel, Suero fisiológico, bajada de suero, guantes estériles, gasas, campo perforado',
+                    valor: 'Honorario médico $200.000',
+                    protocolo: '2-4 semanal',
+                    notas: 'Alta inmediata. Requiere aseo de sala post-procedimiento.'
+                },
+                {
+                    nombre: 'Engrosamiento Peneano',
+                    descripcion: 'Inyección de ácido hialurónico en pene para aumento de grosor.',
+                    duracion: '20 min',
+                    espacio: 'Sala de procedimientos o Pabellón',
+                    equipos: 'Ácido hialurónico en jeringa de 1cc',
+                    insumos: 'Jeringas, lidocaína, suero fisiológico, gasa, campo perforado, gasa tubular, gasa con alcohol',
+                    valor: 'Desde $500.000 (según volumen y sesiones)',
+                    protocolo: 'Semanal',
+                    notas: 'Alta inmediata. Honorario variable según volumen.'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: true,
+            tipoAsistente: 'TENS o Enfermera',
+            insumosRequeridos: [
+                'Cistoscopio Flexible',
+                'Ácido hialurónico',
+                'Endogel',
+                'Suero fisiológico',
+                'Bajada de suero',
+                'Guantes estériles',
+                'Gasas',
+                'Campo perforado',
+                'Jeringas',
+                'Lidocaína',
+                'Gasa tubular',
+                'Gasa con alcohol'
+            ],
+            espacioEspecial: 'Sala de procedimientos o Pabellón',
+            tiempoRecuperacion: 'Alta inmediata',
+            tiempoLimpieza: 'Aseo de sala entre procedimientos',
+            controlesPosteriores: 'Consulta médica de control'
+        },
+        pendientesAdministrativos: [
+            'Tiene consentimiento informado propio (adjuntado)',
+            'Requiere modelo de consentimiento de Clínica Cialo para complementar'
+        ]
+    },
+    {
+        id: 'maria-jesus-contreras',
+        nombreCompleto: 'María Jesús Contreras Merino',
+        especialidad: 'Enfermera - Especialista en Aparatología Estética',
+        rut: '19.293.373-0',
+        telefono: '+56 9 9414 8093',
+        email: 'mariajesuscontrerasm@gmail.com',
+        formacion: {
+            pregrado: 'Enfermera',
+            certificaciones: [
+                'Operadora de Láser Soprano Titanium',
+                'Especialista en Aparatología Estética Corporal y Facial'
+            ]
+        },
+        disponibilidad: {
+            dias: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+            horario: 'Todos los días (horario por confirmar)',
+            frecuencia: 'Semanal',
+            flexibilidad: 'Sí'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Láser Soprano Titanium - Depilación',
+                    descripcion: 'Depilación láser prolongada en el tiempo para reducir gradualmente el vello corporal. Dirigido a personas con vello oscuro.',
+                    duracion: 'Variable según zona (10 min a 2 hrs)',
+                    espacio: 'Sala de procedimientos',
+                    equipos: 'Láser Titanium Soprano',
+                    insumos: 'Gel conductor transparente, bajalenguas, rasuradoras, pocillos blancos, toallitas húmedas, lápiz blanco, toallitas faciales, agua micelar, pétalos de algodón, cintillos, protector solar, lentes protectores',
+                    protocolo: '6-8 sesiones cuerpo completo cada 45 días / 8-10 sesiones rostro cada 45 días',
+                    zonas: [
+                        { zona: 'Bozo (mini)', duracion: '10 min', precio: '$90.000 (pack 6)' },
+                        { zona: 'Mejillas (mini)', duracion: '10 min', precio: '$90.000 (pack 6)' },
+                        { zona: 'Entrecejo (mini)', duracion: '10 min', precio: '$90.000 (pack 6)' },
+                        { zona: 'Axilas (pequeña)', duracion: '15 min', precio: '$98.000 (pack 6)' },
+                        { zona: 'Frente (pequeña)', duracion: '10 min', precio: '$130.000 (pack 6)' },
+                        { zona: 'Dedos (pequeña)', duracion: '10 min', precio: '$130.000 (pack 6)' },
+                        { zona: '½ brazo (mediana)', duracion: '15 min', precio: '$150.000 (pack 6)' },
+                        { zona: '½ rostro (mediana)', duracion: '15 min', precio: '$150.000 (pack 6)' },
+                        { zona: 'Nuca (mediana)', duracion: '15 min', precio: '$150.000 (pack 6)' },
+                        { zona: 'Perfilado barba (mediana)', duracion: '15 min', precio: '$150.000 (pack 6)' },
+                        { zona: 'Rebaje + interglútea (mediana)', duracion: '20 min', precio: '$200.000 (pack 6)' },
+                        { zona: 'Pecho (grande)', duracion: '20 min', precio: '$173.000 (pack 6)' },
+                        { zona: 'Abdomen (grande)', duracion: '20 min', precio: '$173.000 (pack 6)' },
+                        { zona: 'Glúteos (grande)', duracion: '20 min', precio: '$173.000 (pack 6)' },
+                        { zona: '½ pierna (grande)', duracion: '30 min', precio: '$173.000 (pack 6)' },
+                        { zona: 'Brazos + dedos (grande)', duracion: '25 min', precio: '$173.000 (pack 6)' },
+                        { zona: 'Rostro completo (grande)', duracion: '30 min', precio: '$173.000 (pack 6)' },
+                        { zona: 'Espalda (grande)', duracion: '20 min', precio: '$260.000 (pack 6)' },
+                        { zona: 'Piernas completas (extragrande)', duracion: '40 min', precio: '$280.000 (pack 6)' },
+                        { zona: 'Cuerpo Completo', duracion: '2 horas', precio: '$750.000 (pack 6)' }
+                    ]
+                },
+                {
+                    nombre: 'Clatuu Alpha - Criolipólisis',
+                    descripcion: 'Tecnología avanzada que induce la muerte celular de adipocitos de manera controlada y localizada a través de congelamiento. Tratamiento no invasivo para moldear el cuerpo y disminuir grasa.',
+                    duracion: 'Variable según zona',
+                    espacio: 'Box',
+                    equipos: 'Clatuu Alpha',
+                    insumos: 'Batas, toallas de mano de algodón, Gel Pad, toallitas húmedas, marcadores, mantitas, cinta métrica, caliper',
+                    protocolo: '1 sesión (máx 2). Control: 45 días y 90 días. Se puede complementar con RF al mes.',
+                    precios: [
+                        '1-2 cabezales: $200.000 c/u',
+                        '4 cabezales: $180.000 c/u',
+                        '6 cabezales: $150.000 c/u',
+                        '8 cabezales: $120.000 c/u',
+                        '10 cabezales: $100.000 c/u'
+                    ],
+                    recomendaciones: 'Faja compresiva 6 hrs/día por 45 días, Omega 3, Berberina 1.5g/día, Vitamina C 1g/día, Coenzima Q10'
+                },
+                {
+                    nombre: 'Scizer - HIFU Corporal',
+                    descripcion: 'Ultrasonido focalizado de alta intensidad que induce muerte celular de adipocitos de manera controlada. Tratamiento no invasivo para moldear el cuerpo y reducir grasa localizada.',
+                    duracion: '30 min - 1 hora',
+                    espacio: 'Box',
+                    equipos: 'Scizer',
+                    insumos: 'Toallas de mano de algodón, rociador con agua, lápiz blanco, cinta métrica, caliper',
+                    protocolo: '2-3 sesiones cada 1 mes. Control: 45 y 90 días. Complementar con RF cada 15 días.',
+                    precios: [
+                        'Sesión individual: $250.000 por zona',
+                        'Pack 1: 1 Scizer + 4 Exilis = $350.000 (2 meses)',
+                        'Pack 2: 2 Scizer + 4 Exilis = $640.000 (2.5 meses)',
+                        'Pack 3: 3 Scizer + 5 Exilis + Embody regalo = $900.000 (3.5 meses)'
+                    ],
+                    recomendaciones: 'Omega 3, Berberina 1.5g/día, Vitamina C 1g/día, Coenzima Q10'
+                },
+                {
+                    nombre: 'HIFU Ultraformer III - Lifting Facial',
+                    descripcion: 'Ultrasonido micro y macro focalizado de alta intensidad. Trabaja a diferentes profundidades de piel y tejido subcutáneo para tensar la piel, reducir grasa localizada y generar efecto lifting en rostro.',
+                    duracion: '30 min - 1 hora',
+                    espacio: 'Box',
+                    equipos: 'HIFU Ultraformer III',
+                    insumos: 'Gel conductor transparente, lápiz blanco, caliper, cintillo, bajalenguas, pocillo',
+                    protocolo: '1-2 sesiones (mín 45 días entre sesiones). Máx 2 sesiones al año. Control: 45 y 90 días.',
+                    precios: [
+                        'Mejillas: $120.000/sesión',
+                        'Papada: $180.000/sesión',
+                        'Full Face: $490.000/sesión'
+                    ],
+                    recomendaciones: 'Omega 3, Vitamina C 1g/día, Coenzima Q10'
+                },
+                {
+                    nombre: 'Morpheus8 - Radiofrecuencia Fraccionada',
+                    descripcion: 'Radiofrecuencia fraccionada que estimula la producción de colágeno y elastina para tensar y mejorar el aspecto de la piel. Trata flacidez, arrugas finas, estrías y grasa localizada.',
+                    duracion: '60-90 min (+ 1 hr anestesia tópica previa)',
+                    espacio: 'Box',
+                    equipos: 'Morpheus 8',
+                    insumos: 'Cartucho estéril, lápiz blanco, cinta métrica, caliper, anestesia tópica, toallas de papel, alcohol 70%',
+                    protocolo: '2-4 sesiones cada 4-6 semanas',
+                    precios: [
+                        '1 sesión: $350.000',
+                        '4 sesiones: $700.000'
+                    ]
+                },
+                {
+                    nombre: 'Exilis Ultra 360 - Radiofrecuencia',
+                    descripcion: 'Radiofrecuencia, ultrasonido y cooling para tensado de piel y modelamiento del contorno corporal.',
+                    duracion: '30-60 min',
+                    espacio: 'Box',
+                    equipos: 'Exilis Ultra 360',
+                    insumos: 'Lápiz blanco, gel conductor transparente, cinta métrica, caliper, toallas de papel, cintillo, agua micelar, pétalos de algodón',
+                    protocolo: '1 sesión por semana',
+                    precios: [
+                        'Corporal 6 sesiones: $420.000 ($70.000 c/u)',
+                        'Corporal 8 sesiones: $480.000 ($60.000 c/u)',
+                        'Facial 4 sesiones: $200.000'
+                    ]
+                },
+                {
+                    nombre: 'Embody - Tonificación Muscular',
+                    descripcion: 'Procedimiento no invasivo que utiliza energía electromagnética focalizada de alta intensidad (HIFEM) para provocar contracciones musculares supramáximas. Tonifica, reafirma músculos y aumenta masa muscular. Zonas: glúteos y abdomen.',
+                    duracion: '40 min',
+                    espacio: 'Box',
+                    equipos: 'Embody',
+                    insumos: 'Sabanillas, guantes',
+                    protocolo: '2 sesiones por semana',
+                    precios: [
+                        '4 sesiones: $200.000',
+                        '10 sesiones: $500.000'
+                    ]
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: false,
+            insumosRequeridos: [
+                'Gel conductor transparente',
+                'Gel Pad (Clatuu)',
+                'Cartuchos estériles (Morpheus8)',
+                'Anestesia tópica',
+                'Lápiz blanco',
+                'Cinta métrica',
+                'Caliper',
+                'Bajalenguas',
+                'Rasuradoras',
+                'Toallitas húmedas',
+                'Agua micelar',
+                'Protector solar',
+                'Lentes protectores',
+                'Alcohol 70%'
+            ],
+            equiposCriticos: [
+                'Láser Soprano Titanium',
+                'Clatuu Alpha',
+                'Scizer',
+                'HIFU Ultraformer III',
+                'Morpheus 8',
+                'Exilis Ultra 360',
+                'Embody'
+            ],
+            espacioEspecial: 'Sala de procedimientos o Box según tratamiento'
+        }
+    },
+    {
+        id: 'javiera-araya',
+        nombreCompleto: 'Dra. Javiera Paola Araya Medina',
+        especialidad: 'Médico Cirujana - Tricóloga y Cirugía Capilar',
+        rut: '19.091.765-8',
+        telefono: '+56 9 6577 0608',
+        email: 'j.arayamedina02@gmail.com',
+        formacion: {
+            pregrado: 'Médico Cirujana',
+            especialidad: 'Tricología',
+            subespecialidad: 'Cirugía Capilar',
+            certificaciones: [
+                'Especialista en Tricología',
+                'Cirugía Capilar e Injerto',
+                'Técnica Regenera (única en Chile)'
+            ]
+        },
+        disponibilidad: {
+            dias: [
+                'Lunes (09:00 hasta cierre) - Confirmado',
+                'Martes AM (08:00-12:00) - Control post-injerto',
+                'Jueves (cada 6 semanas según demanda)',
+                'Sábados (1-2 al mes según necesidad)'
+            ],
+            horario: 'Lunes completo / Martes AM ocasional / Sábados ocasional',
+            frecuencia: 'Semanal',
+            flexibilidad: 'Sí',
+            notasEspeciales: 'En caso de injerto, permanece hasta las 12 hrs del día siguiente para control'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Consulta Tricología Presencial',
+                    descripcion: 'Anamnesis completa tricológica, análisis clínico con tricoscopia, solicitud de exámenes y definición de tratamiento más adecuado.',
+                    duracion: 'Primera: 40 min / Control: 20 min',
+                    espacio: 'Box atención',
+                    equipos: 'Tricoscopio',
+                    insumos: 'Recetario Cialo, indicaciones, exámenes',
+                    valor: 'Consulta: $40.000 / Control: $20.000',
+                    protocolo: 'Según paciente'
+                },
+                {
+                    nombre: 'Consulta Tricología Online',
+                    descripcion: 'Anamnesis completa, solicitud de exámenes, agendamiento de evaluación presencial y definición de potencial tratamiento.',
+                    duracion: 'Primera: 30 min / Control: 20 min',
+                    espacio: 'Domicilio (telemedicina)',
+                    equipos: 'Computador',
+                    valor: 'Consulta online: $30.000 / Control presencial: $20.000',
+                    protocolo: 'Según paciente',
+                    notas: 'A veces evalúa exámenes por correo sin costo'
+                },
+                {
+                    nombre: 'Evaluación Injerto Ceja',
+                    descripcion: 'Evaluación presencial u online para determinar si es candidato a injerto de ceja. Incluye solicitud de laboratorios, planeación y explicación del procedimiento.',
+                    duracion: 'Online: 30 min / Presencial: 30 min',
+                    espacio: 'Box o telemedicina',
+                    equipos: 'Computador, Tricoscopio',
+                    insumos: 'Lápiz de ojos blanco, clorhexidina, tórula algodón, micrómetro',
+                    valor: 'Sin costo',
+                    protocolo: 'Evaluación única'
+                },
+                {
+                    nombre: 'Mesoterapia Dutasteride',
+                    descripcion: 'Tratamiento capilar mediante microinyecciones del medicamento en cuero cabelludo para pacientes con Alopecia Androgenética.',
+                    duracion: '30 min',
+                    espacio: 'Sala procedimiento',
+                    equipos: 'Mesa auxiliar, Riñón acero inoxidable',
+                    insumos: 'Gasa 10x10, clorhexidina, 2x jeringa 1cc luer lip, 2x aguja 32G 4mm, paño campo desechable, Dutasteride 0.01% 1ml, Lidocaína 2% 1ml, SF 0.9% 1ml, guantes procedimiento S',
+                    valor: '$110.000 - $150.000 (Promoción por 3 sesiones disponible)',
+                    protocolo: 'Cada 2 meses x 3 veces, luego cada 3-6 meses según evolución',
+                    notas: 'Se puede hacer plan terapéutico combinado'
+                },
+                {
+                    nombre: 'Mesoterapia Triamcinolona',
+                    descripcion: 'Tratamiento capilar mediante microinyecciones o microneedling del medicamento para Alopecia Areata, liquen plano, efluvio telógeno activo, etc.',
+                    duracion: '30 min',
+                    espacio: 'Sala procedimiento',
+                    equipos: 'Mesa auxiliar, Riñón acero inoxidable',
+                    insumos: 'Gasa 10x10, clorhexidina, 2x jeringa 1cc luer lip, 2x aguja 32G 4mm, paño campo desechable, Triamcinolona 50mg/ml (rinde 8 pacientes), Lidocaína 2% 1ml, SF 0.9% 1ml, guantes procedimiento S',
+                    valor: '$110.000 - $150.000',
+                    protocolo: 'Según causa: 1 sesión, cada mes, cada 2 meses, etc.',
+                    notas: 'Se puede hacer plan terapéutico combinado'
+                },
+                {
+                    nombre: 'Mesoterapia Plasma Rico en Plaquetas (PRP)',
+                    descripcion: 'Extracción de sangre venosa, centrifugación para separar plasma, aplicación con microinyecciones o microneedling directamente en cuero cabelludo.',
+                    duracion: '30 min (+ 30 min previos para extracción)',
+                    espacio: 'Sala procedimiento',
+                    equipos: 'Mesa auxiliar, Centrífuga, Riñón acero inoxidable, Dermapen',
+                    insumos: 'Gasa 10x10, clorhexidina, 2x jeringa 1cc luer lip, 2x aguja 32G 4mm, paño campo, mariposa scalp vein vacutainer, vacutainer reutilizable, 4 tubos 5ml tapa azul, liga, parche, alcohol, tórula algodón, guantes S',
+                    valor: '$110.000 - $150.000 (Promoción 3-6 sesiones)',
+                    protocolo: '3 sesiones iniciales (cada 2 sem a 1 mes), luego cada 3-6 meses según evolución',
+                    notas: 'Paciente debe llegar 30 min antes para extracción sanguínea (enfermera o TENS)',
+                    requiereAsistente: true
+                },
+                {
+                    nombre: 'Regenera - Células Madre Capilares',
+                    descripcion: 'Procedimiento ambulatorio: obtención de 3 muestras de tejido retroauricular para procesar en máquina Rigenera y obtener Células Madre y exosomas autólogos de tejido folicular. Indicado para Alopecia Androgenética leve a moderada. ÚNICO EN CHILE.',
+                    duracion: '1 hora',
+                    espacio: 'Box procedimiento (o pabellón cirugía menor según SEREMI)',
+                    equipos: 'Máquina Rigenera (propio), Rigeneracons (consumible propio), Mesa auxiliar',
+                    insumos: 'Clorhexidina acuosa, lidocaína 2% 5ml, cuchilla rasuradora, 6x jeringa Luer Slip 1cc, 2x jeringa Luer lock 3ml, conector jeringas, 3x aguja 30G x ½ 12mm, 1x aguja 21G 40mm, 1x punch dérmico 2.5mm, 1x pinzas Adson estériles, gasa 10x10, SF 0.9% 10ml, guantes estériles 6.5, paquete compresa gasa estéril (2 compresas), lápiz quirúrgico, 3x parche curita redondo, guante procedimiento',
+                    valor: '$1.450.000 (única doctora en Chile)',
+                    costoInsumos: 'Rigeneracons Derma ~$550.000 + insumos ~$25.000-30.000',
+                    protocolo: 'Anual',
+                    requiereAsistente: true,
+                    tipoAsistente: 'TENS',
+                    controlPosterior: 'Control sin costo a los 3 meses',
+                    notas: 'Preparación de insumos 10 min previos'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: true,
+            tipoAsistente: 'TENS (para PRP y Regenera)',
+            insumosRequeridos: [
+                'Tricoscopio',
+                'Centrífuga',
+                'Dermapen',
+                'Dutasteride ampolla 0.01%',
+                'Triamcinolona 50mg/ml',
+                'Lidocaína 2%',
+                'SF 0.9%',
+                'Jeringas 1cc luer lip',
+                'Agujas 32G 4mm',
+                'Agujas 30G 12mm',
+                'Punch dérmico 2.5mm',
+                'Tubos PRP tapa azul',
+                'Vacutainer',
+                'Mariposa scalp vein',
+                'Clorhexidina acuosa',
+                'Gasas 10x10',
+                'Campos estériles',
+                'Guantes estériles y procedimiento'
+            ],
+            equiposCriticos: [
+                'Tricoscopio',
+                'Centrífuga (para PRP)',
+                'Dermapen',
+                'Máquina Rigenera (propio)'
+            ],
+            espacioEspecial: 'Box atención y Sala de procedimientos',
+            tiempoPreparacion: '10-30 min según procedimiento'
+        },
+        pendientesAdministrativos: [
+            'Preparar consentimientos informados para todos los procedimientos'
+        ]
+    },
+    {
+        id: 'luis-perez',
+        nombreCompleto: 'Dr. Luis Pérez Lagos',
+        especialidad: 'Cirujano Dentista – Cirujano Maxilofacial',
+        rut: '16.353.720-6',
+        telefono: '+56 9 8300 2718',
+        email: 'dr.maxilofacialchile@gmail.com',
+        formacion: {
+            pregrado: 'Cirujano Dentista',
+            especialidad: 'Cirugía Maxilofacial',
+            certificaciones: [
+                'Especialidad en Cirugía Maxilofacial'
+            ]
+        },
+        disponibilidad: {
+            dias: ['Viernes', 'Sábados'],
+            horario: 'Viernes y Sábados (horario flexible)',
+            frecuencia: 'Quincenal / Mensual',
+            flexibilidad: 'Sí, maneja sus propios horarios'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Bichectomía',
+                    descripcion: 'Adelgazar/estilizar región geniana mediante extracción de bola de Bichat.',
+                    duracion: '30 min',
+                    espacio: 'Box / Sala de procedimientos / Pabellón',
+                    equipos: 'Caja de Cirugía con 2-3 pinzas mosquito/Kelly',
+                    insumos: 'Catgut 4-0, anestesia local, campo perforado, hoja bisturí 15c',
+                    costoInsumos: '~$10.000',
+                    protocolo: '1 vez'
+                },
+                {
+                    nombre: 'Blefaroplastía Superior',
+                    descripcion: 'Retiro de exceso de piel, reposición grasa y/o glándula lagrimal del párpado superior. Refresca la mirada, mejora campo visual. Para blefarocalasia por envejecimiento o predisposición genética.',
+                    duracion: '2-3 horas',
+                    espacio: 'Pabellón',
+                    equipos: 'Caja de Blefaroplastía, electrobisturí/radiofrecuencia con punta colorado',
+                    insumos: 'Vicryl incoloro y normal 5-0 y 6-0, Prolene 5-0 y 6-0, pack estéril pabellón, guantes Qx, lidocaína, epinefrina, ácido tranexámico, SF 0.9%, hoja bisturí 15c y 11',
+                    costoInsumos: '~$60.000',
+                    protocolo: '1 vez'
+                },
+                {
+                    nombre: 'Blefaroplastía Inferior',
+                    descripcion: 'Retiro de piel y/o grasa del párpado inferior. Atenúa "bolsas" bajo los ojos. Técnica transconjuntival (grasa) o transcutánea (piel). Para pacientes con laxitud de piel y herniación grasa.',
+                    duracion: '1-3 horas',
+                    espacio: 'Pabellón',
+                    equipos: 'Caja de Blefaroplastía, eventualmente Láser CO2, electrobisturí/radiofrecuencia punta colorado',
+                    insumos: 'Vicryl incoloro y normal 5-0 y 6-0, Prolene 5-0 y 6-0, pack estéril pabellón, guantes Qx, lidocaína, epinefrina, ácido tranexámico, SF 0.9%, hoja bisturí 15c',
+                    costoInsumos: '~$60.000',
+                    protocolo: '1 vez'
+                },
+                {
+                    nombre: 'Lipoaspiración Cervical y Facial',
+                    descripcion: 'Disminuir grasa supraplastismal en zona de jowls, submentoniana y cervical. Para pacientes con peso adecuado que no logran resultados con dieta/ejercicio/medicina estética. Complemento a bichectomía.',
+                    duracion: '1-1.5 horas',
+                    espacio: 'Sala de procedimientos / Pabellón',
+                    equipos: 'Caja de cánulas + caja cirugía básica',
+                    insumos: 'Prolene o nylon 5-0 y 6-0, pack estéril pabellón, guantes Qx, lidocaína, epinefrina, ácido tranexámico, bicarbonato ampolla, SF 0.9%, hoja bisturí 15c u 11',
+                    costoInsumos: '~$40.000',
+                    protocolo: '1 vez + sesiones de kinesioterapia para drenaje, prevención de fibrosis y retracción subcutánea'
+                },
+                {
+                    nombre: 'Lifting Cervical',
+                    descripcion: 'Manejo de grasa supra y subplastismal, mejoría considerable del contorno cervical y ángulo cérvico-mandibular. Para pacientes con abundante tejido adiposo, piel redundante post-lipo, hiperlaxitud cervical o bandas platismales.',
+                    duracion: '3 horas',
+                    espacio: 'Pabellón',
+                    equipos: 'Caja de Lifting, electrobisturí/radiofrecuencia con punta colorado y paleta + pinza bipolar',
+                    insumos: 'Vicryl 2-0, 3-0 y 4-0, Nylon o Prolene 5-0 y 6-0, pack estéril pabellón, guantes Qx, lidocaína, epinefrina, ácido tranexámico, SF 0.9%, hoja bisturí 15c',
+                    costoInsumos: '~$60.000',
+                    protocolo: '1 vez, complementar con tratamiento revitalizante/láser según caso'
+                },
+                {
+                    nombre: 'Otoplastía',
+                    descripcion: 'Corrección de orejas aladas o protuidas. Para pacientes pediátricos y adultos que busquen mejorar su estética auricular.',
+                    duracion: '1.5-3 horas (según técnica: antehélix nuevo o resección concha)',
+                    espacio: 'Pabellón',
+                    equipos: 'Caja de Cirugía, electrobisturí/radiofrecuencia monopolar y pinza bipolar',
+                    insumos: 'Nylon o Prolene 4-0 y 5-0, pack estéril pabellón, guantes Qx, lidocaína, epinefrina, ácido tranexámico, SF 0.9%, hoja bisturí 15',
+                    costoInsumos: '~$40.000',
+                    protocolo: '1 vez'
+                },
+                {
+                    nombre: 'Browlift Indirecto',
+                    descripcion: 'Corrección de "caída" de las cejas. Procedimiento aislado o complementario a blefaroplastía.',
+                    duracion: '1.5-2 horas',
+                    espacio: 'Pabellón',
+                    equipos: 'Óptica endoscopio (opcional), caja lifting, motor Qx con pieza de mano y fresa cilíndrica, electrobisturí/radiofrecuencia punta colorado y paleta',
+                    insumos: 'Vicryl 4-0, Nylon 2-0, 3-0 y 4-0, pack estéril pabellón, guantes Qx, lidocaína, epinefrina, ácido tranexámico, SF 0.9%, hoja bisturí 15 u 11',
+                    costoInsumos: '~$50.000',
+                    protocolo: '1 vez'
+                },
+                {
+                    nombre: 'Liplift',
+                    descripcion: 'Lifting o elevación del labio superior para mejorar exposición dentaria y rejuvenecer. Especialmente para pacientes de mayor edad. Nota: cicatriz visible en base de nariz.',
+                    duracion: '30-60 min',
+                    espacio: 'Sala de procedimientos / Pabellón',
+                    equipos: 'Caja cirugía básica',
+                    insumos: 'Vicryl 4-0 y 5-0 incoloros, Prolene 5-0 y 6-0, pack estéril pabellón, guantes Qx, lidocaína, epinefrina, ácido tranexámico, SF 0.9%, hoja bisturí 15 u 11',
+                    costoInsumos: '~$40.000',
+                    protocolo: '1 vez'
+                },
+                {
+                    nombre: 'Mentoplastía',
+                    descripcion: 'Avanzar, retroceder, ascender, descender o enderezar el mentón para mejorar perfil y armonía de tercios faciales. Con implante de silicona + tornillos o con osteotomías.',
+                    duracion: '1-1.5 horas',
+                    espacio: 'Pabellón',
+                    equipos: 'Motor piezoeléctrico/Motor sierra reciprocante (óseo) o Motor para tornillos (implante stock)',
+                    insumos: 'Tornillos de OTS, placa de OTS, caja mentoplastía',
+                    costoInsumos: 'Variable según caso',
+                    protocolo: '1 vez'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: true,
+            tipoAsistente: 'Sala procedimiento: TENS para abrir instrumental (trabajan 2 cirujanos). Pabellón: Arsenalera y pabellonera',
+            insumosRequeridos: [
+                'Catgut 4-0',
+                'Vicryl 2-0 a 6-0 (incoloro y normal)',
+                'Prolene/Nylon 4-0 a 6-0',
+                'Lidocaína',
+                'Epinefrina',
+                'Ácido tranexámico',
+                'Bicarbonato ampolla',
+                'SF 0.9%',
+                'Hojas bisturí 11, 15, 15c',
+                'Campos perforados',
+                'Pack estéril pabellón',
+                'Guantes quirúrgicos'
+            ],
+            equiposCriticos: [
+                'Caja de Cirugía Maxilofacial',
+                'Caja de Blefaroplastía',
+                'Caja de Lifting',
+                'Caja de cánulas',
+                'Electrobisturí/Radiofrecuencia',
+                'Motor piezoeléctrico',
+                'Motor sierra reciprocante',
+                'Pinza bipolar'
+            ],
+            espacioEspecial: 'Sala de procedimientos o Pabellón según cirugía. Bioseguridad propia del procedimiento',
+            tiempoRecuperacion: 'Variable según procedimiento, todos requieren recuperación',
+            controlesPosteriores: 'Sí, obligatorios'
+        },
+        pendientesAdministrativos: [
+            'Tiene consentimientos propios (genéricos y específicos)',
+            'Clínica puede preparar consentimientos adicionales si lo desea'
+        ]
+    },
+    {
+        id: 'walter-zaror',
+        nombreCompleto: 'Walter Sebastián Zaror Maza',
+        especialidad: 'Nutricionista Deportivo',
+        rut: '17.366.487-7',
+        telefono: '+56 9 8188 7714',
+        email: 'walterszm2@gmail.com',
+        formacion: {
+            pregrado: 'Nutricionista',
+            especialidad: 'Nutrición Deportiva',
+            certificaciones: [
+                'Nutricionista Deportivo'
+            ]
+        },
+        disponibilidad: {
+            dias: ['Lunes a Jueves (10:00-13:00 y 14:00-16:00)', 'Sábados AM (horarios a convenir)'],
+            horario: 'Lunes a Jueves: 10:00-13:00 y 14:00-16:00 / Sábados AM',
+            frecuencia: 'Semanal',
+            flexibilidad: 'Sí'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Evaluación Nutricional Integral InBody 970',
+                    descripcion: 'Evaluación nutricional integral dirigida a todo público para apoyar diferentes tratamientos estéticos y/o fases agudas que requieran complementación nutricional y alimenticia.',
+                    duracion: 'Primera: 1 hora / Control: 30 min',
+                    espacio: 'Box nutricional',
+                    equipos: 'InBody 970, Camilla',
+                    insumos: 'Alcohol para desinfección de equipos',
+                    valor: '$40.000',
+                    protocolo: 'Evaluación inicial + controles mensuales según disponibilidad del paciente'
+                },
+                {
+                    nombre: 'Calorimetría Indirecta + Evaluación Nutricional',
+                    descripcion: 'Medición del gasto energético en reposo mediante calorimetría indirecta, complementada con evaluación nutricional integral.',
+                    duracion: '30 min',
+                    espacio: 'Box nutricional',
+                    equipos: 'Calorimetría indirecta, InBody 970, Camilla',
+                    insumos: 'Alcohol, filtros y plásticos para calorimetría',
+                    valor: '$75.000 - $80.000',
+                    protocolo: 'Inicial y derivada por médico',
+                    notas: 'Paciente debe llegar 10-15 min previo a la cita'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: false,
+            insumosRequeridos: [
+                'InBody 970',
+                'Equipo de Calorimetría Indirecta',
+                'Camilla',
+                'Alcohol para desinfección',
+                'Filtros para calorimetría',
+                'Plásticos para calorimetría'
+            ],
+            equiposCriticos: [
+                'InBody 970',
+                'Calorimetría Indirecta'
+            ],
+            espacioEspecial: 'Box nutricional',
+            tiempoPreparacion: '10-15 min previos para calorimetría indirecta'
+        },
+        pendientesAdministrativos: [
+            'Preparar modelo de consentimiento informado'
         ]
     }
 ];
