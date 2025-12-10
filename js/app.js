@@ -152,6 +152,11 @@ class App {
                 icon = 'file-signature';
                 content = ConsentimientosContent();
                 break;
+            case 'presupuestos':
+                title = 'Presupuestos';
+                icon = 'file-text';
+                content = PresupuestosContent();
+                break;
             case 'profesionales':
                 title = 'Profesionales';
                 icon = 'users';
@@ -166,6 +171,11 @@ class App {
                 title = 'Consultas y Evaluaciones';
                 icon = 'calendar-check';
                 content = ConsultasContent();
+                break;
+            case 'tratamientos':
+                title = 'Catálogo de Tratamientos';
+                icon = 'sparkles';
+                content = TratamientosContent();
                 break;
             default:
                 title = 'Protocolo Base';
@@ -207,6 +217,12 @@ class App {
         }
         if (state.activeTab === 'consultas') {
             initConsultasContent();
+        }
+        if (state.activeTab === 'presupuestos') {
+            initPresupuestosContent();
+        }
+        if (state.activeTab === 'tratamientos') {
+            initTratamientosContent();
         }
     }
 }

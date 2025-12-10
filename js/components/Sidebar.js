@@ -30,6 +30,7 @@ const sidebarNavigation = {
         title: 'Clínica',
         icon: 'building-2',
         items: [
+            { id: 'tratamientos', label: 'Tratamientos', icon: 'sparkles' },
             { id: 'consultas', label: 'Consultas', icon: 'calendar-check' },
             { id: 'boxes', label: 'Boxes', icon: 'door-open' },
             { id: 'profesionales', label: 'Profesionales', icon: 'users' },
@@ -40,6 +41,7 @@ const sidebarNavigation = {
         title: 'Documentos',
         icon: 'file-text',
         items: [
+            { id: 'presupuestos', label: 'Presupuestos', icon: 'file-text' },
             { id: 'consentimientos', label: 'Consentimientos', icon: 'file-signature' }
         ]
     }

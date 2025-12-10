@@ -154,7 +154,7 @@ const consultasData = [
         ],
         requisitos: 'No requiere preparación especial',
         politicaCancelacion: 'Cancelación con menos de 24 hrs: pago anticipado para reagendar',
-        reembolsable: true
+        reembolsable: false
     },
     {
         id: 'consulta-depilacion',
@@ -219,7 +219,7 @@ const consultasData = [
         ],
         requisitos: 'No requiere preparación especial',
         politicaCancelacion: 'Cancelación con menos de 24 hrs: pago anticipado para reagendar',
-        reembolsable: true
+        reembolsable: false
     },
     {
         id: 'consulta-matrona',
@@ -241,7 +241,7 @@ const consultasData = [
         ],
         requisitos: 'No requiere preparación especial',
         politicaCancelacion: 'Cancelación con menos de 24 hrs: pago anticipado para reagendar',
-        reembolsable: true
+        reembolsable: false
     },
     {
         id: 'consulta-medicina-estetica',
@@ -291,7 +291,7 @@ const consultasData = [
         ],
         requisitos: 'Pago PREVIO a la consulta (obligatorio)',
         politicaCancelacion: 'Cancelación con menos de 24 hrs: pago anticipado para reagendar',
-        reembolsable: true
+        reembolsable: false
     },
     {
         id: 'evaluacion-facial',
@@ -372,7 +372,7 @@ const consultasData = [
         ],
         requisitos: 'Ver indicaciones previas para InBody y Calorimetría',
         politicaCancelacion: 'Cancelación con menos de 24 hrs: pago anticipado para reagendar',
-        reembolsable: true
+        reembolsable: false
     },
     {
         id: 'consulta-maxilofacial',
@@ -397,7 +397,7 @@ const consultasData = [
         ],
         requisitos: 'No requiere preparación especial',
         politicaCancelacion: 'Cancelación con menos de 24 hrs: pago anticipado para reagendar',
-        reembolsable: true
+        reembolsable: false
     },
     {
         id: 'consulta-vascular',
@@ -417,6 +417,6 @@ const consultasData = [
         ],
         requisitos: 'No requiere preparación especial',
         politicaCancelacion: 'Cancelación con menos de 24 hrs: pago anticipado para reagendar',
-        reembolsable: true
+        reembolsable: false
     }
 ];
