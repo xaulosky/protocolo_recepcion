@@ -697,9 +697,9 @@ const tratamientosData = [
         descripcion: 'Corrección quirúrgica de lóbulos de orejas dañados, rasgados o elongados por uso prolongado de aros pesados. Reconstruye el lóbulo para devolverle forma natural y permitir volver a usar aros. Procedimiento ambulatorio bajo anestesia local con resultados definitivos.',
         profesional: 'Dr. Luis Pérez Lagos',
         especialidad: 'Cirujano Maxilofacial',
-        valorDesde: 350000,
-        valorHasta: null,
-        duracion: '30-45 min',
+        valorDesde: 400000,
+        valorHasta: 700000,
+        duracion: '90 min',
         sesiones: '1 cirugía',
         requiereEvaluacion: true,
         evaluacionGratuita: false

@@ -37,7 +37,68 @@ const paymentPolicies = [
     { title: "Política Matrona", content: "Cita $30.000 (Reembolsable). En caso de cancelar con menos de 24 horas o inasistencia sin aviso: para reagendar deberás pagar el valor de la consulta por anticipado vía transferencia.", type: "Medica" },
     { title: "Política Dra. Kiss", content: "Evaluación gratuita. Si cancelas con menos de 24 horas de anticipación, para reagendar se solicitará un abono de $10.000 vía transferencia. Este abono será descontado de tu presupuesto de tratamiento.", type: "Estetica" },
     { title: "Política Dra. Araya", content: "Cita $40.000 (Reembolsable). Pago el mismo día antes de ingresar. En caso de cancelar con menos de 24 horas o inasistencia sin aviso: para reagendar deberás pagar el valor de la consulta por anticipado vía transferencia.", type: "Medica" },
-    { title: "Política Dr. Luis Pérez", content: "Cita $40.000 (Reembolsable). Pago el mismo día antes de ingresar. En caso de cancelar con menos de 24 horas o inasistencia sin aviso: para reagendar deberás pagar el valor de la consulta por anticipado vía transferencia.", type: "Medica" }
+    { title: "Política Dr. Luis Pérez", content: "Cita $40.000 (Reembolsable). Pago el mismo día antes de ingresar. En caso de cancelar con menos de 24 horas o inasistencia sin aviso: para reagendar deberás pagar el valor de la consulta por anticipado vía transferencia.", type: "Medica" },
+
+    // ==================== POLÍTICAS DE PAQUETES PREPAGADOS ====================
+    {
+        title: "Política General de Paquetes Prepagados",
+        content: `📦 PRINCIPIO FUNDAMENTAL
+
+"Las sesiones prepagadas están asociadas a tiempos de agenda.
+Si el paciente no usa ese tiempo según las reglas, la sesión se considera utilizada."
+
+⏰ VIGENCIA DEL PAQUETE
+📌 Los paquetes tienen vigencia de 6 meses desde la primera sesión.
+📌 Pasado ese plazo, las sesiones no utilizadas se considerarán vencidas.
+
+🔄 REAGENDAMIENTO Y CANCELACIONES
+✅ Puedes reagendar sin costo si avisas con al menos 24-48 horas de anticipación.
+❌ Si cancelas con menos tiempo o no asistes, la sesión se descuenta igual del paquete.
+📍 Ese horario queda bloqueado para ti y no podemos asignarlo a otro paciente.
+
+🔢 LÍMITE DE CAMBIOS
+📌 Cada sesión puede reagendarse un máximo de 2 veces.
+📌 Después de eso, si no asistes, la sesión se considera utilizada.
+
+💙 CARTA DE CORTESÍA
+📌 Por primera vez, podemos hacer una excepción y no descontar la sesión.
+📌 Desde la segunda vez en adelante, se aplica la política sin excepciones.`,
+        type: "Paquetes"
+    },
+    {
+        title: "Explicación al Vender Paquete",
+        content: `Antes de confirmar tu paquete, te comento algo importante 📝
+
+Las sesiones tienen vigencia de 6 meses y puedes reagendar hasta 24-48 horas antes sin costo.
+
+Si cancelas muy encima de la hora o no asistes, esa sesión se descuenta igual del paquete, porque ese bloque de tiempo queda reservado solo para ti.
+
+¿Te parece bien? Si quieres, te lo enviamos por escrito para que lo tengas claro.`,
+        type: "Paquetes"
+    },
+    {
+        title: "Condiciones de Uso de Paquetes (Documento)",
+        content: `CONDICIONES DE USO DE PAQUETES DE TRATAMIENTO – CLÍNICA CIALO
+
+📋 VIGENCIA
+Las sesiones del paquete tienen vigencia de 6 meses desde la primera atención.
+
+📅 AGENDAMIENTO Y CAMBIOS
+Los cambios/cancelaciones deben realizarse con mínimo 24-48 horas de anticipación.
+
+⚠️ INASISTENCIA / CANCELACIÓN TARDÍA
+Si el paciente no asiste o cancela fuera de ese plazo, la sesión se considera utilizada y se descontará del paquete.
+
+🔢 LÍMITE DE REAGENDAMIENTOS
+Cada sesión puede reagendarse un máximo de 2 veces. Después de eso, si no se asiste, la sesión se pierde.
+
+🤝 RESPONSABILIDAD COMPARTIDA
+El paciente es responsable de asistir a sus horas reservadas; CIALO se compromete a disponer del equipo profesional, sala e insumos necesarios en cada cita.
+
+💙 EXCEPCIONES (OPCIONAL)
+CIALO podrá, de manera excepcional, no descontar una sesión en caso de fuerza mayor debidamente informada, lo que no constituye obligación futura.`,
+        type: "Paquetes"
+    }
 ];
 
 const scriptsData = {
@@ -52,18 +113,117 @@ const scriptsData = {
         { title: "Solicitud de Datos Completos", content: `"¡Hola! Para poder registrarte en nuestro sistema y agendar tu cita, necesito que me confirmes los siguientes datos:\n\n📋 Nombre completo\n📋 RUT\n📋 Correo electrónico\n📋 Teléfono de contacto\n\n¿Me podrías confirmar esta información?"`, note: "Usar para nuevos pacientes o actualización de datos." },
         { title: "Clausura por Reagendamientos Excesivos", content: `"Hola, ¿cómo estás? Te escribo porque hemos notado que has reagendado tu tratamiento en múltiples ocasiones.\n\nEntendemos que pueden surgir imprevistos, sin embargo, cada vez que reagendas, estamos bloqueando un cupo que otro paciente podría necesitar.\n\nPara poder continuar con tu tratamiento, necesitamos que confirmes una fecha definitiva y te comprometas a asistir. De lo contrario, lamentablemente tendremos que proceder con la clausura de tu tratamiento.\n\nEl valor pagado quedaría como crédito a favor para cuando estés en condiciones de retomar el tratamiento de forma comprometida.\n\n¿Podemos coordinar una fecha definitiva?"`, note: "Usar después de 3+ reagendamientos. Consultar con supervisor antes de enviar." },
         { title: "Cancelación Tardía (Tratamiento No Pagado)", content: `"Hola, hablas con Mónica de Clínica Cialo. Por políticas de nuestra clínica, si no te presentas a tu cita o cancelas con menos de 24 horas de anticipación, para reagendar se solicitará un abono de $10.000 vía transferencia. Este abono será descontado de tu presupuesto de tratamiento.\n\n¿Deseas que te enviemos los datos para realizar el abono y reagendar tu cita?"`, note: "Solo para tratamientos NO pagados. Si ya está pagado, usar otro protocolo." },
-        { title: "Recetas Médicas Listas", content: `"Hola [NOMBRE], buenas tardes 🌿\n\nVimos tu mensaje respecto a las recetas que solicitaste y entendemos que estás quedando con poco medicamento, sobre todo considerando que son formulaciones magistrales y se demoran en la farmacia.\n\nTe cuento que tus recetas ya están listas y firmadas por el médico.\n\nLas puedes retirar impresas en Clínica CIALO (Bulnes 220, oficina 509, Edificio Puerto Mayor II, Los Ángeles).\n\nGracias por escribirnos y por la paciencia. 🙌\n\nClínica CIALO 💚"`, note: "Personalizar con el nombre del paciente. Usar para notificar recetas listas." }
+        { title: "Recetas Médicas Listas", content: `"Hola [NOMBRE], buenas tardes 🌿\n\nVimos tu mensaje respecto a las recetas que solicitaste y entendemos que estás quedando con poco medicamento, sobre todo considerando que son formulaciones magistrales y se demoran en la farmacia.\n\nTe cuento que tus recetas ya están listas y firmadas por el médico.\n\nLas puedes retirar impresas en Clínica CIALO (Bulnes 220, oficina 509, Edificio Puerto Mayor II, Los Ángeles).\n\nGracias por escribirnos y por la paciencia. 🙌\n\nClínica CIALO 💚"`, note: "Personalizar con el nombre del paciente. Usar para notificar recetas listas." },
+
+        // ==================== PAQUETES PREPAGADOS ====================
+        {
+            title: "Inasistencia a Sesión de Paquete Prepagado",
+            content: `Hola, [Nombre] 💙
+
+Hoy tenías una sesión de tu paquete programada a las [hora] y no pudimos verte.
+
+Como la cancelación fue con menos de 24-48 horas, según nuestra política la sesión se considera utilizada y se descuenta del paquete.
+
+Sabemos que a veces pasan imprevistos, así que revisemos juntos los próximos horarios para que puedas aprovechar al máximo las sesiones restantes. 🙌
+
+Te quedan [X] sesiones de tu paquete.
+
+¿Cuándo te acomoda reagendar?`,
+            note: "Marcar sesión como perdida en sistema. Registrar en nota interna."
+        },
+        {
+            title: "Inasistencia Primera Vez (Excepción de Cortesía)",
+            content: `Hola, [Nombre] 💙
+
+Hoy tenías una sesión de tu paquete programada a las [hora] y no pudimos verte.
+
+En esta oportunidad haremos una excepción y NO descontaremos la sesión del paquete, pero desde ahora sí tendremos que aplicar la política para cuidar la agenda de todos los pacientes.
+
+Te recuerdo que puedes reagendar hasta 24-48 horas antes sin costo. Si cancelas muy encima de la hora o no asistes, la sesión se descuenta del paquete.
+
+¿Cuándo te acomoda reagendar tu sesión?`,
+            note: "Solo usar la PRIMERA vez. Registrar que se usó la excepción."
+        },
+        {
+            title: "Límite de Reagendamientos Alcanzado",
+            content: `Hola, [Nombre] 💙
+
+Veo que has reagendado esta sesión 2 veces ya.
+
+Para organizar bien la agenda, cada sesión puede reagendarse un máximo de 2 veces. Si después de esto no se asiste, la sesión se considera utilizada.
+
+¿Podemos coordinar una fecha definitiva que realmente te acomode? Así aprovechas al máximo tu paquete. 🙌`,
+            note: "Usar cuando el paciente ha reagendado la misma sesión 2 veces."
+        },
+        {
+            title: "Recordatorio de Vigencia de Paquete",
+            content: `Hola, [Nombre] 💙
+
+Te escribo para recordarte que tu paquete de [tratamiento] tiene vigencia hasta el [fecha].
+
+Actualmente te quedan [X] sesiones por utilizar.
+
+¿Quieres que coordinemos las fechas para que puedas aprovechar todas tus sesiones antes del vencimiento?
+
+Quedo atenta para ayudarte a agendar. 🙌`,
+            note: "Enviar 1 mes antes del vencimiento del paquete."
+        },
+        {
+            title: "Paquete Próximo a Vencer",
+            content: `Hola, [Nombre] 💙
+
+Te escribo porque tu paquete de [tratamiento] vence el [fecha] (en [X] días).
+
+Aún te quedan [X] sesiones por utilizar.
+
+Es importante que las agendemos pronto para que no pierdas tu inversión.
+
+¿Qué días y horarios te acomodan para coordinar las sesiones restantes?
+
+Estoy aquí para ayudarte. 🙌`,
+            note: "Enviar 2 semanas antes del vencimiento si quedan sesiones."
+        },
+        {
+            title: "Paciente VIP con Inasistencia (Gesto Especial)",
+            content: `Hola, [Nombre] 💙
+
+Sabemos que han surgido varios imprevistos con tus horas.
+
+Según la política del paquete, la sesión de hoy se descuenta, pero como valoramos mucho que te atiendas con nosotros, en la próxima visita te dejaremos un [pequeño beneficio: evaluación complementaria / descuento en producto / sesión adicional corta].
+
+Lo importante es que podamos coordinar horarios que realmente te acomoden para que aproveches todo tu tratamiento.
+
+¿Cuándo te viene bien para reagendar?`,
+            note: "Solo para pacientes de alto valor. Consultar con supervisor antes de enviar."
+        },
+        {
+            title: "Confirmación de Compra de Paquete",
+            content: `¡Felicitaciones por tu decisión, [Nombre]! 🎉
+
+Has adquirido el paquete de [X] sesiones de [tratamiento].
+
+📋 Condiciones importantes:
+✅ Vigencia: 6 meses desde hoy
+✅ Puedes reagendar hasta 24-48 hrs antes sin costo
+✅ Cada sesión puede moverse máximo 2 veces
+✅ Si no asistes o cancelas tarde, la sesión se descuenta
+
+Te enviamos las condiciones completas por escrito para que las tengas siempre a mano.
+
+¿Cuándo quieres agendar tu primera sesión? 💙`,
+            note: "Enviar inmediatamente después de la compra del paquete. Adjuntar documento de condiciones."
+        }
     ],
     Estetica: [
         { title: "Polinucleótidos (Dra. Kiss)", content: `En Clínica Cialo ofrecemos tratamientos con polinucleótidos, una de las terapias más avanzadas en bioestimulación y rejuvenecimiento cutáneo.\n\nSus principales beneficios son:\n✨ Estimulan la producción de colágeno y elastina, mejorando la firmeza y elasticidad de la piel.\n👁️ Reducen arrugas finas y ojeras en la zona periocular.\n🌟 Mejoran la calidad, textura e hidratación global de la piel cuando se aplican en full face.\n💎 Tratamiento seguro, biocompatible y con respaldo científico.\n\nValores por sesión:\n🔹 Zona periocular: $139.000\n🔹 Full face: $190.000\n\n¿Deseas que agendemos tu cita para comenzar tu tratamiento?` },
         { title: "Toxina Botulínica Dysport (Dra. Kiss)", content: `En Clínica Cialo realizamos tratamientos con toxina botulínica Dysport®, reconocida como una de las mejores y más seguras marcas del mundo, con amplio respaldo científico.\n\nSus beneficios incluyen:\n✨ Relajación de las arrugas dinámicas (frente, entrecejo, patas de gallo).\n🌟 Rejuvenecimiento natural, sin alterar la expresión.\n💎 Procedimiento rápido, seguro y con resultados progresivos en pocos días.\n\nValores Dra. Kiss:\n🔹 1 zona: $100.000\n🔹 Tercio superior (frente, entrecejo y patas de gallo): $179.000\n🔹 Full face (rostro completo): $329.000\n\n¿Quieres que coordinemos tu cita para el tratamiento?` },
-        { title: "Relleno de Labios (Dra. Kiss)", content: `El valor del tratamiento de labios con Dra Mariane es de $180.000\n\nEs un tratamiento ambulatorio el cual se realiza bajo anestesia local.\nTrabajamos con marca Juvederm de Allergan, la marca de relleno más prestigiosa del mundo.\nLa durabilidad es de 8-12 meses aproximadamente en reabsorberse de manera completa.\n\n¿Desea ud una cita para el tratamiento?` },
+        { title: "Relleno de Labios (Dra. Kiss)", content: `El valor del tratamiento de labios con Dra. Mariane Kiss (Odontóloga - Armonización Orofacial) es de $180.000\n\nEs un tratamiento ambulatorio el cual se realiza bajo anestesia local.\nTrabajamos con marca Juvederm Ultra plus XC de Allergan, la marca de relleno más prestigiosa del mundo.\nLa durabilidad es de 8-12 meses aproximadamente en reabsorberse de manera completa.\n\n¿Desea ud una cita para el tratamiento?` },
         { title: "Ácido Hialurónico (Dra. Kiss)", content: `En Clínica Cialo realizamos tratamientos con ácido hialurónico de la más alta calidad, aplicados por la Dra. Mariane Kiss, especialista en medicina estética.\n\nCon este producto podemos abordar múltiples objetivos como relleno de labios, ojeras, surcos, perfilado mandibular, hidratación y armonización facial.\n\nEl valor de cada tratamiento con ácido hialurónico es de $180.000 por jeringa, ajustando la técnica y la cantidad según tus necesidades.\n\n¿Deseas que coordinemos tu cita con la Dra. Mariane Kiss para este procedimiento?` },
-        { title: "CoolPeel (Láser CO2)", content: `Se trata de uno de los protocolos más avanzados en rejuvenecimiento facial no invasivo. Combinamos la última tecnología en láser de CO2 fraccionado superficial (CoolPeel) con exosomas de grado médico para:\n\n✅ Mejorar textura y poros dilatados\n✅ Aumentar luminosidad y firmeza de la piel\n✅ Estimular colágeno sin dañar capas profundas\n✅ Acelerar la recuperación postláser gracias a los exosomas\n\nEs ideal para quienes desean resultados visibles sin tiempos prolongados de reposo ni inflamación significativa.\n\n🔬 Trabajamos con tecnología TetraPro by DEKA, y exosomas Purasome NutriComplex, con evidencia clínica en regeneración dérmica.\n\nValor con Dra Mariane: $190.000 por sesión.\n\n¿Deseas una cita?` },
+        { title: "CoolPeel (Láser CO2)", content: `Se trata de uno de los protocolos más avanzados en rejuvenecimiento facial no invasivo. Combinamos la última tecnología en láser de CO2 fraccionado superficial (CoolPeel) para:\n\n✅ Mejorar textura y poros dilatados\n✅ Aumentar luminosidad y firmeza de la piel\n✅ Estimular colágeno sin dañar capas profundas\n\nEs ideal para quienes desean resultados visibles sin tiempos prolongados de reposo ni inflamación significativa.\n\n🔬 Trabajamos con tecnología TetraPro by DEKA.\n\nValor con Dra. Mariane Kiss (Odontóloga - Armonización Orofacial): $199.000 por sesión.\n\n¿Deseas una cita?` },
         { title: "Hilos Revitalizantes (Dra. Kiss)", content: `En Clínica Cialo ofrecemos tratamientos con hilos revitalizantes, realizados por la Dra. Mariane Kiss.\n\nEstos hilos tienen como objetivo estimular la producción natural de colágeno, mejorando la firmeza, textura y calidad de la piel de manera progresiva y natural.\n\nEl valor del tratamiento es de $120.000 por pack, lo que contempla la aplicación de 10 hilos revitalizantes.\n\n¿Deseas que coordinemos tu cita con la Dra. Kiss para este procedimiento?` },
         { title: "Promo Polinucleótidos + Botox", content: `En Clínica Cialo contamos con una promoción exclusiva realizada por la Dra. Mariane Kiss, especialista en medicina estética.\n\n✨ Polinucleótidos → estimulan la producción de colágeno y elastina, mejorando la firmeza, textura e hidratación de la piel.\n🌟 Toxina Botulínica Dysport® → relaja las arrugas dinámicas del tercio superior, logrando un resultado natural y armónico.\n\nValor promoción completa: $269.900\n\n¿Deseas que coordinemos tu cita con la Dra. Mariane Kiss para aprovechar esta combinación de tratamientos?` },
         { title: "Eliminación de Tatuajes", content: `El valor dependerá del tamaño y color del tatuaje. Si deseas puedes enviarme una fotografía para ayudarte en el valor por sesión 😊\n\n(REENVIAR FOTO A DR. NICOLÁS PARA VALOR)\n\nAl entregar presupuesto:\n"El valor de su tatuaje es de ____ por sesión.\n\nContamos con el láser Spectra XT, actualmente el mejor láser del mundo para remoción de tatuajes. Tiene un riesgo de cicatriz mucho menor que los demás láseres.\n\nLa cantidad de sesiones dependerá del tipo de tinta, profundidad, densidad, zona del cuerpo, cantidad de colores, metabolismo del paciente, hábitos, etc. Es difícil determinar una cantidad exacta, pero frecuentemente varían de 5 a 10 sesiones.\n\nLas sesiones se realizan cada 6 semanas, solo pagas la sesión a la que asistes.\n\n¿Desea ud una cita?"` },
-        { title: "Sculptra (Bioestimulador)", content: `En Clínica Cialo ofrecemos tratamientos con Sculptra, el bioestimulador de colágeno más avanzado y duradero del mercado.\n\nSculptra es diferente a los rellenos tradicionales porque no solo rellena, sino que estimula la producción natural de colágeno de tu propia piel, logrando resultados progresivos, naturales y de larga duración.\n\nBeneficios principales:\n✨ Restaura el volumen facial perdido de forma gradual y natural\n🌟 Mejora la firmeza y elasticidad de la piel\n💎 Resultados que pueden durar hasta 2 años o más\n🎯 Ideal para rejuvenecimiento facial global, mejillas, sienes y mandíbula\n\nLa evaluación es gratuita para determinar el plan de tratamiento personalizado según tus necesidades.\n\n¿Deseas que agendemos tu evaluación con la Dra. Mariane Kiss?` }
+        { title: "Sculptra (Bioestimulador)", content: `En Clínica Cialo ofrecemos tratamientos con Sculptra, el bioestimulador de colágeno más avanzado y duradero del mercado.\n\nSculptra es diferente a los rellenos tradicionales porque no solo rellena, sino que estimula la producción natural de colágeno de tu propia piel, logrando resultados progresivos, naturales y de larga duración.\n\nBeneficios principales:\n✨ Restaura el volumen facial perdido de forma gradual y natural\n🌟 Mejora la firmeza y elasticidad de la piel\n💎 Resultados que pueden durar hasta 2 años o más\n🎯 Ideal para rejuvenecimiento facial global, mejillas, sienes y mandíbula\n\nValor: $480.000 - $500.000\n\nLa evaluación es gratuita para determinar el plan de tratamiento personalizado según tus necesidades.\n\n¿Deseas que agendemos tu evaluación con la Dra. Mariane Kiss (Odontóloga - Armonización Orofacial)?` }
     ],
     Corporal: [
         { title: "Depilación Láser (Soprano Titanium)", content: `En Clínica Cialo trabajamos con Soprano Titanium, considerado el gold standard en depilación láser a nivel mundial.\n\nEsta tecnología combina triple longitud de onda (Alexandrita, Diodo y Nd:YAG), lo que permite tratar todo tipo de pieles y vellos, incluso en pacientes morenos o con vellos resistentes.\n\nAdemás, cuenta con el sistema ICE Plus, un avanzado mecanismo de enfriamiento que protege la piel durante cada disparo, logrando un procedimiento seguro, eficaz y prácticamente indoloro.\n\nLa cantidad de sesiones dependerá de tu tipo de piel, grosor del vello y zona a tratar.\n\nLa evaluación es gratuita, para determinar el plan más adecuado para ti.\n\nPrecios: Tenemos valores tanto por sesión individual como en packs de varias sesiones, además de precios diferenciados según si deseas tratar una zona específica o varias zonas en conjunto.\n\n¿Tienes alguna zona en particular en mente para poder orientarte mejor?\n\nRecuerda que la evaluación es gratuita, donde podremos definir el plan ideal para ti según tu tipo de piel y vello.` },

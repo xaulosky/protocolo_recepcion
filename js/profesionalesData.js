@@ -1317,49 +1317,194 @@ const profesionalesData = [
     },
     {
         id: 'mariane-kiss',
-        nombreCompleto: 'Mariane Kiss',
-        especialidad: 'Médico Estética Facial',
-        telefono: '',
-        email: '',
+        nombreCompleto: 'Mariane Soledad Kiss Molina',
+        especialidad: 'Odontóloga - Armonización Orofacial',
+        rut: '15.039.063-9',
+        telefono: '+56 9 9077 5288',
+        email: 'marianekissm@gmail.com',
+        formacion: {
+            pregrado: 'Odontóloga',
+            especialidad: 'Armonización Orofacial',
+            certificaciones: [
+                'Especialista en Armonización Orofacial'
+            ]
+        },
         disponibilidad: {
-            dias: ['Según agenda'],
-            horario: 'Flexible',
+            dias: ['Miércoles', 'Jueves'],
+            horario: 'Miércoles y Jueves: 10:00-19:00 hrs',
             frecuencia: 'Semanal',
-            flexibilidad: 'Sí'
+            flexibilidad: 'Sí, horario puede acomodarse si es necesario'
         },
         prestaciones: {
             servicios: [
                 {
                     nombre: 'Toxina Botulínica',
-                    descripcion: 'Aplicación de toxina botulínica para arrugas de expresión.',
-                    duracion: '20-45 min',
-                    espacio: 'Box facial'
+                    descripcion: 'Se utiliza para atenuar arrugas faciales',
+                    duracion: '30 min',
+                    espacio: 'Sala de procedimientos',
+                    equipos: '',
+                    insumos: '1 par de guantes látex sin polvo, 1 mascarilla, 4 gasa estéril, clorhexidina 2%, 2 jeringa insulina 50 UI 31G X 6mm, lápiz blanco (marcar puntos a nivel facial)',
+                    valor: '$179.000',
+                    protocolo: 'Cada 5 meses',
+                    requiereAsistente: false,
+                    controlesPosteriores: 'Control 14 días',
+                    requiereCertificacion: 'Ejecutado por odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
                 },
                 {
-                    nombre: 'Rellenos con Ácido Hialurónico',
-                    descripcion: 'Rellenos faciales para labios, pómulos, mentón, ojeras.',
-                    duracion: '30-45 min',
-                    espacio: 'Box facial'
+                    nombre: 'Aumento de volumen o perfilado labial',
+                    descripcion: 'Inyección de ácido hialurónico en labios para aumentar el volumen o perfilar',
+                    duracion: '45 min',
+                    espacio: 'Sala de procedimientos',
+                    equipos: 'Ácido hialurónico en jeringa de 1 ml - Marca Juvederm Ultra plus XC',
+                    insumos: '2-3 anestesia Mepivacaína 3% sin vasoconstrictor, 1-2 cánulas 23 G, aguja corta para anestesiar, carpule, mascarilla, 1 par guantes de látex sin polvo, clorhexidina 2%',
+                    valor: '$180.000',
+                    protocolo: 'Depende de lo que quiere el paciente y lo que podemos lograr',
+                    requiereAsistente: true,
+                    tipoAsistente: 'TENS',
+                    tiempoLimpieza: 'Aseo de la sala',
+                    controlesPosteriores: 'Control 21 días',
+                    requiereCertificacion: 'Ejecutado por Odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
                 },
                 {
-                    nombre: 'Bioestimuladores',
-                    descripcion: 'Sculptra, Ellansé para estimulación de colágeno.',
+                    nombre: 'Aumento de volumen Mentón o pómulos',
+                    descripcion: 'Inyección de ácido hialurónico en mentón o pómulos para armonizar el perfil o reponer pérdida de volumen',
+                    duracion: '45 min',
+                    espacio: 'Sala de procedimientos',
+                    equipos: 'Ácido hialurónico en jeringa de 1 ml',
+                    insumos: '1 anestesia Mepivacaína 3% sin vasoconstrictor, 1-2 cánulas 22 G, mascarilla, 1 par guantes de látex sin polvo, clorhexidina 2%, 1 jeringa insulina 50 UI 31G X 6mm, lápiz blanco marcaje',
+                    valor: '$180.000',
+                    protocolo: 'Depende de lo que el paciente requiere',
+                    requiereAsistente: true,
+                    tipoAsistente: 'TENS',
+                    tiempoLimpieza: 'Aseo de la sala',
+                    controlesPosteriores: 'Control 21 días',
+                    requiereCertificacion: 'Ejecutado por Odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
+                },
+                {
+                    nombre: 'Mesoterapia Pink glow o NCTF Filorga',
+                    descripcion: 'Tratamiento facial mínimamente invasivo que consiste en la aplicación de un cóctel nutritivo directamente en la piel mediante microinyecciones o Dermapen. Diseñado para hidratar, iluminar, revitalizar y unificar el tono de la piel.',
+                    duracion: '30 min',
+                    espacio: 'Sala de procedimientos',
+                    equipos: 'Dermapen',
+                    insumos: '1 aguja Dermapen, mascarilla, 1 par guantes de látex sin polvo, clorhexidina 2%, 1 jeringa (puede ser de 1, 2 o 3 ml), 1-1,5 ml de Pink glow o NCTF Filorga, opcional una mascarilla de hidratación facial',
+                    valor: 'Depende del valor que quiera cobrar la clínica',
+                    protocolo: '1 sesión al mes',
+                    requiereAsistente: false,
+                    tiempoLimpieza: 'Aseo de la sala',
+                    requiereCertificacion: 'Ejecutado por Odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
+                },
+                {
+                    nombre: 'Polinucleótidos en zona de ojera, REJURAN',
+                    descripcion: 'Tratamiento de rejuvenecimiento de la piel en zona ocular. Mejora la hidratación, reducción de arrugas y flacidez cutánea, reducción de pigmentación',
+                    duracion: '30 min',
+                    espacio: 'Sala de procedimientos',
+                    equipos: 'Ácido hialurónico en jeringa de 1 ml',
+                    insumos: 'Mascarilla, 1 par guantes de látex sin polvo, clorhexidina 2%, 3-4 gasas, 0,5 – 1 ml de REJURAN',
+                    valor: 'Precio de la clínica',
+                    protocolo: 'Ideal 3-4 veces cada 3 semanas',
+                    requiereAsistente: false,
+                    tiempoLimpieza: 'Aseo de la sala',
+                    controlesPosteriores: 'Control 21 días',
+                    requiereCertificacion: 'Ejecutado por Odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
+                },
+                {
+                    nombre: 'SCULPTRA',
+                    descripcion: 'Tratamiento inyectable que estimula la producción de colágeno en la piel. Promueve un rejuvenecimiento gradual y profundo.',
                     duracion: '45-60 min',
-                    espacio: 'Box facial'
+                    espacio: 'Sala de procedimientos',
+                    equipos: '',
+                    insumos: '1 anestesia Mepivacaína 3% sin vasoconstrictor, 1-2 cánulas 22 G, mascarilla, 1 par guantes de látex sin polvo, clorhexidina 2%, 1 jeringa insulina 50 UI 31G X 6mm, lápiz blanco marcaje, 1 vial SCULPTRA, 1 agua para inyectables, 1 Lidocaína, 2 jeringas 1 ml, 2 jeringas 3 ml, 5 gasas',
+                    valor: '$480.000 - $500.000',
+                    protocolo: 'Depende de lo que el paciente requiere',
+                    requiereAsistente: true,
+                    tipoAsistente: 'TENS',
+                    tiempoLimpieza: 'Aseo de la sala',
+                    controlesPosteriores: 'Control 1-3 meses',
+                    requiereCertificacion: 'Ejecutado por Odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
                 },
                 {
-                    nombre: 'Hilos Tensores',
-                    descripcion: 'Hilos tensores PDO para lifting sin cirugía.',
-                    duracion: '60-90 min',
-                    espacio: 'Box facial'
+                    nombre: 'Hilos revitalizantes en mejillas o papada',
+                    descripcion: 'Hilos lisos de PDO que se aplican en malla para estimular la producción de colágeno. Atenúan arrugas finas y flacidez leve a moderada.',
+                    duracion: '30 min',
+                    espacio: 'Sala de procedimientos',
+                    equipos: '1 paquete hilos lisos PDO (envío proveedor)',
+                    insumos: 'Mascarilla, 1 par guantes de látex sin polvo, clorhexidina 2%, lápiz blanco marcaje, 1 paquete hilos lisos PDO, hielo',
+                    valor: '$120.000',
+                    protocolo: 'Cada 5 meses',
+                    requiereAsistente: false,
+                    tiempoLimpieza: 'Aseo de la sala',
+                    requiereCertificacion: 'Ejecutado por Odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
+                },
+                {
+                    nombre: 'Hilos multifill surco nasogeniano',
+                    descripcion: 'Aplicación de hilo multifill (Paquete de 8-10 hilos lisos PDO) en surco nasogeniano para estimular la producción de colágeno.',
+                    duracion: '30 min',
+                    espacio: 'Sala de procedimientos',
+                    equipos: '1 Paquete hilo multifill',
+                    insumos: 'Mascarilla, 1 par guantes de látex sin polvo, clorhexidina 2%, 1 paquete hilos multifill, hielo',
+                    valor: '$160.000 - $180.000',
+                    protocolo: 'Cada 8-12 meses',
+                    requiereAsistente: true,
+                    tipoAsistente: 'TENS',
+                    tiempoLimpieza: 'Aseo de la sala',
+                    controlesPosteriores: 'Control 21 días',
+                    requiereCertificacion: 'Ejecutado por Odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
+                },
+                {
+                    nombre: 'Láser Coolpeel',
+                    descripcion: 'Tratamiento de rejuvenecimiento facial con láser CO2 fraccionado superficial',
+                    duracion: '45 min',
+                    espacio: 'Sala de procedimientos',
+                    equipos: 'Láser',
+                    insumos: 'Anestesia tópica, mascarilla, 1 par guantes de látex sin polvo, clorhexidina 2% o suero fisiológico, 5 gasas',
+                    valor: '$199.000',
+                    protocolo: '',
+                    requiereAsistente: true,
+                    tipoAsistente: 'TENS',
+                    tiempoLimpieza: 'Aseo de la sala',
+                    controlesPosteriores: 'Control 1 mes',
+                    requiereCertificacion: 'Ejecutado por Odontólogo',
+                    consentimientoInformado: 'Clínica Cialo preparará modelo'
                 }
             ]
         },
         requisitosLogisticos: {
-            necesitaAsistente: false,
-            insumosRequeridos: ['Anestesia tópica', 'Agujas', 'Jeringas', 'Gasas estériles'],
-            equiposCriticos: [],
-            espacioEspecial: 'Box facial'
-        }
+            necesitaAsistente: true,
+            tipoAsistente: 'TENS (para procedimientos con ácido hialurónico, Sculptra, hilos multifill y láser)',
+            insumosRequeridos: [
+                'Guantes látex sin polvo',
+                'Mascarillas',
+                'Gasas estériles',
+                'Clorhexidina 2%',
+                'Jeringas insulina 50 UI 31G X 6mm',
+                'Anestesia Mepivacaína 3% sin vasoconstrictor',
+                'Cánulas 22 G y 23 G',
+                'Lápiz blanco marcaje',
+                'Ácido hialurónico Juvederm Ultra plus XC',
+                'REJURAN',
+                'SCULPTRA',
+                'Pink glow o NCTF Filorga',
+                'Hilos PDO',
+                'Dermapen',
+                'Anestesia tópica'
+            ],
+            equiposCriticos: [
+                'Dermapen',
+                'Láser CO2'
+            ],
+            espacioEspecial: 'Sala de procedimientos',
+            tiempoLimpieza: 'Aseo de sala entre procedimientos'
+        },
+        pendientesAdministrativos: [
+            'Preparar consentimientos informados para todos los procedimientos'
+        ]
     }
 ];

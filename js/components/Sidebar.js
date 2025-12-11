@@ -10,7 +10,8 @@ const sidebarNavigation = {
         icon: 'clipboard-list',
         items: [
             { id: 'base', label: 'Protocolo Base', icon: 'check-circle' },
-            { id: 'pagos', label: 'Pagos y Citas', icon: 'credit-card' }
+            { id: 'pagos', label: 'Pagos y Citas', icon: 'credit-card' },
+            { id: 'suspension', label: 'Protocolo de Suspensión', icon: 'alert-triangle' }
         ]
     },
     guiones: {

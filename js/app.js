@@ -177,6 +177,11 @@ class App {
                 icon = 'sparkles';
                 content = TratamientosContent();
                 break;
+            case 'suspension':
+                title = 'Protocolo de Suspensión y Paquetes Prepagados';
+                icon = 'alert-triangle';
+                content = ProtocoloSuspensionContent();
+                break;
             default:
                 title = 'Protocolo Base';
                 icon = 'check-circle';

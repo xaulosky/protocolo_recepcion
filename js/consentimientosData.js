@@ -222,5 +222,52 @@ const consentimientosData = [
             'Evitar consumo excesivo de tabaco y alcohol para optimizar resultados.',
             'Seguir el plan de sesiones recomendado para lograr resultados óptimos.'
         ]
+    },
+    {
+        id: 'aclarado-intimo-axilar',
+        title: 'CONSENTIMIENTO INFORMADO - Aclarado Íntimo y/o Axilar',
+        treatment: 'Aclarado Íntimo y/o Axilar con Peeling Químico y/o Láser CO₂',
+        profesional: 'Matrona Stefania Kuncar Ferrón',
+        introduction: 'Procedimiento de aclarado íntimo y/o axilar que puede incluir el uso de peeling químico y, de ser necesario y con autorización del paciente, la complementación del tratamiento con Láser CO₂ fraccionado, con el objetivo de mejorar los resultados clínicos y estéticos. Este procedimiento puede requerir más de una sesión para alcanzar los resultados esperados y la respuesta puede variar de acuerdo con las características de la piel y hábitos personales.',
+        medicamentos: true,
+        alergias: true,
+        criteriosExclusion: [
+            'Procesos infecciosos o inflamatorios en la zona a tratar (ej.: vaginitis, vulvitis, foliculitis activa).',
+            'Dermatosis en fase activa (psoriasis, dermatitis seborreica, liquen plano, liquen escleroso, entre otras).',
+            'Lesiones sospechosas, premalignas o malignas en la zona.',
+            'Embarazo o lactancia.',
+            'Cirugía reciente en la zona a tratar (menos de 6 meses).',
+            'Uso de anticoagulantes.',
+            'Bronceado reciente o exposición solar activa en la zona a tratar.'
+        ],
+        compromisoPaciente: [
+            'Informar antecedentes de herpes genital o cutáneo antes del inicio del procedimiento.',
+            'No exponer la zona a sol, solarium o fuentes de calor directo por al menos 15 días post procedimiento.',
+            'Evitar ropa ajustada y utilizar ropa interior de algodón posterior al tratamiento.',
+            'No realizar baños de tina, piscinas, sauna ni mar en las 48 horas posteriores.',
+            'No realizar ejercicio físico intenso en los 3-4 días siguientes.',
+            'Evitar relaciones sexuales en la primera semana tras un procedimiento genital.',
+            'Seguir las indicaciones de cuidado domiciliario entregadas por la profesional.'
+        ],
+        efectosSecundarios: [
+            'Molestias o sensación de ardor transitorio.',
+            'Eritema (enrojecimiento) o edema (hinchazón leve) en la zona.',
+            'Descamación en los días posteriores al peeling.'
+        ],
+        efectosInfrecuentes: [
+            'Hiperpigmentación postinflamatoria o hipopigmentación.',
+            'Infección secundaria si no se cumplen los cuidados posteriores.',
+            'Cicatrización anómala (extremadamente infrecuente).',
+            'Inflamación de ganglios inguinales en pacientes con inmunidad disminuida.'
+        ],
+        informacionRecibida: [
+            'Beneficios potenciales del procedimiento y posibilidad de que no logre el resultado esperado en mi caso.',
+            'Consecuencias razonables de no realizar el procedimiento.',
+            'Riesgos y complicaciones asociadas tanto al peeling químico como al láser CO₂.',
+            'Necesidad de varias sesiones para obtener resultados óptimos.',
+            'Que debo informar de inmediato si quedo embarazada durante el tratamiento.'
+        ],
+        registroFotografico: true,
+        liberacionResponsabilidad: 'Libero de responsabilidad a la Matrona Stefania Kuncar Ferrón y a su equipo frente a complicaciones derivadas del incumplimiento de las indicaciones post procedimiento o de condiciones personales no declaradas.'
     }
 ];

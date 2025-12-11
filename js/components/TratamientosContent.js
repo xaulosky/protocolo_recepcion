@@ -154,7 +154,8 @@ function renderTratamientoCard(tratamiento) {
     const icono = getCategoriaIcon(tratamiento.categoria);
 
     return `
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all group">
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all group cursor-pointer"
+             onclick="openTratamientoModal('${tratamiento.id}')">
             <!-- Header con gradiente -->
             <div class="bg-gradient-to-r ${gradiente} p-3 text-white">
                 <div class="flex items-center justify-between">
@@ -208,6 +209,13 @@ function renderTratamientoCard(tratamiento) {
                         </span>
                     ` : ''}
                 </div>
+                
+                <!-- Botón Ver Detalles -->
+                <button class="w-full mt-3 px-4 py-2 bg-gradient-to-r ${gradiente} text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                        onclick="event.stopPropagation(); openTratamientoModal('${tratamiento.id}')">
+                    <i data-lucide="info" class="w-4 h-4"></i>
+                    Ver Detalles Completos
+                </button>
             </div>
         </div>
     `;
@@ -225,6 +233,183 @@ function updateTratamientoResults() {
     if (countElement) {
         countElement.textContent = getTratamientoResultsCount();
     }
+}
+
+function openTratamientoModal(tratamientoId) {
+    const tratamiento = tratamientosData.find(t => t.id === tratamientoId);
+    if (!tratamiento) return;
+
+    // Crear modal si no existe
+    let modal = document.getElementById('tratamientoModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'tratamientoModal';
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = renderTratamientoModal(tratamiento);
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Refrescar iconos
+    lucide.createIcons({ nodes: [modal] });
+}
+
+function closeTratamientoModal() {
+    const modal = document.getElementById('tratamientoModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
+function renderTratamientoModal(tratamiento) {
+    const gradiente = getCategoriaColor(tratamiento.categoria);
+    const icono = getCategoriaIcon(tratamiento.categoria);
+
+    return `
+        <!-- Modal Overlay -->
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+             onclick="closeTratamientoModal()">
+            <!-- Modal Content -->
+            <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden"
+                 onclick="event.stopPropagation()">
+                
+                <!-- Header con gradiente -->
+                <div class="bg-gradient-to-r ${gradiente} p-6 text-white relative">
+                    <button onclick="closeTratamientoModal()" 
+                            class="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-lg transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                    
+                    <div class="flex items-start gap-4">
+                        <div class="p-3 bg-white/20 rounded-xl">
+                            <i data-lucide="${icono}" class="w-8 h-8"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-medium bg-white/20 px-3 py-1 rounded-full inline-block mb-2">
+                                ${tratamiento.categoria} • ${tratamiento.subcategoria}
+                            </div>
+                            <h2 class="text-2xl font-bold mb-2">${tratamiento.nombre}</h2>
+                            <div class="flex items-center gap-2 text-white/90">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                                <span class="text-sm">${tratamiento.profesional}</span>
+                            </div>
+                            ${tratamiento.especialidad ? `
+                                <p class="text-sm text-white/75 mt-1">${tratamiento.especialidad}</p>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body con scroll -->
+                <div class="overflow-y-auto max-h-[calc(90vh-200px)] p-6">
+                    
+                    <!-- Descripción -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-5 h-5 text-purple-500"></i>
+                            Descripción del Tratamiento
+                        </h3>
+                        <p class="text-slate-700 leading-relaxed">${tratamiento.descripcion}</p>
+                    </div>
+
+                    <!-- Información Clave -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <!-- Precio -->
+                        <div class="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i data-lucide="dollar-sign" class="w-5 h-5 text-purple-600"></i>
+                                <h4 class="font-semibold text-slate-800">Precio</h4>
+                            </div>
+                            <p class="text-2xl font-bold text-purple-600">
+                                ${formatPrecio(tratamiento.valorDesde, tratamiento.valorHasta)}
+                            </p>
+                        </div>
+
+                        <!-- Duración -->
+                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-xl border border-blue-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i data-lucide="clock" class="w-5 h-5 text-blue-600"></i>
+                                <h4 class="font-semibold text-slate-800">Duración</h4>
+                            </div>
+                            <p class="text-lg font-medium text-blue-600">${tratamiento.duracion}</p>
+                        </div>
+
+                        <!-- Sesiones -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i data-lucide="repeat" class="w-5 h-5 text-green-600"></i>
+                                <h4 class="font-semibold text-slate-800">Sesiones</h4>
+                            </div>
+                            <p class="text-lg font-medium text-green-600">${tratamiento.sesiones}</p>
+                        </div>
+
+                        <!-- Evaluación -->
+                        <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl border border-amber-100">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i data-lucide="clipboard-check" class="w-5 h-5 text-amber-600"></i>
+                                <h4 class="font-semibold text-slate-800">Evaluación</h4>
+                            </div>
+                            ${tratamiento.evaluacionGratuita ? `
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg font-medium text-green-600">Gratuita</span>
+                                    <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Incluida</span>
+                                </div>
+                            ` : tratamiento.requiereEvaluacion ? `
+                                <p class="text-lg font-medium text-amber-600">Requerida</p>
+                                <p class="text-xs text-amber-700 mt-1">Consultar valor</p>
+                            ` : `
+                                <p class="text-lg font-medium text-slate-600">No requerida</p>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- Profesional -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <i data-lucide="stethoscope" class="w-5 h-5 text-purple-500"></i>
+                            Profesional
+                        </h3>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-gradient-to-r ${gradiente} rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                ${tratamiento.profesional.charAt(0)}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-800">${tratamiento.profesional}</p>
+                                ${tratamiento.especialidad ? `
+                                    <p class="text-sm text-slate-600">${tratamiento.especialidad}</p>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nota informativa -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div class="flex gap-3">
+                            <i data-lucide="info" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                            <div class="text-sm text-blue-800">
+                                <p class="font-medium mb-1">Información Importante</p>
+                                <p>Para agendar este tratamiento o solicitar más información, contacta a recepción. Los precios pueden variar según evaluación personalizada.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="border-t border-slate-200 p-4 bg-slate-50 flex gap-3 justify-end">
+                    <button onclick="closeTratamientoModal()" 
+                            class="px-6 py-2.5 bg-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-300 transition-colors">
+                        Cerrar
+                    </button>
+                    <button class="px-6 py-2.5 bg-gradient-to-r ${gradiente} text-white rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        Agendar Cita
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function initTratamientosContent() {
@@ -256,5 +441,12 @@ function initTratamientosContent() {
 
             updateTratamientoResults();
         };
+    });
+
+    // Cerrar modal con tecla Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeTratamientoModal();
+        }
     });
 }
