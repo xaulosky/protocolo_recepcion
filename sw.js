@@ -1,6 +1,6 @@
 // Service Worker para PWA - Cialo Hub
-const CACHE_NAME = 'cialo-hub-v1.3.0';
-const RUNTIME_CACHE = 'cialo-hub-runtime-v1.3.0';
+const CACHE_NAME = 'cialo-hub-v1.9.0';
+const RUNTIME_CACHE = 'cialo-hub-runtime-v1.9.0';
 
 // Archivos esenciales para cachear durante la instalación
 const ESSENTIAL_FILES = [
@@ -25,6 +25,10 @@ const ESSENTIAL_FILES = [
     '/js/components/ConsentSignature.js',
     '/js/components/ProfesionalesContent.js',
     '/js/components/BoxesContent.js',
+    '/js/components/ConsultasContent.js',
+    '/js/components/PresupuestosContent.js',
+    '/js/components/TratamientosContent.js',
+    '/js/tratamientosData.js',
     '/js/components/SearchResults.js',
     '/manifest.json'
 ];
@@ -38,7 +42,7 @@ const CDN_RESOURCES = [
 
 // Instalación del Service Worker
 self.addEventListener('install', (event) => {
-    console.log('[SW] Instalando Service Worker v3.1.0...');
+    console.log('[SW] Instalando Service Worker v1.4.0...');
 
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -71,14 +75,14 @@ self.addEventListener('install', (event) => {
             })
             .then(() => {
                 console.log('[SW] Service Worker instalado correctamente');
-                return self.skipWaiting(); // Activar inmediatamente
+                // NO hacer skipWaiting() aquí - esperar confirmación del usuario
             })
     );
 });
 
 // Activación del Service Worker
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activando Service Worker v3.1.0...');
+    console.log('[SW] Activando Service Worker v1.4.0...');
 
     event.waitUntil(
         caches.keys()

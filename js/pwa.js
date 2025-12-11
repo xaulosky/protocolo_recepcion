@@ -385,7 +385,7 @@ class PWAManager {
         document.getElementById('pwa-update-btn').addEventListener('click', () => {
             this.applyUpdate();
         });
-        
+
         // Event listener para descartar
         document.getElementById('pwa-update-dismiss').addEventListener('click', () => {
             notification.classList.add('hiding');
@@ -404,6 +404,20 @@ class PWAManager {
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 window.location.reload();
             });
+        } else {
+            // Si no hay SW waiting, forzar recarga limpia
+            console.log('[PWA] No hay SW waiting, forzando recarga limpia...');
+
+            // Limpiar caches y recargar
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    Promise.all(names.map(name => caches.delete(name))).then(() => {
+                        window.location.reload(true);
+                    });
+                });
+            } else {
+                window.location.reload(true);
+            }
         }
     }
 

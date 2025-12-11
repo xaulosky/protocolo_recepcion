@@ -1238,5 +1238,128 @@ const profesionalesData = [
         pendientesAdministrativos: [
             'Preparar modelo de consentimiento informado'
         ]
+    },
+    {
+        id: 'keren-matus',
+        nombreCompleto: 'Keren Matus',
+        especialidad: 'Cosmetóloga - Remodelación Corporal',
+        telefono: '',
+        email: '',
+        disponibilidad: {
+            dias: ['Lunes a Sábado'],
+            horario: 'Según agenda',
+            frecuencia: 'Semanal',
+            flexibilidad: 'Sí'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Depilación Láser Soprano Titanium',
+                    descripcion: 'Depilación láser con tecnología Soprano Titanium de triple longitud de onda.',
+                    duracion: 'Variable según zona',
+                    espacio: 'Box corporal'
+                },
+                {
+                    nombre: 'Criolipólisis Clatuu Alpha',
+                    descripcion: 'Tratamiento de criolipólisis 360° para reducción de grasa localizada.',
+                    duracion: '60 min por cabezal',
+                    espacio: 'Box corporal'
+                },
+                {
+                    nombre: 'HIFU Corporal Ultraformer III',
+                    descripcion: 'Ultrasonido focalizado para tensado y reafirmación corporal.',
+                    duracion: '60-90 min',
+                    espacio: 'Box corporal'
+                },
+                {
+                    nombre: 'Morpheus8 Corporal',
+                    descripcion: 'Radiofrecuencia fraccionada con microagujas para flacidez y estrías.',
+                    duracion: '45-60 min',
+                    espacio: 'Box corporal'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: false,
+            insumosRequeridos: ['Gel conductor', 'Gasas', 'Guantes'],
+            equiposCriticos: ['Soprano Titanium', 'Clatuu Alpha', 'Ultraformer III', 'Morpheus8'],
+            espacioEspecial: 'Box corporal'
+        }
+    },
+    {
+        id: 'susana-pereira',
+        nombreCompleto: 'Susana Pereira',
+        especialidad: 'Cosmetóloga - Depilación Láser',
+        telefono: '',
+        email: '',
+        disponibilidad: {
+            dias: ['Lunes a Sábado'],
+            horario: 'Según agenda',
+            frecuencia: 'Semanal',
+            flexibilidad: 'Sí'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Depilación Láser Soprano Titanium',
+                    descripcion: 'Depilación láser con tecnología Soprano Titanium de triple longitud de onda para todo tipo de piel.',
+                    duracion: 'Variable según zona',
+                    espacio: 'Box depilación'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: false,
+            insumosRequeridos: ['Gel conductor', 'Gasas', 'Guantes'],
+            equiposCriticos: ['Soprano Titanium'],
+            espacioEspecial: 'Box depilación'
+        }
+    },
+    {
+        id: 'mariane-kiss',
+        nombreCompleto: 'Mariane Kiss',
+        especialidad: 'Médico Estética Facial',
+        telefono: '',
+        email: '',
+        disponibilidad: {
+            dias: ['Según agenda'],
+            horario: 'Flexible',
+            frecuencia: 'Semanal',
+            flexibilidad: 'Sí'
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Toxina Botulínica',
+                    descripcion: 'Aplicación de toxina botulínica para arrugas de expresión.',
+                    duracion: '20-45 min',
+                    espacio: 'Box facial'
+                },
+                {
+                    nombre: 'Rellenos con Ácido Hialurónico',
+                    descripcion: 'Rellenos faciales para labios, pómulos, mentón, ojeras.',
+                    duracion: '30-45 min',
+                    espacio: 'Box facial'
+                },
+                {
+                    nombre: 'Bioestimuladores',
+                    descripcion: 'Sculptra, Ellansé para estimulación de colágeno.',
+                    duracion: '45-60 min',
+                    espacio: 'Box facial'
+                },
+                {
+                    nombre: 'Hilos Tensores',
+                    descripcion: 'Hilos tensores PDO para lifting sin cirugía.',
+                    duracion: '60-90 min',
+                    espacio: 'Box facial'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: false,
+            insumosRequeridos: ['Anestesia tópica', 'Agujas', 'Jeringas', 'Gasas estériles'],
+            equiposCriticos: [],
+            espacioEspecial: 'Box facial'
+        }
     }
 ];

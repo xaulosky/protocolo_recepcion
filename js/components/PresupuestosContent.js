@@ -344,6 +344,7 @@ function agregarTratamientoSeleccionado() {
     presupuestoState.items.push({
         id: ++itemIdCounter,
         nombre: tratamientoSeleccionado.nombre,
+        descripcion: tratamientoSeleccionado.descripcion,
         cantidad,
         valorUnitario
     });
@@ -364,34 +365,25 @@ function renderPresupuestoItems() {
     }
 
     return `
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead>
-                    <tr class="text-left text-sm text-slate-500 border-b border-slate-200">
-                        <th class="pb-2 font-medium">Tratamiento</th>
-                        <th class="pb-2 font-medium text-center">Cant.</th>
-                        <th class="pb-2 font-medium text-right">V. Unit.</th>
-                        <th class="pb-2 font-medium text-right">Subtotal</th>
-                        <th class="pb-2 w-10"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${presupuestoState.items.map(item => `
-                        <tr class="border-b border-slate-100 last:border-0">
-                            <td class="py-3 text-slate-800">${item.nombre}</td>
-                            <td class="py-3 text-center text-slate-600">${item.cantidad}</td>
-                            <td class="py-3 text-right text-slate-600">$${formatNumber(item.valorUnitario)}</td>
-                            <td class="py-3 text-right font-medium text-slate-800">$${formatNumber(item.cantidad * item.valorUnitario)}</td>
-                            <td class="py-3">
-                                <button onclick="eliminarItemPresupuesto(${item.id})" 
-                                    class="text-red-400 hover:text-red-600 transition-colors p-1">
-                                    <i data-lucide="x" class="w-4 h-4"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+        <div class="space-y-3">
+            ${presupuestoState.items.map(item => `
+                <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-grow min-w-0">
+                            <div class="font-medium text-slate-800">${item.nombre}</div>
+                            ${item.descripcion ? `<div class="text-xs text-slate-500 mt-1 line-clamp-2">${item.descripcion}</div>` : ''}
+                        </div>
+                        <button onclick="eliminarItemPresupuesto(${item.id})" 
+                            class="text-red-400 hover:text-red-600 transition-colors p-1 flex-shrink-0">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-200 text-sm">
+                        <span class="text-slate-500">${item.cantidad > 1 ? `${item.cantidad} sesiones x $${formatNumber(item.valorUnitario)}` : ''}</span>
+                        <span class="font-bold text-emerald-600">$${formatNumber(item.cantidad * item.valorUnitario)}</span>
+                    </div>
+                </div>
+            `).join('')}
         </div>
     `;
 }
@@ -493,10 +485,14 @@ function generarTextoPresupuesto() {
 
     presupuestoState.items.forEach(item => {
         const subtotalItem = item.cantidad * item.valorUnitario;
+        texto += `\n✨ *${item.nombre}*\n`;
+        if (item.descripcion) {
+            texto += `${item.descripcion}\n`;
+        }
         if (item.cantidad > 1) {
-            texto += `• ${item.nombre}\n  ${item.cantidad} x $${formatNumber(item.valorUnitario)} = $${formatNumber(subtotalItem)}\n`;
+            texto += `${item.cantidad} x $${formatNumber(item.valorUnitario)} = *$${formatNumber(subtotalItem)}*\n`;
         } else {
-            texto += `• ${item.nombre}: $${formatNumber(subtotalItem)}\n`;
+            texto += `*Valor: $${formatNumber(subtotalItem)}*\n`;
         }
     });
 
@@ -513,8 +509,15 @@ function generarTextoPresupuesto() {
         texto += `\n📝 *Notas:* ${presupuestoState.notas}\n`;
     }
 
-    texto += `\n✅ Presupuesto válido por 30 días\n`;
-    texto += `📍 Clínica Cialo - Los Ángeles`;
+    texto += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+    texto += `📋 *CONDICIONES:*\n`;
+    texto += `• Presupuesto válido por 30 días\n`;
+    texto += `• Exclusivo e intransferible para el paciente indicado\n`;
+    texto += `• Valores en pesos chilenos\n`;
+    texto += `• Formas de pago: efectivo, débito, crédito\n`;
+    texto += `• Cancelación con menos de 24 hrs requiere abono para reagendar\n`;
+    texto += `\n📍 Clínica Cialo - Los Ángeles, Chile\n`;
+    texto += `📞 +56 9 8202 8473`;
 
     return texto;
 }
@@ -584,7 +587,12 @@ function imprimirPresupuesto() {
     const subtotal = presupuestoState.items.reduce((acc, item) => acc + (item.cantidad * item.valorUnitario), 0);
     const descuentoMonto = subtotal * (presupuestoState.descuento / 100);
     const total = subtotal - descuentoMonto;
-    const fecha = new Date().toLocaleDateString('es-CL');
+    const fecha = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Calcular fecha de vigencia (15 días)
+    const vigencia = new Date();
+    vigencia.setDate(vigencia.getDate() + 15);
+    const fechaVigencia = vigencia.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
 
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
@@ -593,83 +601,188 @@ function imprimirPresupuesto() {
         <head>
             <title>Presupuesto - Clínica Cialo</title>
             <style>
-                body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-                .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #10b981; padding-bottom: 20px; }
-                .header h1 { color: #10b981; margin: 0; }
-                .header p { color: #666; margin: 5px 0; }
-                .info { margin-bottom: 20px; }
-                .info p { margin: 5px 0; }
-                table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-                th { background: #f8fafc; font-weight: 600; }
-                .text-right { text-align: right; }
-                .total-row { font-weight: bold; font-size: 1.2em; background: #ecfdf5; }
-                .notes { background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px; }
-                .footer { margin-top: 40px; text-align: center; color: #666; font-size: 0.9em; }
-                @media print { body { padding: 20px; } }
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px 40px; max-width: 800px; margin: 0 auto; color: #1d1d1b; background: white; font-size: 11px; line-height: 1.4; }
+                
+                .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #d4c1a0; }
+                .header-logo img { max-width: 120px; }
+                .header-contact { text-align: center; color: #4f4f51; font-size: 10px; }
+                .header-contact a { color: #1d1d1b; text-decoration: none; }
+                .header-address { text-align: right; color: #4f4f51; font-size: 10px; }
+                
+                .main-content { display: flex; justify-content: space-between; margin-bottom: 20px; }
+                .client-info { width: 45%; }
+                .client-info p { margin: 2px 0; font-size: 11px; }
+                .client-info .label { color: #666; font-size: 10px; text-transform: uppercase; }
+                
+                .doc-info { width: 50%; text-align: right; }
+                .doc-title { font-size: 32px; font-weight: 300; color: #1d1d1b; letter-spacing: 2px; margin-bottom: 15px; }
+                .doc-dates { display: flex; justify-content: flex-end; gap: 30px; }
+                .doc-dates div { text-align: left; }
+                .doc-dates .label { color: #666; font-size: 9px; text-transform: uppercase; }
+                .doc-dates .value { font-size: 11px; color: #1d1d1b; }
+                
+                .items-table { width: 100%; margin: 20px 0 15px 0; border-collapse: collapse; }
+                .items-table th { background: #d4c1a0; color: #1d1d1b; padding: 8px 10px; text-align: left; font-weight: 600; font-size: 10px; text-transform: uppercase; }
+                .items-table th:last-child, .items-table td:last-child { text-align: right; }
+                .items-table th:nth-child(2), .items-table td:nth-child(2) { text-align: center; width: 80px; }
+                .items-table td { padding: 10px; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
+                .items-table .item-name { font-weight: 500; }
+                .items-table .item-details { font-size: 10px; color: #666; margin-top: 3px; }
+                
+                .totals-section { display: flex; justify-content: space-between; align-items: flex-start; margin: 20px 0; padding-top: 10px; border-top: 1px solid #d4c1a0; }
+                .savings { font-size: 10px; color: #666; font-style: italic; }
+                .totals { text-align: right; width: 250px; }
+                .totals-row { display: flex; justify-content: space-between; padding: 4px 0; }
+                .totals-row.total { font-size: 16px; font-weight: 600; border-top: 2px solid #1d1d1b; padding-top: 8px; margin-top: 5px; }
+                .totals-row.discount { color: #d4c1a0; }
+                
+                .conditions { margin: 20px 0; }
+                .conditions-title { font-weight: 600; font-size: 11px; margin-bottom: 8px; text-decoration: underline; }
+                .conditions ol { padding-left: 15px; color: #4f4f51; font-size: 10px; }
+                .conditions li { margin: 3px 0; }
+                
+                .payment-info { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e5e5; }
+                .payment-title { font-weight: 600; font-size: 10px; text-transform: uppercase; color: #666; margin-bottom: 8px; }
+                .payment-methods { display: flex; gap: 15px; margin-bottom: 12px; flex-wrap: wrap; }
+                .payment-method { display: flex; align-items: center; gap: 5px; background: #f5f5f5; padding: 6px 12px; border-radius: 6px; font-size: 11px; }
+                .method-icon { font-size: 14px; }
+                .payment-details { font-size: 10px; color: #1d1d1b; background: #fafafa; padding: 10px; border-radius: 6px; border-left: 3px solid #d4c1a0; }
+                .payment-details p { margin: 2px 0; }
+                
+                @media print { 
+                    body { padding: 20px 30px; }
+                    .items-table th { background: #d4c1a0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
             </style>
         </head>
         <body>
             <div class="header">
-                <h1>CLÍNICA CIALO</h1>
-                <p>Presupuesto de Tratamientos</p>
-                <p>Fecha: ${fecha}</p>
+                <div class="header-logo">
+                    <img src="assets/logo-cialo.png" alt="Clínica Cialo">
+                </div>
+                <div class="header-contact">
+                    +56 9 8202 8473<br>
+                    contacto@cialo.cl
+                </div>
+                <div class="header-contact">
+                    <a href="http://www.cialo.cl">www.cialo.cl</a><br>
+                    @cialo.cl
+                </div>
+                <div class="header-address">
+                    Bulnes 220, oficina 509<br>
+                    Los Ángeles Chile
+                </div>
             </div>
 
-            ${presupuestoState.paciente.nombre ? `
-                <div class="info">
-                    <p><strong>Paciente:</strong> ${presupuestoState.paciente.nombre}</p>
-                    ${presupuestoState.paciente.rut ? `<p><strong>RUT:</strong> ${presupuestoState.paciente.rut}</p>` : ''}
-                    ${presupuestoState.paciente.telefono ? `<p><strong>Teléfono:</strong> ${presupuestoState.paciente.telefono}</p>` : ''}
-                    ${presupuestoState.paciente.email ? `<p><strong>Email:</strong> ${presupuestoState.paciente.email}</p>` : ''}
+            <div class="main-content">
+                <div class="client-info">
+                    <p class="label">Cliente:</p>
+                    <p><strong>${presupuestoState.paciente.nombre || 'Sin especificar'}</strong></p>
+                    ${presupuestoState.paciente.rut ? `<p>${presupuestoState.paciente.rut}</p>` : ''}
+                    ${presupuestoState.paciente.email ? `<p>${presupuestoState.paciente.email}</p>` : ''}
+                    ${presupuestoState.paciente.telefono ? `<p>${presupuestoState.paciente.telefono}</p>` : ''}
                 </div>
-            ` : ''}
+                <div class="doc-info">
+                    <div class="doc-title">PRESUPUESTO</div>
+                    <div class="doc-dates">
+                        <div>
+                            <p class="label">Fecha:</p>
+                            <p class="value">${fecha}</p>
+                        </div>
+                        <div>
+                            <p class="label">Duración:</p>
+                            <p class="value">${fechaVigencia}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <table>
+            <table class="items-table">
                 <thead>
                     <tr>
-                        <th>Tratamiento</th>
-                        <th class="text-right">Cantidad</th>
-                        <th class="text-right">Valor Unitario</th>
-                        <th class="text-right">Subtotal</th>
+                        <th>Descripción</th>
+                        <th>Sesiones</th>
+                        <th>Valor</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${presupuestoState.items.map(item => `
                         <tr>
-                            <td>${item.nombre}</td>
-                            <td class="text-right">${item.cantidad}</td>
-                            <td class="text-right">$${formatNumber(item.valorUnitario)}</td>
-                            <td class="text-right">$${formatNumber(item.cantidad * item.valorUnitario)}</td>
+                            <td>
+                                <div class="item-name">${item.nombre}</div>
+                                ${item.descripcion ? `<div class="item-details">${item.descripcion}</div>` : ''}
+                            </td>
+                            <td>${item.cantidad}</td>
+                            <td>$${formatNumber(item.cantidad * item.valorUnitario)}</td>
                         </tr>
                     `).join('')}
-                    <tr>
-                        <td colspan="3" class="text-right"><strong>Subtotal:</strong></td>
-                        <td class="text-right">$${formatNumber(subtotal)}</td>
-                    </tr>
-                    ${presupuestoState.descuento > 0 ? `
-                        <tr>
-                            <td colspan="3" class="text-right" style="color: #10b981;"><strong>Descuento (${presupuestoState.descuento}%):</strong></td>
-                            <td class="text-right" style="color: #10b981;">-$${formatNumber(descuentoMonto)}</td>
-                        </tr>
-                    ` : ''}
-                    <tr class="total-row">
-                        <td colspan="3" class="text-right">TOTAL:</td>
-                        <td class="text-right">$${formatNumber(total)}</td>
-                    </tr>
                 </tbody>
             </table>
 
-            ${presupuestoState.notas ? `
-                <div class="notes">
-                    <strong>Notas:</strong><br>
-                    ${presupuestoState.notas}
+            <div class="totals-section">
+                <div class="savings">
+                    ${presupuestoState.descuento > 0 ? `Ahorro vs. pagar por separado: $${formatNumber(descuentoMonto)} (${presupuestoState.descuento}% descuento)` : ''}
                 </div>
-            ` : ''}
+                <div class="totals">
+                    <div class="totals-row">
+                        <span>SUBTOTAL</span>
+                        <span>$${formatNumber(subtotal)}</span>
+                    </div>
+                    ${presupuestoState.descuento > 0 ? `
+                        <div class="totals-row discount">
+                            <span>DESCUENTO</span>
+                            <span>-$${formatNumber(descuentoMonto)}</span>
+                        </div>
+                    ` : ''}
+                    <div class="totals-row total">
+                        <span>TOTAL</span>
+                        <span>$${formatNumber(total)}</span>
+                    </div>
+                </div>
+            </div>
 
-            <div class="footer">
-                <p>Este presupuesto tiene una validez de 30 días.</p>
-                <p>Clínica Cialo - Los Ángeles, Chile</p>
+            ${presupuestoState.notas ? `<p style="margin-bottom: 15px; font-size: 10px;"><strong>Notas:</strong> ${presupuestoState.notas}</p>` : ''}
+
+            <div class="conditions">
+                <p class="conditions-title">Condiciones</p>
+                <ol>
+                    <li>Vigencia del presupuesto: 15 días desde la fecha de emisión.</li>
+                    <li>Agendamiento sujeto a disponibilidad. Pago por sesión o por plan.</li>
+                    <li>Este documento no constituye diagnóstico ni indicación definitiva de tratamiento; el plan puede ajustarse tras evaluación clínica.</li>
+                    <li>Valores no incluyen medicamentos/insumos postprocedimiento adicionales ni procedimientos complementarios fuera de este presupuesto.</li>
+                    <li>Política de cambios y reprogramaciones según normativa interna de Clínica Cialo.</li>
+                </ol>
+            </div>
+
+            <div class="payment-info">
+                <p class="payment-title">Métodos de Pago:</p>
+                <div class="payment-methods">
+                    <div class="payment-method">
+                        <span class="method-icon">💵</span>
+                        <span>Efectivo</span>
+                    </div>
+                    <div class="payment-method">
+                        <span class="method-icon">💳</span>
+                        <span>Débito</span>
+                    </div>
+                    <div class="payment-method">
+                        <span class="method-icon">💳</span>
+                        <span>Crédito</span>
+                    </div>
+                    <div class="payment-method">
+                        <span class="method-icon">🏦</span>
+                        <span>Transferencia</span>
+                    </div>
+                </div>
+                <div class="payment-details">
+                    <p><strong>Datos para Transferencia:</strong></p>
+                    <p>Centro Médico Cialo SPA</p>
+                    <p>RUT: 78.155.814-1</p>
+                    <p>Cuenta Corriente Banco Santander</p>
+                    <p>Nº 0-000-9779419-7</p>
+                    <p>contacto@cialo.cl</p>
+                </div>
             </div>
         </body>
         </html>
