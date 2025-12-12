@@ -55,6 +55,15 @@ const tratamientosProfesionalesData = [
     { tratamientoId: 'blefaroplastia-laser', profesionalId: 'nicolas-laucirica' },
     { tratamientoId: 'hydrafacial', profesionalId: 'nicolas-laucirica' },
 
+    // ==================== DRA. MARIANE KISS - Estética Facial ====================
+    { tratamientoId: 'toxina-tercio-superior', profesionalId: 'mariane-kiss' },
+    { tratamientoId: 'toxina-full-face', profesionalId: 'mariane-kiss' },
+    { tratamientoId: 'labios-ah', profesionalId: 'mariane-kiss' },
+    { tratamientoId: 'sculptra', profesionalId: 'mariane-kiss' },
+    { tratamientoId: 'adn-salmon', profesionalId: 'mariane-kiss' },
+    { tratamientoId: 'adn-salmon-fullface', profesionalId: 'mariane-kiss' },
+    { tratamientoId: 'hilos-tensores', profesionalId: 'mariane-kiss' },
+
     // ==================== KEREN MATUS - Kinesiología Dermatofuncional ====================
     { tratamientoId: 'exilis-facial', profesionalId: 'keren-matus' },
     { tratamientoId: 'exilis-corporal', profesionalId: 'keren-matus' },
@@ -102,6 +111,9 @@ const tratamientosProfesionalesData = [
     { tratamientoId: 'laser-co2-vaginal', profesionalId: 'stefania-kuncar' },
     { tratamientoId: 'consulta-matrona', profesionalId: 'stefania-kuncar' },
     { tratamientoId: 'peeling-intimo', profesionalId: 'stefania-kuncar' },
+
+    // ==================== DRA. MARÍA LAURA VILLARROEL - Ginecoestética ====================
+    { tratamientoId: 'prp-dermapen-vulvar', profesionalId: 'maria-villarroel' },
 
     // ==================== DR. LUIS PÉREZ - Cirugía Maxilofacial ====================
     { tratamientoId: 'bichectomia', profesionalId: 'luis-perez' },

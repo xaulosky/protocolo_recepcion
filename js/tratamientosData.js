@@ -11,16 +11,16 @@ const tratamientosData = [
         subcategoria: 'Toxina Botulínica',
         nombre: 'Toxina Botulínica Tercio Superior Facial',
         descripcion: 'Procedimiento inyectable que utiliza toxina botulínica tipo A para relajar temporalmente los músculos responsables de arrugas dinámicas del tercio superior (frente, glabela/entrecejo y líneas perioculares). Reduce líneas de expresión, suaviza la apariencia del rostro y previene el envejecimiento prematuro. Dirigido a mujeres y hombres que buscan un resultado natural, preventivo o correctivo, con seguridad y respaldo científico.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirujano Dentista - Estética Facial',
-        valorDesde: 210000,
-        valorFidelizacion: 189000,
-        valorHasta: null,
+        profesional: 'Dr. Nicolás Laucirica / Dra. Mariane Kiss',
+        especialidad: 'Estética Facial',
+        valorDesde: 179000,
+        valorHasta: 210000,
         duracion: '20 min',
         sesiones: '1 sesión (efecto 4-6 meses)',
         protocolo: 'Repetir cada 4–6 meses. Control a los 10–14 días para ajustes. Uso preventivo en pacientes jóvenes.',
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        notas: '💰 PRECIOS POR PROFESIONAL:\n• Dr. Nicolás Laucirica: $210.000 (Fidelización: $189.000)\n• Dra. Mariane Kiss: $179.000'
     },
     {
         id: 'toxina-bruxismo',
@@ -59,15 +59,16 @@ const tratamientosData = [
         subcategoria: 'Toxina Botulínica',
         nombre: 'Toxina Botulínica Full Face',
         descripcion: 'Tratamiento integral que utiliza toxina botulínica tipo A para relajar selectivamente los músculos responsables de arrugas dinámicas en todo el rostro. Incluye tercio superior (frente, entrecejo, patitas de gallo) y zonas avanzadas como líneas de conejo (bunny lines), mentonianos, depresor del ángulo de la boca (DAO) para suavizar aspecto de tristeza, y puntos estratégicos en la línea mandibular (jowls) para mejorar definición. Dirigido a mujeres y hombres que buscan una armonización global y resultados naturales.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirujano Dentista - Estética Facial',
+        profesional: 'Dr. Nicolás Laucirica / Dra. Mariane Kiss',
+        especialidad: 'Estética Facial',
         valorDesde: 329000,
         valorHasta: null,
         duracion: '30 min',
         sesiones: '1 sesión (efecto 4-6 meses)',
         protocolo: 'Cada 4 a 6 meses según necesidad y grado de contracción muscular.',
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        notas: '💰 Mismo precio con ambos profesionales: $329.000'
     },
     {
         id: 'toxina-espasmos-paralisis',
@@ -106,16 +107,17 @@ const tratamientosData = [
         categoria: 'Facial',
         subcategoria: 'Ácido Hialurónico',
         nombre: 'Relleno de Labios con Ácido Hialurónico',
-        descripcion: 'Procedimiento inyectable que utiliza ácido hialurónico de alta calidad para definir el contorno labial, mejorar volumen, hidratar profundamente y armonizar la proporción entre labio superior e inferior. Permite corregir asimetrías, recuperar estructura perdida por envejecimiento y potenciar la naturalidad del rostro. Procedimiento realizado bajo anestesia local.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirujano Dentista - Estética Facial',
-        valorDesde: 240000,
-        valorHasta: null,
+        descripcion: 'Procedimiento inyectable que utiliza ácido hialurónico de alta calidad (Juvederm Allergan) para definir el contorno labial, mejorar volumen, hidratar profundamente y armonizar la proporción entre labio superior e inferior. Permite corregir asimetrías, recuperar estructura perdida por envejecimiento y potenciar la naturalidad del rostro. Procedimiento realizado bajo anestesia local.',
+        profesional: 'Dr. Nicolás Laucirica / Dra. Mariane Kiss',
+        especialidad: 'Estética Facial',
+        valorDesde: 180000,
+        valorHasta: 240000,
         duracion: '30 min',
         sesiones: '1 sesión (duración 10-14 meses)',
         protocolo: 'Control a los 10–14 días para evaluar integración y asimetrías.',
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        notas: '💰 PRECIOS POR PROFESIONAL:\n• Dr. Nicolás Laucirica: $240.000\n• Dra. Mariane Kiss: $180.000'
     },
     {
         id: 'menton-ah',
@@ -251,15 +253,16 @@ const tratamientosData = [
         subcategoria: 'Bioestimuladores',
         nombre: 'Sculptra®',
         descripcion: 'Bioestimulador avanzado compuesto por ácido poli-L-láctico (PLLA), diseñado para inducir la producción natural de colágeno tipo I y III. No actúa como un relleno inmediato, sino que estimula la capacidad regenerativa de la piel, mejorando firmeza, densidad dérmica, elasticidad y contorno facial a largo plazo. Indicado para rejuvenecimiento natural y progresivo del rostro y cuello.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirujano Dentista - Estética Facial',
-        valorDesde: 500000,
-        valorHasta: null,
+        profesional: 'Dr. Nicolás Laucirica / Dra. Mariane Kiss',
+        especialidad: 'Estética Facial',
+        valorDesde: 480000,
+        valorHasta: 500000,
         duracion: '30-40 min',
         sesiones: '2-3 sesiones separadas por 3 meses',
         protocolo: 'Mantención cada 6 meses. Resultado inicia a las 8–12 semanas, progresivo hasta los 9–12 meses.',
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        notas: '💰 PRECIOS POR PROFESIONAL:\n• Dr. Nicolás Laucirica: $500.000\n• Dra. Mariane Kiss: $480.000 - $500.000'
     },
     {
         id: 'radiesse',
@@ -298,15 +301,16 @@ const tratamientosData = [
         subcategoria: 'Bioregeneración',
         nombre: 'Polinucleótidos Perioculares / ADN de Salmón',
         descripcion: 'Tratamiento bioregenerativo que utiliza polinucleótidos purificados con alta capacidad de estimular fibroblastos, aumentar síntesis de colágeno y mejorar la hidratación profunda en el área periocular. Reduce apariencia de cansancio, atenúa líneas finas, disminuye laxitud leve y mejora textura. No rellena volumen: regenera la piel desde adentro.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirujano Dentista - Estética Facial',
+        profesional: 'Dr. Nicolás Laucirica / Dra. Mariane Kiss',
+        especialidad: 'Estética Facial',
         valorDesde: 139000,
         valorHasta: null,
         duracion: '30 min',
         sesiones: '3 sesiones separadas por 1 mes',
         protocolo: 'Resultados desde la segunda sesión. Mantención cada 6 meses según calidad de piel.',
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        notas: '💰 Mismo precio con ambos profesionales: $139.000'
     },
     {
         id: 'adn-salmon-fullface',
@@ -314,15 +318,16 @@ const tratamientosData = [
         subcategoria: 'Bioregeneración',
         nombre: 'Polinucleótidos Full Face / ADN de Salmón',
         descripcion: 'Tratamiento bioregenerativo avanzado que utiliza polinucleótidos purificados para mejorar globalmente la calidad de la piel del rostro. Estimula fibroblastos, aumenta síntesis de colágeno y elastina, mejora hidratación profunda y optimiza densidad dérmica. Complemento ideal a bioestimuladores estructurales (Sculptra, Radiesse) o tratamientos de tensado facial.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirujano Dentista - Estética Facial',
+        profesional: 'Dr. Nicolás Laucirica / Dra. Mariane Kiss',
+        especialidad: 'Estética Facial',
         valorDesde: 190000,
         valorHasta: null,
         duracion: '30 min',
         sesiones: '3 sesiones separadas por 1 mes',
         protocolo: 'Efecto progresivo que se potencia con el tiempo. Mantención cada 6 meses.',
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        notas: '💰 Mismo precio con ambos profesionales: $190.000'
     },
     {
         id: 'hilos-tensores',
@@ -330,14 +335,15 @@ const tratamientosData = [
         subcategoria: 'Hilos',
         nombre: 'Hilos Tensores y Revitalizantes',
         descripcion: 'Tratamiento de lifting sin cirugía mediante hilos de PDO (polidioxanona) o PLLA. Los hilos tensores reposicionan tejidos caídos (papada, mejillas, cejas), mientras los hilos revitalizantes estimulan colágeno mejorando la calidad de la piel. Procedimiento mínimamente invasivo con resultados inmediatos que mejoran progresivamente.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirujano Dentista - Estética Facial',
-        valorDesde: 350000,
+        profesional: 'Dr. Nicolás Laucirica / Dra. Mariane Kiss',
+        especialidad: 'Estética Facial',
+        valorDesde: 120000,
         valorHasta: 1200000,
         duracion: '45-60 min',
         sesiones: '1 sesión',
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        notas: '💰 PRECIOS POR PROFESIONAL:\n• Dr. Nicolás Laucirica (Tensores): $350.000 - $1.200.000\n• Dra. Mariane Kiss (Revitalizantes): $120.000 por pack de 10 hilos'
     },
     {
         id: 'exosomas',
@@ -1164,6 +1170,22 @@ const tratamientosData = [
         sesiones: '1 procedimiento',
         requiereEvaluacion: true,
         evaluacionGratuita: false
+    },
+    {
+        id: 'prp-dermapen-vulvar',
+        categoria: 'Ginecoestética',
+        subcategoria: 'Tratamiento Regenerativo',
+        nombre: 'Plasma Rico en Plaquetas con Dermapen Vulvar para Liquen Escleroso',
+        descripcion: 'Tratamiento regenerativo que combina Plasma Rico en Plaquetas (PRP) con microneedling mediante Dermapen en la zona vulvar para el manejo del liquen escleroso, una condición inflamatoria crónica de la piel genital. El PRP estimula la regeneración tisular, mejora la elasticidad y reduce la atrofia, mientras el Dermapen facilita la penetración de los factores de crecimiento. Ayuda a aliviar síntomas como prurito, dolor y cambios en la textura de la piel.',
+        profesional: 'Dra. María Laura Villarroel Reyes',
+        especialidad: 'Ginecóloga - Ginecoestética',
+        valorDesde: 110000,
+        valorHasta: null,
+        duracion: '45-60 min',
+        sesiones: '3-4 sesiones cada 4-6 semanas',
+        requiereEvaluacion: true,
+        evaluacionGratuita: false,
+        notas: 'Tratamiento innovador para liquen escleroso. Se requiere evaluación ginecológica previa.'
     },
     // ==================== CIRUGÍA MAXILOFACIAL - DR. LUIS PÉREZ ====================
     {
