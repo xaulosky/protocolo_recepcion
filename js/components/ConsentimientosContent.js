@@ -242,7 +242,7 @@ function renderAclaradoIntimoConsent(consent) {
         </h2>
 
         <!-- Autorización inicial -->
-        <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="mb-6">
             <p class="text-slate-700 leading-relaxed text-justify">
                 YO <span class="inline-block border-b-2 border-slate-400 min-w-[250px] px-2 font-medium">____________________________</span>, 
                 RUT <span class="inline-block border-b-2 border-slate-400 min-w-[150px] px-2 font-medium">__________________</span>, 
@@ -715,10 +715,7 @@ function printAclaradoIntimoConsent(printWindow, consent) {
                 }
                 
                 .auth-box {
-                    background: #f0f8ff;
-                    padding: 12px;
-                    border: 1px solid #4a90e2;
-                    border-radius: 4px;
+                    padding: 12px 0;
                     margin: 12px 0;
                     page-break-inside: avoid;
                 }
@@ -731,10 +728,7 @@ function printAclaradoIntimoConsent(printWindow, consent) {
                 }
                 
                 .med-item {
-                    background: #f8f8f8;
-                    padding: 8px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
+                    padding: 8px 0;
                     font-size: 10px;
                 }
                 
@@ -794,18 +788,12 @@ function printAclaradoIntimoConsent(printWindow, consent) {
                 }
                 
                 .highlight {
-                    background: #fff3cd;
-                    padding: 8px;
-                    border: 1px solid #ffc107;
-                    border-radius: 4px;
+                    padding: 8px 0;
                     margin: 8px 0;
                 }
                 
                 .warning {
-                    background: #f8d7da;
-                    padding: 8px;
-                    border: 1px solid #dc3545;
-                    border-radius: 4px;
+                    padding: 8px 0;
                     margin: 8px 0;
                     font-size: 10px;
                 }
