@@ -28,11 +28,13 @@ function ProfesionalesContent() {
                     id="profesionalSearchInput" 
                     placeholder="Buscar profesional por nombre, especialidad, servicio..."
                     class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all text-slate-800 placeholder-slate-400"
+                    oninput="handleProfesionalSearch(this.value)"
                 />
                 <i data-lucide="search" class="absolute left-3 top-3.5 text-purple-500 w-5 h-5"></i>
                 <button 
                     id="clearProfesionalSearchBtn" 
                     class="absolute right-3 top-3.5 text-slate-400 hover:text-purple-600 transition-colors hidden"
+                    onclick="clearProfesionalSearch()"
                 >
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
@@ -47,6 +49,7 @@ function ProfesionalesContent() {
                 <div class="flex gap-2">
                     <button 
                         id="viewModeList"
+                        onclick="changeViewMode('list')"
                         class="px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${profesionalViewMode === 'list' ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'}"
                         title="Vista de Lista"
                     >
@@ -55,6 +58,7 @@ function ProfesionalesContent() {
                     </button>
                     <button 
                         id="viewModeGrid"
+                        onclick="changeViewMode('grid')"
                         class="px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${profesionalViewMode === 'grid' ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'}"
                         title="Vista de Grid"
                     >
@@ -63,6 +67,7 @@ function ProfesionalesContent() {
                     </button>
                     <button 
                         id="viewModeCards"
+                        onclick="changeViewMode('cards')"
                         class="px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${profesionalViewMode === 'cards' ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 hover:bg-purple-50'}"
                         title="Vista de Tarjetas"
                     >
@@ -149,13 +154,13 @@ function renderListView(profesionales) {
                             <p class="text-xs sm:text-sm text-slate-600 truncate pr-2">${prof.especialidad}</p>
                             <div class="flex items-center gap-2 mt-1 sm:hidden">
                                 <i data-lucide="briefcase" class="w-3 h-3 text-slate-400"></i>
-                                <span class="text-xs text-slate-500">${prof.prestaciones.servicios.length} servicio${prof.prestaciones.servicios.length !== 1 ? 's' : ''}</span>
+                                <span class="text-xs text-slate-500">${getTratamientosByProfesional(prof.id).length} tratamiento${getTratamientosByProfesional(prof.id).length !== 1 ? 's' : ''}</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                             <div class="text-right hidden sm:block">
-                                <p class="text-xs text-slate-500">Servicios</p>
-                                <p class="font-bold text-purple-600">${prof.prestaciones.servicios.length}</p>
+                                <p class="text-xs text-slate-500">Tratamientos</p>
+                                <p class="font-bold text-purple-600">${getTratamientosByProfesional(prof.id).length}</p>
                             </div>
                             <button 
                                 onclick="showProfesionalDetails('${prof.id}')"
@@ -189,7 +194,7 @@ function renderGridView(profesionales) {
                         <p class="text-xs text-slate-600 mb-2 w-full truncate px-2">${prof.especialidad}</p>
                         <div class="flex items-center gap-2 text-xs text-slate-500">
                             <i data-lucide="briefcase" class="w-3 h-3"></i>
-                            <span>${prof.prestaciones.servicios.length} servicio${prof.prestaciones.servicios.length !== 1 ? 's' : ''}</span>
+                            <span>${getTratamientosByProfesional(prof.id).length} tratamiento${getTratamientosByProfesional(prof.id).length !== 1 ? 's' : ''}</span>
                         </div>
                     </div>
                     <div class="space-y-2 mb-3 sm:mb-4">
@@ -298,31 +303,36 @@ function renderProfesionalCard(profesional) {
                     </div>
                 </div>
 
-                <!-- Prestaciones Resumen -->
-                <div>
-                    <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
-                        <i data-lucide="clipboard-list" class="w-4 h-4 text-purple-600"></i>
-                        Servicios (${profesional.prestaciones.servicios.length})
-                    </h4>
-                    <div class="bg-purple-50 border border-purple-100 p-4 rounded-lg">
-                        <div class="space-y-2">
-                            ${profesional.prestaciones.servicios.slice(0, 3).map(servicio => {
-        const nombre = typeof servicio === 'string' ? servicio : servicio.nombre;
-        return `
-                                    <div class="flex items-start gap-2 text-sm text-purple-900">
-                                        <i data-lucide="check-circle" class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0"></i>
-                                        <span class="font-medium">${nombre}</span>
+                <!-- Tratamientos desde Tabla Relacional -->
+                ${(() => {
+            const tratamientos = getTratamientosByProfesional(profesional.id);
+            return `
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2 text-sm uppercase tracking-wide">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-purple-600"></i>
+                            Tratamientos (${tratamientos.length})
+                        </h4>
+                        <div class="bg-purple-50 border border-purple-100 p-4 rounded-lg">
+                            <div class="space-y-2">
+                                ${tratamientos.slice(0, 3).map(t => `
+                                    <div class="flex items-start justify-between gap-2 text-sm text-purple-900">
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0"></i>
+                                            <span class="font-medium">${t.nombre}</span>
+                                        </div>
+                                        <span class="text-purple-600 font-bold whitespace-nowrap">$${t.valorDesde?.toLocaleString('es-CL') || 'Consultar'}</span>
                                     </div>
-                                `;
-    }).join('')}
-                            ${profesional.prestaciones.servicios.length > 3 ? `
-                                <p class="text-xs text-purple-700 font-medium mt-2">
-                                    + ${profesional.prestaciones.servicios.length - 3} servicio(s) más
-                                </p>
-                            ` : ''}
+                                `).join('')}
+                                ${tratamientos.length > 3 ? `
+                                    <p class="text-xs text-purple-700 font-medium mt-2">
+                                        + ${tratamientos.length - 3} tratamiento(s) más
+                                    </p>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
-                </div>
+                    `;
+        })()}
 
                 ${tienePendientes ? `
                     <!-- Pendientes -->
@@ -452,31 +462,43 @@ function renderProfesionalFullDetails(profesional) {
                 </div>
             </div>
 
-            <!-- Servicios Detallados -->
-            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h3 class="font-bold text-purple-900 mb-3 flex items-center gap-2">
-                    <i data-lucide="clipboard-list" class="w-5 h-5 text-purple-600"></i>
-                    Servicios Detallados
-                </h3>
-                ${esArraySimple ? `
-                    <ul class="list-disc list-inside space-y-1 ml-2 text-sm text-purple-900">
-                        ${servicios.map(s => `<li>${s}</li>`).join('')}
-                    </ul>
-                ` : `
-                    <div class="space-y-4">
-                        ${servicios.map(servicio => `
-                            <div class="bg-white p-4 rounded-lg border border-purple-200">
-                                <h4 class="font-bold text-purple-900 mb-2">${servicio.nombre}</h4>
-                                <div class="space-y-1 text-sm text-purple-800">
-                                    ${servicio.duracion ? `<p><span class="font-bold">Duración:</span> ${servicio.duracion}</p>` : ''}
-                                    ${servicio.valor ? `<p><span class="font-bold">Valor:</span> ${servicio.valor}</p>` : ''}
-                                    ${servicio.notas ? `<p class="text-xs mt-2 p-2 bg-purple-100 rounded">${servicio.notas}</p>` : ''}
+            <!-- Tratamientos desde Tabla Relacional -->
+            ${(() => {
+            const tratamientos = getTratamientosByProfesional(profesional.id);
+            return `
+                <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <h3 class="font-bold text-purple-900 mb-3 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-purple-600"></i>
+                        Tratamientos (${tratamientos.length})
+                    </h3>
+                    ${tratamientos.length === 0 ? `
+                        <p class="text-sm text-purple-700">No hay tratamientos asignados a este profesional.</p>
+                    ` : `
+                        <div class="space-y-3">
+                            ${tratamientos.map(t => `
+                                <div class="bg-white p-4 rounded-lg border border-purple-200 hover:border-purple-400 transition-colors">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex-grow">
+                                            <h4 class="font-bold text-purple-900">${t.nombre}</h4>
+                                            <p class="text-xs text-purple-600 mb-2">${t.categoria} - ${t.subcategoria}</p>
+                                            <p class="text-sm text-purple-800 line-clamp-2">${t.descripcion}</p>
+                                        </div>
+                                        <div class="text-right flex-shrink-0">
+                                            <p class="font-bold text-lg text-emerald-600">$${t.valorDesde?.toLocaleString('es-CL') || 'Consultar'}</p>
+                                            ${t.valorHasta ? `<p class="text-xs text-slate-500">hasta $${t.valorHasta.toLocaleString('es-CL')}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4 mt-3 pt-3 border-t border-purple-100 text-xs text-purple-700">
+                                        <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${t.duracion}</span>
+                                        <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> ${t.sesiones}</span>
+                                    </div>
                                 </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `}
-            </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+                `;
+        })()}
 
             ${tienePendientes ? `
                 <!-- Pendientes -->
@@ -534,18 +556,13 @@ function filterProfesionales(searchTerm) {
         if (profesional.disponibilidad.dias.some(dia => dia.toLowerCase().includes(term))) return true;
         if (profesional.disponibilidad.horario.toLowerCase().includes(term)) return true;
 
-        // Buscar en servicios
-        const servicios = profesional.prestaciones.servicios;
-        if (Array.isArray(servicios)) {
-            if (typeof servicios[0] === 'string') {
-                if (servicios.some(serv => serv.toLowerCase().includes(term))) return true;
-            } else {
-                for (const servicio of servicios) {
-                    if (servicio.nombre && servicio.nombre.toLowerCase().includes(term)) return true;
-                    if (servicio.valor && servicio.valor.toLowerCase().includes(term)) return true;
-                    if (servicio.notas && servicio.notas.toLowerCase().includes(term)) return true;
-                }
-            }
+        // Buscar en tratamientos desde la tabla relacional
+        const tratamientos = getTratamientosByProfesional(profesional.id);
+        for (const t of tratamientos) {
+            if (t.nombre.toLowerCase().includes(term)) return true;
+            if (t.categoria.toLowerCase().includes(term)) return true;
+            if (t.subcategoria.toLowerCase().includes(term)) return true;
+            if (t.descripcion.toLowerCase().includes(term)) return true;
         }
 
         return false;
@@ -632,4 +649,33 @@ function updateProfesionalesView(searchTerm) {
     const viewMode = appState.getState().profesionalViewMode;
     container.innerHTML = renderProfesionales(searchTerm, viewMode);
     lucide.createIcons();
+
+    // Actualizar visibilidad del botón de limpiar
+    const clearBtn = document.getElementById('clearProfesionalSearchBtn');
+    if (clearBtn) {
+        clearBtn.classList.toggle('hidden', !searchTerm);
+    }
+}
+
+// ============================================================================
+// FUNCIONES GLOBALES PARA EVENTOS INLINE
+// ============================================================================
+
+/**
+ * Maneja la búsqueda de profesionales (llamada desde evento oninput)
+ */
+function handleProfesionalSearch(searchTerm) {
+    updateProfesionalesView(searchTerm);
+}
+
+/**
+ * Limpia la búsqueda de profesionales
+ */
+function clearProfesionalSearch() {
+    const searchInput = document.getElementById('profesionalSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    updateProfesionalesView('');
 }

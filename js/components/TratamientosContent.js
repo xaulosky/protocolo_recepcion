@@ -113,6 +113,16 @@ function renderTratamientosList() {
 }
 
 function formatPrecio(desde, hasta) {
+    // Si ambos son null, mostrar "Consultar"
+    if (desde === null && hasta === null) {
+        return 'Consultar';
+    }
+
+    // Si solo desde es null pero hay hasta
+    if (desde === null) {
+        return 'Hasta $' + hasta.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
     const formatNum = (n) => '$' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 
     if (hasta && hasta !== desde) {

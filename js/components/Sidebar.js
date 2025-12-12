@@ -9,7 +9,7 @@ const sidebarNavigation = {
         title: 'General',
         icon: 'clipboard-list',
         items: [
-            { id: 'base', label: 'Protocolo Base', icon: 'check-circle' },
+            { id: 'base', label: 'Inicio', icon: 'home' },
             { id: 'pagos', label: 'Pagos y Citas', icon: 'credit-card' },
             { id: 'suspension', label: 'Protocolo de Suspensión', icon: 'alert-triangle' }
         ]
@@ -56,10 +56,34 @@ function SidebarNavigation() {
     const state = appState.getState();
     const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos'];
     const isCollapsed = state.sidebarCollapsed || false;
+    const isActive = state.activeTab === 'base';
 
-    return Object.entries(sidebarNavigation).map(([key, category]) =>
+    // Botón fijo de Dashboard + categorías
+    const dashboardButton = `
+        <button 
+            onclick="appState.setState({activeTab: 'base'})"
+            class="w-full flex items-center gap-3 px-3 py-3 mb-3 rounded-xl transition-all ${isActive
+            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg'
+            : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+        }"
+        >
+            <div class="w-8 h-8 ${isActive ? 'bg-white/20' : 'bg-purple-200'} rounded-lg flex items-center justify-center">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+            </div>
+            ${!isCollapsed ? `
+                <div class="flex-1 text-left">
+                    <span class="font-semibold text-sm">Dashboard</span>
+                    <p class="text-xs ${isActive ? 'text-purple-200' : 'text-purple-500'}">Panel Principal</p>
+                </div>
+            ` : ''}
+        </button>
+    `;
+
+    const categories = Object.entries(sidebarNavigation).map(([key, category]) =>
         renderSidebarCategory(key, category, state.activeTab, expandedCategories, isCollapsed)
     ).join('');
+
+    return dashboardButton + categories;
 }
 
 /**

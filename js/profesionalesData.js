@@ -1506,5 +1506,117 @@ const profesionalesData = [
         pendientesAdministrativos: [
             'Preparar consentimientos informados para todos los procedimientos'
         ]
+    },
+    {
+        id: 'nicolas-laucirica',
+        nombreCompleto: 'Nicolás Laucirica Muñoz',
+        especialidad: 'Medicina Estética Facial',
+        rut: '18.155.817-2',
+        telefono: '+56 9 5130 2863',
+        email: 'dr.laucirica@gmail.com',
+        disponibilidad: {
+            dias: [
+                'Lunes a Viernes (08:30-19:30) - Los Ángeles',
+                'Miércoles (09:00-19:30) - Concepción',
+                'Sábado (08:00-14:30) - Los Ángeles'
+            ],
+            horario: 'Lunes a Viernes 08:30-19:30 (excepto Miércoles que atiende en Concepción 09:00-19:30) / Sábado 08:00-14:30',
+            frecuencia: 'Semanal',
+            flexibilidad: 'Sí',
+            ubicaciones: {
+                losAngeles: 'Lunes, Martes, Jueves, Viernes (08:30-19:30) y Sábado (08:00-14:30)',
+                concepcion: 'Miércoles (09:00-19:30)'
+            }
+        },
+        prestaciones: {
+            servicios: [
+                {
+                    nombre: 'Toxina Botulínica 1 Zona (Botox 1 Zona)',
+                    descripcion: 'Procedimiento inyectable con toxina botulínica tipo A dirigido a relajar un grupo muscular específico del rostro. Una "zona" corresponde a un área facial donde se trata un patrón muscular definido (ej.: frente, entrecejo, patitas de gallo, mentón, bunny lines, DAO, etc.). Reduce arrugas dinámicas y previene la formación de líneas estáticas. Ideal para pacientes que desean un ajuste focal, un tratamiento preventivo o mantener correcciones previas sin realizar un full face.',
+                    duracion: '30 min',
+                    espacio: 'Sala de procedimientos',
+                    insumos: 'Vial de toxina botulínica tipo A (marca autorizada por ISP), suero fisiológico para reconstitución, jeringas de 1 ml tipo insulina o tuberculina, agujas 30G–32G estériles, torundas con clorhexidina alcohólica al 2%, guantes desechables',
+                    valor: '$130.000',
+                    protocolo: 'Cada 4 a 6 meses según necesidad'
+                },
+                {
+                    nombre: 'Toxina Botulínica en Tercio Superior Facial',
+                    descripcion: 'Procedimiento inyectable que utiliza toxina botulínica tipo A para relajar temporalmente los músculos responsables de arrugas dinámicas del tercio superior (frente, glabela/entrecejo y líneas perioculares). Reduce líneas de expresión, suaviza la apariencia del rostro y previene el envejecimiento prematuro. Dirigido a mujeres y hombres que buscan un resultado natural, preventivo o correctivo, con seguridad y respaldo científico.',
+                    duracion: '20 min',
+                    espacio: 'Sala de procedimientos',
+                    insumos: 'Vial de toxina botulínica tipo A (marca autorizada por ISP), suero fisiológico para reconstitución, jeringas de 1 ml tipo insulina o tuberculina, agujas 30G–32G estériles, torundas con clorhexidina alcohólica al 2%, guantes desechables',
+                    valor: '$210.000 (Fidelización: $189.000)',
+                    protocolo: 'Cada 4-6 meses. Control a los 10-14 días para ajustes. Uso preventivo en pacientes jóvenes.'
+                }
+            ]
+        },
+        requisitosLogisticos: {
+            necesitaAsistente: false,
+            insumosRequeridos: [
+                'Vial de toxina botulínica tipo A (marca autorizada por ISP)',
+                'Suero fisiológico para reconstitución',
+                'Jeringas de 1 ml tipo insulina o tuberculina',
+                'Agujas 30G–32G estériles',
+                'Torundas con clorhexidina alcohólica al 2%',
+                'Guantes desechables'
+            ],
+            espacioEspecial: 'Box estándar',
+            notasEspeciales: 'Atiende en dos ubicaciones: Clínica Cialo Los Ángeles (mayoría de días) y Concepción (miércoles)'
+        },
+        pendientesAdministrativos: [
+            'Definir servicios específicos de Medicina Estética Facial',
+            'Establecer precios de prestaciones',
+            'Preparar consentimientos informados'
+        ]
+    },
+    {
+        id: 'keren-matus',
+        nombreCompleto: 'Keren Hapuc Matus Islas',
+        especialidad: 'Kinesióloga Dermatofuncional',
+        subespecialidad: 'Rehabilitación Kinésica Post Quirúrgica de Cirugía Plástica y Reconstructiva',
+        rut: '19.716.896-K',
+        telefono: '+56 9 3136 5173',
+        email: 'kerencialo2025@gmail.com',
+        emailAlternativo: 'klgakeren.matus@gmail.com',
+        disponibilidad: {
+            turno1: {
+                descripcion: 'Lunes a Viernes',
+                horarios: {
+                    lunesAJueves: '09:00-14:00, 16:00-20:00',
+                    viernes: '10:00-14:00, 16:00-20:00'
+                },
+                descanso: 'Sábado, Domingo, Lunes'
+            },
+            turno2: {
+                descripcion: 'Martes a Sábado',
+                horarios: {
+                    martesAViernes: '09:00-14:00, 16:00-20:00',
+                    sabado: '09:00-13:00, 14:00-18:00'
+                }
+            },
+            frecuencia: 'Semanal',
+            flexibilidad: true,
+            ubicaciones: ['Clínica Cialo Los Ángeles']
+        },
+        prestaciones: {
+            descripcionGeneral: 'Kinesiología Dermatofuncional especializada en rehabilitación post quirúrgica de cirugía plástica y reconstructiva. Tratamientos faciales y corporales con aparatología avanzada.',
+            servicios: []
+        },
+        requisitosLogisticos: {
+            insumosRequeridos: [
+                'Gel conductor',
+                'Guantes',
+                'Toallas húmedas',
+                'Alcohol desinfectante',
+                'Lápiz blanco marcador',
+                'Electrodos y cables según equipo'
+            ],
+            espacioEspecial: 'Box estándar',
+            asistenciaRequerida: 'TENS para preparación de box en agenda llena y para tratamientos Clatuu',
+            tiempoEntreSesiones: '10 minutos mínimo para limpieza/preparación',
+            controlPosterior: 'Recomendado control al mes del tratamiento (no obligatorio)',
+            notasEspeciales: 'Especializada en recuperación post quirúrgica. Requiere certificación de Kinesiólogo para equipos. Tiene consentimientos informados propios.'
+        },
+        pendientesAdministrativos: []
     }
 ];
