@@ -9,6 +9,12 @@ let consultaSearchTerm = '';
 let consultaViewMode = 'list';
 
 function ConsultasContent() {
+    // Debug: verificar cuántas consultas hay
+    console.log('[ConsultasContent] Total consultas cargadas:', typeof consultasData !== 'undefined' ? consultasData.length : 'consultasData NO DEFINIDO');
+    if (typeof consultasData !== 'undefined') {
+        console.log('[ConsultasContent] IDs:', consultasData.map(c => c.id));
+    }
+
     return `
         <div class="space-y-6">
             <!-- Header Info -->
@@ -117,14 +123,39 @@ function renderConsultasList() {
 // Vista Lista (detallada)
 function renderConsultaCard(consulta) {
     const profesionalesList = consulta.profesionales.map(p => `
-        <div class="flex items-start gap-2 py-2 border-b border-slate-100 last:border-0">
-            <i data-lucide="user" class="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0"></i>
-            <div class="min-w-0">
-                <div class="font-medium text-slate-800 text-sm">${p.nombre}</div>
-                <div class="text-xs text-slate-500">${p.especialidad}</div>
-                <div class="text-xs text-indigo-600 flex items-center gap-1 mt-1">
-                    <i data-lucide="clock" class="w-3 h-3"></i>
-                    ${p.disponibilidad}
+        <div class="py-3 border-b border-slate-100 last:border-0">
+            <div class="flex items-start gap-2">
+                <i data-lucide="user" class="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0"></i>
+                <div class="min-w-0 flex-grow">
+                    <div class="font-medium text-slate-800 text-sm">${p.nombre}</div>
+                    <div class="text-xs text-slate-500">${p.especialidad}</div>
+                    <div class="text-xs text-indigo-600 flex items-center gap-1 mt-1">
+                        <i data-lucide="clock" class="w-3 h-3"></i>
+                        ${p.disponibilidad}
+                    </div>
+                    ${p.tratamientos ? `
+                        <div class="mt-2">
+                            <div class="text-xs font-semibold text-purple-700 mb-1 flex items-center gap-1">
+                                <i data-lucide="stethoscope" class="w-3 h-3"></i>
+                                Tratamientos que evalúa:
+                            </div>
+                            <div class="flex flex-wrap gap-1">
+                                ${p.tratamientos.map(t => `
+                                    <span class="inline-flex items-center px-2 py-0.5 bg-purple-50 text-purple-700 rounded text-xs border border-purple-100">
+                                        ${t}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${p.condicionGratuidad ? `
+                        <div class="mt-2 flex items-start gap-1 p-2 rounded-md ${p.condicionGratuidad.includes('cualquier') ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}">
+                            <i data-lucide="badge-dollar-sign" class="w-4 h-4 ${p.condicionGratuidad.includes('cualquier') ? 'text-green-600' : 'text-amber-600'} flex-shrink-0 mt-0.5"></i>
+                            <span class="text-xs ${p.condicionGratuidad.includes('cualquier') ? 'text-green-700' : 'text-amber-700'} font-medium">
+                                ${p.condicionGratuidad}
+                            </span>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         </div>

@@ -12,7 +12,7 @@ const consultasData = [
         descripcion: 'Evaluación urológica integral centrada en el diagnóstico, prevención y tratamiento de patologías del tracto urinario masculino y femenino, y salud sexual masculina. Aborda desde condiciones benignas hasta procedimientos avanzados en urología funcional y estética genital. Incluye evaluación prostática, manejo de infecciones, disfunción eréctil, enfermedad de Peyronie, cistoscopía flexible, y planificación de cirugías como circuncisión, frenuloplastía, vasectomía y engrosamiento peneano con ácido hialurónico.',
         valor: '$50.000',
         duracion: '30-45 min',
-        reembolsable: true,
+        reembolsable: false,
         profesionales: [
             {
                 nombre: 'Dr. Frank Ulloa Carrasco',
@@ -40,11 +40,11 @@ const consultasData = [
         id: 'consulta-bariatrica',
         categoria: 'Cirugía Digestiva y Bariátrica',
         emoji: '⚖️',
-        nombre: 'Consulta Bariátrica Inicial',
+        nombre: 'Consulta Médica – Cirugía Bariátrica',
         descripcion: 'Evaluación integral para pacientes con obesidad o enfermedades metabólicas con posible resolución quirúrgica. Incluye historia clínica, análisis de comorbilidades y determinación de riesgo y perfil metabólico. Incorpora Calorimetría Indirecta (Q-NRG Max) para medir gasto energético y análisis de composición corporal de precisión con InBody 970. Se establece un plan preoperatorio multidisciplinario y protocolo de seguimiento postoperatorio.',
         valor: '$40.000',
         duracion: '45-60 min',
-        reembolsable: true,
+        reembolsable: false,
         profesionales: [
             {
                 nombre: 'Dr. Andrés Martínez Serrano',
@@ -103,12 +103,42 @@ const consultasData = [
             {
                 nombre: 'Dr. Nicolás Laucirica',
                 especialidad: 'Medicina Estética Facial Avanzada',
-                disponibilidad: 'Los Ángeles: L-Ma-J-V 08:30-19:30, Sáb 08:00-14:30 | Concepción: Mi 09:00-19:30'
+                disponibilidad: 'Los Ángeles: L-Ma-J-V 08:30-19:30, Sáb 08:00-14:30 | Concepción: Mi 09:00-19:30',
+                tratamientos: [
+                    // Tecnologías Láser (exclusivo Dr. Nicolás)
+                    'Láser CO₂ Resurfacing',
+                    'IPL (Rosácea, Manchas, Rejuvenecimiento)',
+                    'Láser Erbium',
+                    'Q-Switched (Manchas, Tatuajes)',
+                    'Morpheus 8 Facial',
+                    'HIFU Ultraformer III',
+                    // Armonización Facial (igual que Dra. Mariane)
+                    'Toxina Botulínica Tercio Superior',
+                    'Toxina Botulínica Full Face',
+                    'Relleno de Labios',
+                    'Relleno de Mentón',
+                    'Relleno de Pómulos',
+                    'Hilos Tensores',
+                    // Bioestimuladores
+                    'Sculptra',
+                    'Radiesse',
+                    'Polinucleótidos'
+                ],
+                condicionGratuidad: 'GRATUITA solo L-Ma-J-V a las 09:00, 12:00 y 15:00 hrs. Otros horarios: $30.000 (se descuenta del tratamiento)'
             },
             {
                 nombre: 'Dra. Mariane Kiss Molina',
                 especialidad: 'Armonización Orofacial',
-                disponibilidad: 'Miércoles y Jueves 10:00-19:00 hrs'
+                disponibilidad: 'Miércoles y Jueves 10:00-19:00 hrs',
+                tratamientos: [
+                    'Toxina Botulínica Tercio Superior',
+                    'Toxina Botulínica Full Face',
+                    'Relleno de Labios',
+                    'Relleno de Mentón',
+                    'Relleno de Pómulos',
+                    'Hilos Tensores'
+                ],
+                condicionGratuidad: 'GRATUITA en cualquier horario disponible'
             }
         ],
         tratamientosAsociados: [
@@ -191,7 +221,7 @@ const consultasData = [
         descripcion: 'Evaluación clínica especializada del cuero cabelludo y salud folicular para diagnóstico de alopecias. Incluye análisis de densidad y miniaturización con tricoscopio. Planificación terapéutica integral: Mesoterapia capilar, Plasma Rico en Plaquetas (PRP), Tricopat, Regenera (micrografting - única doctora en Chile), Dutasteride inyectable y evaluación para injerto capilar.',
         valor: '$40.000',
         duracion: '40-45 min',
-        reembolsable: true,
+        reembolsable: false,
         profesionales: [
             {
                 nombre: 'Dra. Javiera Paola Araya Medina',
@@ -208,7 +238,7 @@ const consultasData = [
             'Injerto de Cejas'
         ],
         requisitos: 'Traer exámenes hormonales si los tiene. Control: $20.000.',
-        politicaCancelacion: 'Consulta online disponible ($30.000). Cancelar con 24 horas.'
+        politicaCancelacion: 'Cancelar con 24 horas de anticipación.'
     },
     {
         id: 'consulta-ginecologia',
@@ -216,9 +246,9 @@ const consultasData = [
         emoji: '👩‍⚕️',
         nombre: 'Consulta Médica – Ginecología',
         descripcion: 'Atención integral en ginecología general, perimenopausia y menopausia. Enfoque avanzado en ginecología regenerativa, funcional y estética, evaluando indicaciones para Láser CO2 vaginal (atrofia, laxitud, incontinencia), Ninfoplastia y Lifting vulvar. Manejo de patologías frecuentes como trastornos del ciclo, dolor pélvico, infecciones y planificación reproductiva.',
-        valor: 'Consultar',
+        valor: '$40.000',
         duracion: '30-45 min',
-        reembolsable: true,
+        reembolsable: false,
         profesionales: [
             {
                 nombre: 'Dra. María Laura Villarroel Reyes',
@@ -243,7 +273,7 @@ const consultasData = [
         emoji: '🌸',
         nombre: 'Control Ginecológico con Matrona',
         descripcion: 'Atención integral en salud sexual y reproductiva con enfoque preventivo y educativo. Incluye control ginecológico (toma de PAP, VPH, examen de mamas), inserción/retiro de anticonceptivos (Implanon, Jadelle, DIU Mirena/Kyleena/Asertia, T de Cobre), consejería en planificación familiar, climaterio y menopausia. En ginecoestética, realiza Rejuvenecimiento íntimo con Láser CO2.',
-        valor: '$40.000',
+        valor: '$30.000',
         duracion: '30-40 min',
         reembolsable: false,
         profesionales: [
@@ -265,51 +295,51 @@ const consultasData = [
         requisitos: 'Control ginecológico: sin exámenes incluidos. PAP requiere citofijador.',
         politicaCancelacion: 'Cancelar con 24 horas de anticipación. Controles post-procedimiento incluidos.'
     },
-    {
-        id: 'consulta-enfermeria',
-        categoria: 'Enfermería Estética',
-        emoji: '💆',
-        nombre: 'Consulta Enfermería Estética',
-        descripcion: 'Evaluación clínica especializada para depilación láser y cuidados dermoestéticos. Revisión de fototipo, antecedentes y educación al paciente. Planificación de tratamientos de depilación láser (Soprano Titanium), limpiezas (Hydrafacial) y cuidados faciales, además de coordinación para procedimientos médicos.',
-        valor: 'GRATUITA',
-        duracion: '15-30 min',
-        reembolsable: false,
-        profesionales: [
-            {
-                nombre: 'EU. María Jesús Contreras Merino',
-                especialidad: 'Enfermera - Aparatología Estética',
-                disponibilidad: 'Lunes a Sábado (horario por confirmar)'
-            }
-        ],
-        tratamientosAsociados: [
-            'Depilación Láser Soprano Titanium',
-            'HydraFacial MD',
-            'Criolipólisis Clatuu Alpha',
-            'HIFU Corporal',
-            'Morpheus 8 Corporal'
-        ],
-        requisitos: 'Sin preparación especial. Para depilación: zona sin rasurar 24 hrs antes.',
-        politicaCancelacion: 'Evaluación gratuita. Cancelar con 24 horas de anticipación.'
-    },
+
     {
         id: 'evaluacion-corporal',
         categoria: 'Kinesiología Estética / Corporal',
         emoji: '🏋️',
         nombre: 'Evaluación Corporal Integral',
         descripcion: 'Valoración funcional y estética del contorno corporal. Diagnóstico de adiposidad localizada, flacidez, celulitis y estado del sistema linfático. Definición de protocolos personalizados utilizando tecnologías avanzadas (Scizer, Clatuu Alpha, Exilis Ultra 360, EmBody, Morpheus8 Body, Soprano Titanium) y manejo de postoperatorio de cirugía plástica (drenaje linfático, manejo de fibrosis).',
-        valor: '$30.000',
+        valor: 'GRATUITA',
         duracion: '30-45 min',
         reembolsable: false,
         profesionales: [
             {
                 nombre: 'Klga. Keren Hapuc Matus Islas',
                 especialidad: 'Kinesióloga Dermatofuncional',
-                disponibilidad: 'L-V 09:00-14:00 y 16:00-20:00'
+                disponibilidad: 'L-V 09:00-14:00 y 16:00-20:00',
+                tratamientos: [
+                    // Tratamientos corporales (igual que María Jesús)
+                    'Depilación Láser Soprano Titanium',
+                    'Criolipólisis Clatuu Alpha',
+                    'Scizer - HIFU Corporal',
+                    'Morpheus 8 Corporal',
+                    'Exilis Corporal',
+                    'EmBody - Tonificación Muscular',
+                    'HydraFacial MD',
+                    'Postquirúrgicos y Drenaje Linfático'
+                ]
             },
             {
                 nombre: 'EU. María Jesús Contreras Merino',
-                especialidad: 'Enfermera - Aparatología Corporal',
-                disponibilidad: 'Lunes a Sábado'
+                especialidad: 'Enfermera - Aparatología Estética',
+                disponibilidad: 'Lunes a Sábado',
+                tratamientos: [
+                    // Tratamientos corporales
+                    'Depilación Láser Soprano Titanium',
+                    'Criolipólisis Clatuu Alpha',
+                    'Scizer - HIFU Corporal',
+                    'Morpheus 8 Corporal',
+                    'Exilis Corporal',
+                    'EmBody - Tonificación Muscular',
+                    'HydraFacial MD',
+                    // Tratamientos con Láser (exclusivo María Jesús)
+                    'Onicomicosis Láser',
+                    'Hollywood Peel (Carbon Peel)',
+                    'Láser Q-Switched'
+                ]
             }
         ],
         tratamientosAsociados: [
@@ -332,7 +362,7 @@ const consultasData = [
         descripcion: 'Evaluación nutricional integral con enfoque clínico, deportivo y metabólico. Incluye medición avanzada de composición corporal con InBody 970 y opción de Calorimetría Indirecta (Q-NRG Max) para determinar gasto energético real. Elaboración de pautas de alimentación de alta precisión adaptadas a objetivos de composición corporal, rendimiento deportivo o manejo de patologías metabólicas.',
         valor: '$40.000',
         duracion: '45-60 min',
-        reembolsable: true,
+        reembolsable: false,
         profesionales: [
             {
                 nombre: 'Valentina Andrea Verdejo Merino',
