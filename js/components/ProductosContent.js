@@ -22,10 +22,10 @@ function ProductosContent() {
     if (productSearchTerm) {
         const searchLower = productSearchTerm.toLowerCase();
         filteredProducts = filteredProducts.filter(p =>
-            p.name.toLowerCase().includes(searchLower) ||
-            p.description.toLowerCase().includes(searchLower) ||
-            p.category.toLowerCase().includes(searchLower) ||
-            p.brand.toLowerCase().includes(searchLower)
+            (p.name && p.name.toLowerCase().includes(searchLower)) ||
+            (p.description && p.description.toLowerCase().includes(searchLower)) ||
+            (p.category && p.category.toLowerCase().includes(searchLower)) ||
+            (p.brand && p.brand.toLowerCase().includes(searchLower))
         );
     }
 
@@ -97,10 +97,10 @@ function updateProductsGrid() {
     if (productSearchTerm) {
         const searchLower = productSearchTerm.toLowerCase();
         filteredProducts = filteredProducts.filter(p =>
-            p.name.toLowerCase().includes(searchLower) ||
-            p.description.toLowerCase().includes(searchLower) ||
-            p.category.toLowerCase().includes(searchLower) ||
-            p.brand.toLowerCase().includes(searchLower)
+            (p.name && p.name.toLowerCase().includes(searchLower)) ||
+            (p.description && p.description.toLowerCase().includes(searchLower)) ||
+            (p.category && p.category.toLowerCase().includes(searchLower)) ||
+            (p.brand && p.brand.toLowerCase().includes(searchLower))
         );
     }
 

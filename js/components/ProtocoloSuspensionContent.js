@@ -84,6 +84,200 @@ function ProtocoloSuspensionContent() {
                 </div>
             </div>
 
+            <!-- Abono por Cancelaciones Consecutivas -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="banknote" class="w-6 h-6 text-emerald-600"></i>
+                    Abono por Cancelaciones Consecutivas - Tratamientos Corporales
+                </h3>
+
+                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+                    <h4 class="font-bold text-emerald-800 mb-2 flex items-center gap-2">
+                        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                        Política de Abono $10.000
+                    </h4>
+                    <p class="text-sm text-emerald-900 font-medium">
+                        Si un paciente cancela <strong>2 citas seguidas</strong> en tratamientos corporales, 
+                        debe realizar un <strong>abono de $10.000</strong> para reagendar su próxima cita.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- Tratamientos Aplicables -->
+                    <div class="bg-gradient-to-br from-slate-50 to-gray-50 p-4 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="list-checks" class="w-5 h-5 text-slate-600"></i>
+                            <h4 class="font-bold text-slate-800">Tratamientos que Aplican</h4>
+                        </div>
+                        <ul class="space-y-1 text-sm text-slate-700">
+                            <li class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                                Depilación Láser
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                                EmBody / EmSculpt
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                                Tratamientos Corporales Reductores
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                                Otros tratamientos con maquinaria corporal
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Cuándo se aplica -->
+                    <div class="bg-gradient-to-br from-red-50 to-orange-50 p-4 rounded-xl border border-red-200">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="calendar-x" class="w-5 h-5 text-red-600"></i>
+                            <h4 class="font-bold text-slate-800">¿Cuándo se Aplica?</h4>
+                        </div>
+                        <div class="space-y-2 text-sm text-slate-700">
+                            <p><strong>❌ 1ª cancelación:</strong> Se reagenda sin costo</p>
+                            <p><strong>❌❌ 2ª cancelación consecutiva:</strong> Se solicita abono de $10.000</p>
+                            <p class="text-xs text-red-700 mt-2">
+                                El abono se descuenta del valor de la sesión. Si asiste, no pierde el dinero.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guiones de Mensajes -->
+                <div class="space-y-3">
+                    ${renderMensajeCard(
+        'Solicitud de Abono - 2da Cancelación Consecutiva',
+        'banknote',
+        'green',
+        `Hola, [Nombre] 💙
+
+Veo que esta es la segunda vez consecutiva que debemos reagendar tu sesión de [tratamiento].
+
+Para poder confirmar tu próxima cita, te solicitamos un abono de $10.000 que se descontará del valor de tu sesión.
+
+Esto nos ayuda a organizar mejor la agenda y asegurar que el horario esté disponible para ti.
+
+¿Te parece bien? Te puedo enviar los datos para transferir y coordinamos la fecha 🙌`,
+        'Usar cuando el paciente cancela por segunda vez consecutiva en tratamientos corporales.'
+    )}
+
+                    ${renderMensajeCard(
+        'Explicación de la Política de Abono',
+        'info',
+        'blue',
+        `Hola, [Nombre] 💙
+
+Te comento sobre nuestra política:
+
+Cuando se cancelan 2 citas seguidas en tratamientos corporales (como depilación láser, EmBody, etc.), pedimos un abono de $10.000 para reagendar.
+
+Este abono se descuenta completamente del valor de tu sesión, así que no es un cobro extra, es solo para confirmar tu asistencia.
+
+Si asistes a tu cita, ese dinero ya está incluido en tu pago. ¿Te queda claro? 💙`,
+        'Usar para explicar la política cuando el paciente pregunta.'
+    )}
+
+                    ${renderMensajeCard(
+        'Datos para Transferencia del Abono',
+        'credit-card',
+        'purple',
+        `Para realizar el abono de $10.000, puedes transferir a:
+
+🏦 Banco: [BANCO]
+👤 Nombre: Clínica Cialo
+📧 RUT: [RUT CLÍNICA]
+💰 Monto: $10.000
+📝 Comentario: Abono [Nombre Paciente]
+
+Una vez recibido, te confirmo tu hora para el día [fecha] a las [hora].
+
+¡Quedo atenta! 💙`,
+        'Personalizar con los datos bancarios reales de la clínica.'
+    )}
+
+                    ${renderMensajeCard(
+        'Confirmación de Abono Recibido',
+        'check-circle',
+        'green',
+        `¡Hola, [Nombre]! 💙
+
+Confirmamos la recepción de tu abono de $10.000. ¡Gracias!
+
+Tu cita queda confirmada para:
+📅 Fecha: [fecha]
+🕐 Hora: [hora]
+💆 Tratamiento: [tratamiento]
+
+Recuerda llegar 5-10 minutos antes. ¡Te esperamos!`,
+        'Enviar apenas se confirme la transferencia.'
+    )}
+
+                    ${renderMensajeCard(
+        'Recordatorio de Política (Antes de 2da Cancelación)',
+        'alert-triangle',
+        'amber',
+        `Hola, [Nombre] 💙
+
+Te escribo porque tienes agendada tu sesión de [tratamiento] para el [fecha] a las [hora].
+
+Como ya tuvimos que reagendar tu sesión anterior, te recuerdo que si esta cita también se cancela, para reagendar necesitaremos un abono de $10.000 (que se descuenta de tu sesión).
+
+¿Confirmas tu asistencia? Así te reservamos el horario 🙌`,
+        'Enviar 1-2 días antes de la cita cuando ya hubo una cancelación previa.'
+    )}
+
+                    ${renderMensajeCard(
+        'Paciente Molesto por la Política',
+        'heart-handshake',
+        'purple',
+        `Hola, [Nombre] 💙
+
+Entiendo que la situación puede ser incómoda, y te agradezco tu paciencia.
+
+Esta política la implementamos porque cuando se cancela una hora, ese espacio queda vacío y otros pacientes podrían haberlo aprovechado. El abono nos ayuda a confirmar que el horario realmente será utilizado.
+
+La buena noticia es que ese dinero no se pierde: se descuenta directamente del valor de tu sesión, así que al final pagas lo mismo.
+
+¿Coordinamos la próxima fecha? Estoy aquí para ayudarte 💙`,
+        'Usar cuando el paciente reclama o cuestiona la política. Mantener tono empático.'
+    )}
+
+                    ${renderMensajeCard(
+        'Nueva Cancelación (Aplicando la Política)',
+        'ban',
+        'red',
+        `Hola, [Nombre] 💙
+
+Lamentamos que no puedas asistir a tu cita de hoy.
+
+Como esta es la segunda cancelación consecutiva en tu tratamiento de [tratamiento], para reagendar necesitamos un abono de $10.000.
+
+Este abono se descuenta del valor de tu próxima sesión, así que no es un cobro adicional.
+
+¿Te envío los datos para la transferencia y coordinamos una nueva fecha?`,
+        'Usar cuando el paciente avisa que no puede asistir y es su 2da cancelación.'
+    )}
+
+                    ${renderMensajeCard(
+        'Paciente Frecuente que Cancela - Tono Especial',
+        'star',
+        'yellow',
+        `Hola, [Nombre] 💙
+
+Sabemos que eres una paciente muy querida en CIALO y que a veces surgen imprevistos.
+
+Esta sería la segunda vez que reagendamos esta sesión, por lo que para confirmar la nueva hora necesitaríamos el abono de $10.000.
+
+Como siempre, este monto se descuenta de tu sesión, así que es solo una confirmación de tu asistencia.
+
+¿Te parece si coordinamos una fecha que realmente te acomode? Queremos que puedas disfrutar tu tratamiento sin contratiempos 💙`,
+        'Usar para pacientes frecuentes o VIP, manteniendo tono cercano.'
+    )}
+                </div>
+            </div>
+
             <!-- Procedimiento ante Inasistencia -->
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
                 <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
