@@ -274,6 +274,7 @@ const productsData = [
         "name": "Suplemento Glisodin",
         "price": 44000,
         "category": "Suplemento",
+        "description": "Antioxidante oral. Suplemento alimenticio con superóxido dismutasa (SOD) que protege las células del estrés oxidativo y mejora la salud de la piel desde el interior."
     },
     {
         "id": 200001,

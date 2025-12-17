@@ -405,9 +405,9 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '3 sesiones cada 4 semanas',
         protocolo: 'Mejoría progresiva desde primera sesión. Mantención cada 3-6 meses según calidad dérmica.',
-        requiereEvaluacion: true,
-        evaluacionGratuita: true,
-        notas: 'Valor de oferta'
+        requiereEvaluacion: false,
+        evaluacionGratuita: false,
+        notas: 'Valor de oferta. Se agenda directamente sin evaluación previa.'
     },
     {
         id: 'laser-melasma',
