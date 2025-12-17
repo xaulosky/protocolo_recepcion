@@ -45,6 +45,13 @@ const sidebarNavigation = {
             { id: 'presupuestos', label: 'Presupuestos', icon: 'file-text' },
             { id: 'consentimientos', label: 'Consentimientos', icon: 'file-signature' }
         ]
+    },
+    administracion: {
+        title: 'Administración',
+        icon: 'building',
+        items: [
+            { id: 'solicitud-reembolso', label: 'Solicitud de Reembolso', icon: 'receipt-text' }
+        ]
     }
 };
 
@@ -54,7 +61,7 @@ const sidebarNavigation = {
  */
 function SidebarNavigation() {
     const state = appState.getState();
-    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos'];
+    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos', 'administracion'];
     const isCollapsed = state.sidebarCollapsed || false;
     const isActive = state.activeTab === 'base';
 
@@ -128,7 +135,7 @@ function updateSidebarVisualState() {
 function Sidebar() {
     const state = appState.getState();
     const isCollapsed = state.sidebarCollapsed || false;
-    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos'];
+    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos', 'administracion'];
 
     return `
         <aside id="sidebar" class="sidebar ${isCollapsed ? 'sidebar-collapsed' : ''}" role="navigation">
@@ -300,7 +307,7 @@ function toggleSidebar() {
  */
 function toggleSidebarCategory(categoryKey) {
     const state = appState.getState();
-    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos'];
+    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos', 'administracion'];
 
     let newExpanded;
     if (expandedCategories.includes(categoryKey)) {

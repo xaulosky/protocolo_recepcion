@@ -18,7 +18,7 @@ class AppState {
             boxViewMode: 'cards', // 'cards', 'list'
             // Sidebar states
             sidebarCollapsed: false,
-            expandedCategories: ['general', 'guiones', 'clinica', 'documentos']
+            expandedCategories: ['general', 'guiones', 'clinica', 'documentos', 'administracion']
         };
         this.listeners = [];
     }

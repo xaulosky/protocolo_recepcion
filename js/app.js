@@ -182,6 +182,11 @@ class App {
                 icon = 'alert-triangle';
                 content = ProtocoloSuspensionContent();
                 break;
+            case 'solicitud-reembolso':
+                title = 'Solicitud de Reembolso';
+                icon = 'receipt-text';
+                content = SolicitudReembolsoContent();
+                break;
             default:
                 title = 'Protocolo Base';
                 icon = 'check-circle';
@@ -228,6 +233,9 @@ class App {
         }
         if (state.activeTab === 'tratamientos') {
             initTratamientosContent();
+        }
+        if (state.activeTab === 'solicitud-reembolso') {
+            initSolicitudReembolsoContent();
         }
     }
 }
