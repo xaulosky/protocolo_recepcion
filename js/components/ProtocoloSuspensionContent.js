@@ -84,6 +84,55 @@ function ProtocoloSuspensionContent() {
                 </div>
             </div>
 
+            <!-- Confirmación de Citas - Liberación de Hora -->
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="clock" class="w-6 h-6 text-blue-600"></i>
+                    Confirmación de Citas - Liberación de Hora
+                </h3>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h4 class="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                        Proceso de Confirmación
+                    </h4>
+                    <p class="text-sm text-blue-900 font-medium">
+                        Para optimizar la agenda, se solicita confirmación de asistencia 48 horas antes de la cita. 
+                        Si el paciente no confirma, la hora será liberada para otro paciente.
+                    </p>
+                </div>
+
+                <div class="space-y-3">
+                    ${renderMensajeCard(
+        'Aviso de Liberación sin Confirmación (48hrs)',
+        'alert-circle',
+        'amber',
+        `¡Hola! Te escribimos desde Clínica Cialo para recordarte que tienes una cita agendada con ___ el día ___ a las ___ horas.
+
+⚠️ IMPORTANTE: Para mantener tu hora reservada, necesitamos que confirmes tu asistencia respondiendo este mensaje.
+
+Si no recibimos tu confirmación en las próximas horas, tu hora será liberada para otro paciente.
+
+¿Confirmas tu cita? 📅`,
+        'Enviar 48 horas antes. Dejar claro que la hora se liberará si no hay respuesta.'
+    )}
+
+                    ${renderMensajeCard(
+        'Hora Liberada por No Confirmación',
+        'calendar-x',
+        'red',
+        `¡Hola! Te escribimos desde Clínica Cialo.
+
+Lamentablemente, al no recibir confirmación de tu cita con ___ programada para hoy a las ___ horas, tu hora ha sido liberada y asignada a otro paciente.
+
+¿Deseas que te ayudemos a reagendar una nueva cita? 📅
+
+Quedamos atentos a tu respuesta para coordinar un nuevo horario que te acomode. 🙌`,
+        'Enviar el mismo día de la cita cuando el paciente no confirmó. Ofrecer reagendamiento inmediato.'
+    )}
+                </div>
+            </div>
+
             <!-- Abono por Cancelaciones Consecutivas -->
             <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
                 <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
