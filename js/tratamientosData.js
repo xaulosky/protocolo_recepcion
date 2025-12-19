@@ -1526,6 +1526,22 @@ const tratamientosData = [
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
+    {
+        id: 'despigmentacion-intima-laser-qswitch',
+        categoria: 'Ginecoestética',
+        subcategoria: 'Láser',
+        nombre: 'Despigmentación Íntima Láser QSwitch',
+        descripcion: 'Procedimiento avanzado con láser QSwitch (Spectra Lutronic) para despigmentación íntima y axilar. Actúa fragmentando el pigmento de melanina en capas profundas de la piel, logrando un aclaramiento progresivo y uniforme. Tratamiento complementario al peeling químico para resultados más completos y duraderos. Indicado para hiperpigmentación en zona inguinal, vulvar, perianal y axilar.',
+        profesional: 'Stefania Kuncar Ferrón',
+        especialidad: 'Matrona - Ginecoestética',
+        valorDesde: 75000,
+        valorHasta: null,
+        duracion: '30 min',
+        sesiones: '6-8 sesiones (cada 2-4 semanas)',
+        protocolo: 'Protocolo adaptado a cada caso según grado de pigmentación. Complementación con peeling químico para mejores resultados.',
+        requiereEvaluacion: true,
+        evaluacionGratuita: false
+    },
 
     // ==================== UROLOGÍA ====================
     {
