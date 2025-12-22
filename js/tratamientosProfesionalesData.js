@@ -146,7 +146,27 @@ const tratamientosProfesionalesData = [
     { tratamientoId: 'laser-co2-vaginal', profesionalId: 'maria-villarroel' },
 
     // ==================== DRA. JAVIERA ARAYA - Tricología (adicionales) ====================
-    { tratamientoId: 'injerto-capilar', profesionalId: 'javiera-araya' },
+    // Injertos FUE Corto Zafiro
+    { tratamientoId: 'injerto-1000uf-zafiro', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-1500uf-zafiro', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-2000uf-zafiro', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-2500uf-zafiro', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-3000uf-zafiro', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-3500uf-zafiro', profesionalId: 'javiera-araya' },
+    // Injertos FUE Corto Implanters
+    { tratamientoId: 'injerto-1000uf-implanters', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-1500uf-implanters', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-2000uf-implanters', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-2500uf-implanters', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-3000uf-implanters', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-3500uf-implanters', profesionalId: 'javiera-araya' },
+    // Injertos FUE Pelo Largo
+    { tratamientoId: 'injerto-1000uf-pelo-largo', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-1500uf-pelo-largo', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-2000uf-pelo-largo', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-2500uf-pelo-largo', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-3000uf-pelo-largo', profesionalId: 'javiera-araya' },
+    { tratamientoId: 'injerto-3500uf-pelo-largo', profesionalId: 'javiera-araya' },
     { tratamientoId: 'regenera-capilar', profesionalId: 'javiera-araya' },
 
     // ==================== MARÍA JESÚS CONTRERAS - Aparatología (adicionales) ====================
