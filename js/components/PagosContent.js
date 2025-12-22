@@ -19,8 +19,8 @@ function PagosContent() {
                 <strong>Mensaje Base Confirmación (Agendado):</strong><br/>
                 "(Nombre), quedó agendada tu cita para el día [Fecha] a las [Hora].<br/>
                 Dirección: Bulnes 220, of 509, Edificio Puerto Mayor II.<br/>
-                Ubicación: https://maps.app.goo.gl/PyeYcr4JdqW7iJ4G9<br/>
-                [Insertar Política de Cancelación correspondiente aquí]"
+                Ubicación: https://maps.app.goo.gl/PyeYcr4JdqW7iJ4G9<br/><br/>
+                ⚠️ <strong>Política de Cancelación:</strong> Si necesitas reagendar o cancelar, te pedimos avisar con mínimo 24 horas de anticipación. Cancelaciones con menos de 24 hrs o inasistencias sin aviso pueden requerir un abono para reagendar la cita. ¡Gracias por tu comprensión!"
             </div>
         </div>
     `;
