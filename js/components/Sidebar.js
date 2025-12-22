@@ -50,7 +50,8 @@ const sidebarNavigation = {
         title: 'Administración',
         icon: 'building',
         items: [
-            { id: 'solicitud-reembolso', label: 'Solicitud de Reembolso', icon: 'receipt-text' }
+            { id: 'solicitud-reembolso', label: 'Solicitud de Reembolso', icon: 'receipt-text' },
+            { id: 'giftcards', label: 'Generar Gift Card', icon: 'gift' }
         ]
     }
 };

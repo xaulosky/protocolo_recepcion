@@ -187,6 +187,11 @@ class App {
                 icon = 'receipt-text';
                 content = SolicitudReembolsoContent();
                 break;
+            case 'giftcards':
+                title = 'Generar Gift Card';
+                icon = 'gift';
+                content = GiftCardContent();
+                break;
             default:
                 title = 'Protocolo Base';
                 icon = 'check-circle';
@@ -236,6 +241,9 @@ class App {
         }
         if (state.activeTab === 'solicitud-reembolso') {
             initSolicitudReembolsoContent();
+        }
+        if (state.activeTab === 'giftcards') {
+            initGiftCardContent();
         }
     }
 }
