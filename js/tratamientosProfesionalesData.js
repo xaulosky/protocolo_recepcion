@@ -114,6 +114,7 @@ const tratamientosProfesionalesData = [
 
     // ==================== DRA. MARÍA LAURA VILLARROEL - Ginecoestética ====================
     { tratamientoId: 'prp-dermapen-vulvar', profesionalId: 'maria-villarroel' },
+    { tratamientoId: 'labioplastia-laser', profesionalId: 'maria-villarroel' },
 
     // ==================== DR. LUIS PÉREZ - Cirugía Maxilofacial ====================
     { tratamientoId: 'bichectomia', profesionalId: 'luis-perez' },

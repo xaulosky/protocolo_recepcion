@@ -1897,6 +1897,40 @@ const tratamientosData = [
         sesiones: '1 examen',
         requiereEvaluacion: false,
         evaluacionGratuita: false
+    },
+
+    // ==================== GINECOLOGÍA / GINECOESTÉTICA ====================
+    {
+        id: 'labioplastia-laser',
+        categoria: 'Ginecología',
+        subcategoria: 'Cirugía Ginecoestética',
+        nombre: 'Ninfoplastia (Labioplastia) Láser',
+        descripcion: 'Cirugía estética de los labios menores realizada con láser CO₂ ginecoestético. Procedimiento ambulatorio indicado por razones funcionales (molestias, roce) o estéticas. La técnica láser reduce sangrado y mejora cicatrización. Requiere evaluación previa para determinar plan quirúrgico y presupuesto personalizado.',
+        profesional: 'Dra. María Laura Villarroel',
+        especialidad: 'Ginecología y Ginecoestética',
+        valorDesde: null,
+        valorHasta: null,
+        duracion: '60-90 min',
+        sesiones: '1 sesión',
+        espacio: 'Pabellón Menor',
+        equipo: 'Láser CO2 Ginecoestético',
+        insumos: [
+            { cantidad: 1, item: 'Lápiz dermográfico estéril para marcaje', valor: '$10.000', nota: 'No reutilizable' },
+            { cantidad: 4, item: 'Sobres de gasas 10x10', valor: null, nota: null },
+            { cantidad: 1, item: 'Gel lubricante', valor: null, nota: 'Para separar levemente labios si es necesario' },
+            { cantidad: 1, item: 'Campo quirúrgico estéril', valor: null, nota: null },
+            { cantidad: 1, item: 'Suero fisiológico 20cc', valor: null, nota: 'Para humedecer gasa' },
+            { cantidad: 1, item: 'Ampolla Lidocaína 1% (o con epinefrina)', valor: null, nota: null },
+            { cantidad: 1, item: 'Jeringa 10ml', valor: null, nota: null },
+            { cantidad: 1, item: 'Jeringa 20ml', valor: null, nota: null },
+            { cantidad: 2, item: 'Agujas 25G o 27G', valor: null, nota: null },
+            { cantidad: 1, item: 'Suero fisiológico para irrigación', valor: null, nota: 'Prácticamente innecesario, solo para humedecer gasas' },
+            { cantidad: 1, item: 'Clorhexidina jabonosa y alcohólica', valor: null, nota: 'Para asepsia, uso mínimo' }
+        ],
+        protocolo: 'Requiere evaluación previa. Recuperación en casa. Retorno a actividades normales: 1-2 semanas.',
+        requiereEvaluacion: true,
+        evaluacionGratuita: false,
+        notas: 'Requiere apoyo de TENS/Matrona. Precio determinado en evaluación según complejidad.'
     }
 ];
 

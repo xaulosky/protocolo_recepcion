@@ -394,6 +394,38 @@ function renderTratamientoModal(tratamiento) {
                         </div>
                     </div>
 
+                    ${tratamiento.insumos && tratamiento.insumos.length > 0 ? `
+                    <!-- Insumos Requeridos -->
+                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-200 mb-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <i data-lucide="package" class="w-5 h-5 text-orange-500"></i>
+                            Insumos Requeridos
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-orange-200">
+                                        <th class="text-left py-2 px-2 font-semibold text-slate-700">Cant.</th>
+                                        <th class="text-left py-2 px-2 font-semibold text-slate-700">Insumo</th>
+                                        <th class="text-left py-2 px-2 font-semibold text-slate-700">Valor</th>
+                                        <th class="text-left py-2 px-2 font-semibold text-slate-700">Nota</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tratamiento.insumos.map(insumo => `
+                                        <tr class="border-b border-orange-100 hover:bg-orange-100/50">
+                                            <td class="py-2 px-2 text-center font-medium text-orange-700">${insumo.cantidad}</td>
+                                            <td class="py-2 px-2 text-slate-700">${insumo.item}</td>
+                                            <td class="py-2 px-2 text-slate-600">${insumo.valor || '-'}</td>
+                                            <td class="py-2 px-2 text-slate-500 text-xs">${insumo.nota || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    ` : ''}
+
                     <!-- Nota informativa -->
                     <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                         <div class="flex gap-3">

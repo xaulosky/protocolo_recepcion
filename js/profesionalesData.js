@@ -592,6 +592,19 @@ const profesionalesData = [
                     nombre: 'Ninfoplastia (Labioplastia) Láser',
                     espacio: 'Pabellón Menor',
                     equipo: 'Láser Ginecoestético',
+                    insumos: [
+                        { cantidad: 1, item: 'Lápiz dermográfico estéril para marcaje', valor: '$10.000', nota: 'No reutilizable' },
+                        { cantidad: 4, item: 'Sobres de gasas 10x10', valor: null, nota: null },
+                        { cantidad: 1, item: 'Gel lubricante', valor: null, nota: 'Para separar levemente labios si es necesario' },
+                        { cantidad: 1, item: 'Campo quirúrgico estéril', valor: null, nota: null },
+                        { cantidad: 1, item: 'Suero fisiológico 20cc', valor: null, nota: 'Para humedecer gasa' },
+                        { cantidad: 1, item: 'Ampolla Lidocaína 1% (o con epinefrina)', valor: null, nota: null },
+                        { cantidad: 1, item: 'Jeringa 10ml', valor: null, nota: null },
+                        { cantidad: 1, item: 'Jeringa 20ml', valor: null, nota: null },
+                        { cantidad: 2, item: 'Agujas 25G o 27G', valor: null, nota: null },
+                        { cantidad: 1, item: 'Suero fisiológico para irrigación', valor: null, nota: 'Prácticamente innecesario, solo para humedecer gasas' },
+                        { cantidad: 1, item: 'Clorhexidina jabonosa y alcohólica', valor: null, nota: 'Para asepsia, uso mínimo' }
+                    ],
                     notas: 'Cirugía estética de labios menores con láser. Requiere TENS/Matrona.'
                 },
                 {
