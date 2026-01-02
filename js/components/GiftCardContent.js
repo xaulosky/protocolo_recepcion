@@ -147,6 +147,26 @@ function GiftCardContent() {
                         <p class="text-xs text-slate-400 mt-1">Máximo 100 caracteres</p>
                     </div>
                     
+                    <!-- Teléfono para WhatsApp -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                            <i data-lucide="smartphone" class="w-4 h-4 inline mr-1 text-green-600"></i>
+                            Teléfono para WhatsApp
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-medium text-sm">+56 9</span>
+                            <input 
+                                type="tel" 
+                                id="giftCardPhone" 
+                                placeholder="1234 5678"
+                                maxlength="9"
+                                class="w-full pl-16 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+                                oninput="formatGiftCardPhone(this)"
+                            >
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1">Ingresa el número sin el +56 9</p>
+                    </div>
+                    
                     <!-- Fecha de vencimiento -->
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">
@@ -197,7 +217,7 @@ function GiftCardContent() {
                 
                 <!-- Canvas para el preview -->
                 <div class="flex justify-center bg-slate-100 rounded-lg p-6">
-                    <canvas id="giftCardCanvas" width="800" height="500" class="max-w-full h-auto rounded-lg shadow-lg"></canvas>
+                    <canvas id="giftCardCanvas" width="1600" height="1000" class="max-w-full h-auto rounded-lg shadow-lg"></canvas>
                 </div>
             </div>
             
@@ -223,6 +243,15 @@ function GiftCardContent() {
                 >
                     <i data-lucide="copy" class="w-5 h-5"></i>
                     Copiar al portapapeles
+                </button>
+                <button 
+                    onclick="sendGiftCardByWhatsApp()"
+                    class="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    Enviar por WhatsApp
                 </button>
             </div>
             
@@ -413,8 +442,14 @@ function updateGiftCardPreview() {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+
+    // Factor de escala para alta resolución (2x)
+    const scale = 2;
+    const width = canvas.width / scale;
+    const height = canvas.height / scale;
+
+    // Aplicar escala al contexto
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
 
     // Obtener valores del formulario
     const amount = document.getElementById('giftCardAmount')?.value || '';
@@ -429,8 +464,8 @@ function updateGiftCardPreview() {
 
     const colors = getGiftCardStyles(style);
 
-    // Limpiar canvas
-    ctx.clearRect(0, 0, width, height);
+    // Limpiar canvas (usar dimensiones completas del canvas)
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // ========== FONDO CON GRADIENTE MULTI-STOP ==========
     const bgGradient = ctx.createLinearGradient(0, 0, width, height);
@@ -584,14 +619,41 @@ function updateGiftCardPreview() {
     // ========== MENSAJE PERSONALIZADO ==========
     if (message) {
         ctx.fillStyle = colors.secondaryText;
-        ctx.font = 'italic 300 16px "Inter", "Helvetica Neue", Arial, sans-serif';
+        ctx.font = 'italic 300 15px "Inter", "Helvetica Neue", Arial, sans-serif';
         ctx.textAlign = 'center';
-        // Truncar mensaje si es muy largo
-        let displayMessage = message;
-        if (message.length > 60) {
-            displayMessage = message.substring(0, 57) + '...';
+
+        // Dividir mensaje en líneas si es muy largo
+        const maxCharsPerLine = 50;
+        const words = message.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        for (const word of words) {
+            const testLine = currentLine ? currentLine + ' ' + word : word;
+            if (testLine.length <= maxCharsPerLine) {
+                currentLine = testLine;
+            } else {
+                if (currentLine) lines.push(currentLine);
+                currentLine = word;
+            }
         }
-        ctx.fillText(`"${displayMessage}"`, width / 2, 275);
+        if (currentLine) lines.push(currentLine);
+
+        // Limitar a máximo 2 líneas
+        if (lines.length > 2) {
+            lines[1] = lines[1].substring(0, maxCharsPerLine - 3) + '...';
+            lines.length = 2;
+        }
+
+        // Dibujar las líneas
+        const lineHeight = 20;
+        const startY = 275 - ((lines.length - 1) * lineHeight / 2);
+
+        lines.forEach((line, index) => {
+            const prefix = index === 0 ? '"' : '';
+            const suffix = index === lines.length - 1 ? '"' : '';
+            ctx.fillText(`${prefix}${line}${suffix}`, width / 2, startY + (index * lineHeight));
+        });
     }
 
     // ========== DESTINATARIO Y REMITENTE (Layout horizontal) ==========
@@ -934,4 +996,125 @@ function showGiftCardNotification(message, type) {
         notification.style.transform = 'translateX(-50%) translateY(-20px)';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+/**
+ * Formatea el número de teléfono para WhatsApp
+ */
+function formatGiftCardPhone(input) {
+    // Remover todo excepto números
+    let value = input.value.replace(/\D/g, '');
+
+    // Limitar a 8 dígitos
+    if (value.length > 8) {
+        value = value.substring(0, 8);
+    }
+
+    // Formato: 1234 5678
+    if (value.length > 4) {
+        value = value.substring(0, 4) + ' ' + value.substring(4);
+    }
+
+    input.value = value;
+}
+
+/**
+ * Envía la Gift Card por WhatsApp
+ */
+function sendGiftCardByWhatsApp() {
+    const canvas = document.getElementById('giftCardCanvas');
+    const phoneInput = document.getElementById('giftCardPhone');
+
+    if (!canvas) {
+        showGiftCardNotification('Error: No se encontró la imagen de la Gift Card', 'error');
+        return;
+    }
+
+    // Obtener el número de teléfono
+    const phoneValue = phoneInput?.value?.replace(/\s/g, '') || '';
+
+    if (!phoneValue || phoneValue.length < 8) {
+        showGiftCardNotification('Por favor ingresa un número de teléfono válido', 'error');
+        // Enfocar el campo de teléfono
+        phoneInput?.focus();
+        return;
+    }
+
+    // Formatear número para WhatsApp (código de Chile: 56)
+    const whatsappNumber = '569' + phoneValue;
+
+    // Obtener datos de la gift card para el mensaje
+    const cardType = getGiftCardType();
+    const amount = document.getElementById('giftCardAmount')?.value || '';
+    const treatment = document.getElementById('giftCardTreatment')?.value || '';
+    const recipient = document.getElementById('giftCardRecipient')?.value || '';
+    const sender = document.getElementById('giftCardSender')?.value || '';
+    const code = document.getElementById('giftCardCode')?.value || '';
+    const expiry = document.getElementById('giftCardExpiry')?.value || '';
+
+    // Formatear fecha de vencimiento
+    let expiryFormatted = '';
+    if (expiry) {
+        const expiryDate = new Date(expiry + 'T00:00:00');
+        expiryFormatted = expiryDate.toLocaleDateString('es-CL', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
+    // Construir mensaje
+    let message = '🎁 *¡Te han regalado una Gift Card de Clínica Cialo!* 🎁\n\n';
+
+    if (recipient) {
+        message += `👤 *Para:* ${recipient}\n`;
+    }
+    if (sender) {
+        message += `💝 *De:* ${sender}\n`;
+    }
+
+    message += '\n';
+
+    if (cardType === 'treatment' && treatment) {
+        message += `✨ *Tratamiento:* ${treatment}\n`;
+    } else if (amount) {
+        message += `💰 *Valor:* $${amount}\n`;
+    }
+
+    if (code) {
+        message += `🔑 *Código:* ${code}\n`;
+    }
+    if (expiryFormatted) {
+        message += `📅 *Válida hasta:* ${expiryFormatted}\n`;
+    }
+
+    message += '\n📍 *Clínica Cialo*\n';
+    message += '🌐 www.cialo.cl\n\n';
+    message += '_Presenta esta Gift Card en nuestra clínica para hacerla efectiva._';
+
+    // Primero copiamos la imagen al portapapeles
+    canvas.toBlob(async (blob) => {
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': blob })
+            ]);
+
+            // Abrir WhatsApp Web con el mensaje
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+
+            // Abrir en nueva pestaña
+            window.open(whatsappUrl, '_blank');
+
+            showGiftCardNotification('¡Imagen copiada! Pega (Ctrl+V) la imagen en WhatsApp después de enviar el mensaje.', 'success');
+        } catch (err) {
+            console.error('Error copiando imagen:', err);
+            // Si falla copiar, igual abrir WhatsApp
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
+
+            showGiftCardNotification('WhatsApp abierto. Descarga la imagen y envíala manualmente.', 'success');
+        }
+    }, 'image/png');
 }
