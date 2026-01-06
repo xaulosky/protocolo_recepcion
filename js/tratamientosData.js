@@ -1851,6 +1851,21 @@ const tratamientosData = [
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
+    {
+        id: 'lipoliticos-quemador-grasa',
+        categoria: 'Corporal',
+        subcategoria: 'Inyectables',
+        nombre: 'Lipolíticos Quemador de Grasa',
+        descripcion: 'Tratamiento inyectable con lipolíticos para reducción de grasa localizada. Actúa disolviendo las células grasas en zonas específicas como papada, abdomen, flancos, brazos y muslos. Procedimiento ambulatorio que ayuda a remodelar la figura de forma no quirúrgica.',
+        profesional: 'Dra. Elga Viviana Peña',
+        especialidad: 'Medicina Estética',
+        valorDesde: 150000,
+        valorHasta: null,
+        duracion: '30-45 min',
+        sesiones: 'Según evaluación (3-6 sesiones recomendadas)',
+        requiereEvaluacion: true,
+        evaluacionGratuita: true
+    },
 
     // ==================== NUTRICIÓN ====================
     {
