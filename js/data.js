@@ -158,6 +158,19 @@ Para organizar bien la agenda, cada sesión puede reagendarse un máximo de 2 ve
             note: "Usar cuando el paciente ha reagendado la misma sesión 2 veces."
         },
         {
+            title: "Advertencia Segunda Suspensión (Tratamiento Pagado)",
+            content: `Hola [Nombre] 💙
+
+Te escribo porque es la segunda vez que cancelas o suspendes tu cita.
+
+Queremos recordarte que la continuidad es clave para el éxito de tu tratamiento.
+
+Por política de la clínica, si esta próxima cita se vuelve a cancelar o suspender, la sesión será descontada automáticamente de tu tratamiento.
+
+¿Podemos confirmar tu compromiso para la próxima fecha? 🙌`,
+            note: "Enviar cuando el paciente cancela por segunda vez, para advertir sobre la tercera."
+        },
+        {
             title: "Recordatorio de Vigencia de Paquete",
             content: `Hola, [Nombre] 💙
 

@@ -231,6 +231,7 @@ const tratamientosData = [
         evaluacionGratuita: false
     },
     {
+<<<<<<< HEAD
         id: 'blefaroplastia-superior',
         categoria: 'Facial',
         subcategoria: 'Cirugía',
@@ -243,10 +244,25 @@ const tratamientosData = [
         duracion: '60-90 min',
         sesiones: '1 única vez',
         protocolo: 'Control postquirúrgico a los 7 días para retiro de puntos. Resultados visibles desde las 2-3 semanas, definitivos a los 3 meses.',
+=======
+        id: 'lifting-cejas-blefaro',
+        categoria: 'Facial',
+        subcategoria: 'Cirugía',
+        nombre: 'Lifting Directo de Cejas + Blefaroplastía Sup.',
+        descripcion: 'Corrección de piel párpado superior y elevación de cola de ceja. Rejuvenecimiento de la mirada mediante técnica quirúrgica combinada.',
+        profesional: 'Equipo Quirúrgico',
+        especialidad: 'Cirugía Plástica Facial',
+        valorDesde: 1100000,
+        valorHasta: null,
+        duracion: '120 min',
+        sesiones: '1 sesión',
+        protocolo: 'Requiere evaluación pre-quirúrgica y exámenes.',
+>>>>>>> b16b59324173cb1f8f9d9b94d2df3f4032ed5b69
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
     {
+<<<<<<< HEAD
         id: 'blefaroplastia-inferior',
         categoria: 'Facial',
         subcategoria: 'Cirugía',
@@ -259,10 +275,25 @@ const tratamientosData = [
         duracion: '60-90 min',
         sesiones: '1 única vez',
         protocolo: 'Control postquirúrgico a los 7 días. Evitar exposición solar directa durante la recuperación. Resultados definitivos a los 3 meses.',
+=======
+        id: 'lifting-cervical-lipo',
+        categoria: 'Facial',
+        subcategoria: 'Cirugía',
+        nombre: 'Lifting Cervical (Cuello) + Lipoaspiración Facial',
+        descripcion: 'Tratamiento de papada, plicatura de platisma y definición mandibular. Mejora el ángulo cérvico-mental y contorno facial.',
+        profesional: 'Equipo Quirúrgico',
+        especialidad: 'Cirugía Plástica Facial',
+        valorDesde: 1650000,
+        valorHasta: null,
+        duracion: '180 min',
+        sesiones: '1 sesión',
+        protocolo: 'Requiere evaluación pre-quirúrgica y exámenes.',
+>>>>>>> b16b59324173cb1f8f9d9b94d2df3f4032ed5b69
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
     {
+<<<<<<< HEAD
         id: 'lifting-cervical',
         categoria: 'Facial',
         subcategoria: 'Cirugía',
@@ -308,6 +339,50 @@ const tratamientosData = [
         sesiones: '1 única vez',
         protocolo: 'Uso de banda elástica postoperatoria por 2-4 semanas. Control a los 7 días. Apto para adultos y niños desde los 6 años.',
         requiereEvaluacion: true,
+=======
+        id: 'pabellon-quirurgico',
+        categoria: 'Quirúrgico',
+        subcategoria: 'Pabellón',
+        nombre: 'Gastos Clínicos / Derecho de Pabellón',
+        descripcion: 'Tiempo quirúrgico estimado: 3.5 - 4 horas. Incluye uso de pabellón y equipos.',
+        profesional: 'Clínica',
+        especialidad: 'Pabellón',
+        valorDesde: 450000,
+        valorHasta: null,
+        duracion: '4 horas',
+        sesiones: '1',
+        requiereEvaluacion: false,
+        evaluacionGratuita: false
+    },
+    {
+        id: 'anestesia-equipo',
+        categoria: 'Quirúrgico',
+        subcategoria: 'Anestesia',
+        nombre: 'Honorarios Equipo Anestesia (Sedación/TIVA)',
+        descripcion: 'Incluye consulta pre-anestésica y monitoreo intraoperatorio.',
+        profesional: 'Equipo Anestesia',
+        especialidad: 'Anestesiología',
+        valorDesde: 400000,
+        valorHasta: null,
+        duracion: '4 horas',
+        sesiones: '1',
+        requiereEvaluacion: false,
+        evaluacionGratuita: false
+    },
+    {
+        id: 'pack-recuperacion',
+        categoria: 'Post-Quirúrgico',
+        subcategoria: 'Kinesiología',
+        nombre: 'Pack Recuperación (Kine + Controles)',
+        descripcion: '10 sesiones drenaje linfático, ultrasonido y curaciones post-operatorias.',
+        profesional: 'Kinesiología Estética',
+        especialidad: 'Recuperación',
+        valorDesde: 250000,
+        valorHasta: null,
+        duracion: '10 sesiones',
+        sesiones: '10 sesiones',
+        requiereEvaluacion: false,
+>>>>>>> b16b59324173cb1f8f9d9b94d2df3f4032ed5b69
         evaluacionGratuita: false
     },
     {
