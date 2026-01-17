@@ -43,6 +43,7 @@ const sidebarNavigation = {
         icon: 'file-text',
         items: [
             { id: 'presupuestos', label: 'Presupuestos', icon: 'file-text' },
+            { id: 'presupuestos-ai', label: 'Presupuestos IA', icon: 'sparkles' },
             { id: 'consentimientos', label: 'Consentimientos', icon: 'file-signature' }
         ]
     },

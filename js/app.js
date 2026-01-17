@@ -157,6 +157,11 @@ class App {
                 icon = 'file-text';
                 content = PresupuestosContent();
                 break;
+            case 'presupuestos-ai':
+                title = 'Presupuestos con IA';
+                icon = 'sparkles';
+                content = PresupuestosAIContent();
+                break;
             case 'profesionales':
                 title = 'Profesionales';
                 icon = 'users';
@@ -235,6 +240,9 @@ class App {
         }
         if (state.activeTab === 'presupuestos') {
             initPresupuestosContent();
+        }
+        if (state.activeTab === 'presupuestos-ai') {
+            initPresupuestosAIContent();
         }
         if (state.activeTab === 'tratamientos') {
             initTratamientosContent();

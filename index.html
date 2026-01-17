@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cialo Hub</title>
 
+    <!-- Disable cache for development -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- PWA DESACTIVADA
     <meta name="description" content="Cialo Hub - Sistema integral de información de Clínica Cialo">
     <meta name="theme-color" content="#0f172a">
@@ -102,14 +107,15 @@
 
     </div>
 
-    <!-- Application Scripts (Non-module version for file:// protocol) -->
+    <!-- Application Scripts - Cache disabled with timestamp -->
+    <script>const v = Date.now();</script>
     <script src="js/data.js"></script>
     <script src="js/productsData.js"></script>
     <script src="js/tratamientosData.js"></script>
     <script src="js/consentimientosData.js"></script>
     <script src="js/profesionalesData.js"></script>
     <script src="js/tratamientosProfesionalesData.js"></script>
-    <script src="js/consultasData.js?v=1.15.0"></script>
+    <script src="js/consultasData.js"></script>
     <script src="js/boxesData.js"></script>
     <script src="js/state.js"></script>
     <script src="js/components/Sidebar.js"></script>
@@ -124,6 +130,7 @@
     <script src="js/components/ConsentimientosContent.js"></script>
     <script src="js/components/ConsentSignature.js"></script>
     <script src="js/components/PresupuestosContent.js"></script>
+    <script src="js/components/PresupuestosAIContent.js"></script>
     <script src="js/components/ProfesionalesContent.js"></script>
     <script src="js/components/BoxesContent.js"></script>
     <script src="js/components/TratamientosContent.js"></script>
@@ -133,6 +140,21 @@
     <script src="js/components/SearchResults.js"></script>
     <!-- PWA DESACTIVADA: <script src="js/pwa.js"></script> -->
     <script src="js/app.js"></script>
+
+    <!-- Cache buster: Reload all scripts dynamically -->
+    <script>
+        // Force reload scripts on development
+        if (location.protocol === 'file:' || location.hostname === 'localhost') {
+            const scripts = document.querySelectorAll('script[src]');
+            scripts.forEach(script => {
+                if (script.src && !script.src.includes('cdn') && !script.src.includes('unpkg')) {
+                    const newScript = document.createElement('script');
+                    newScript.src = script.src.split('?')[0] + '?v=' + Date.now();
+                    script.parentNode.replaceChild(newScript, script);
+                }
+            });
+        }
+    </script>
 
 </body>
 
