@@ -1633,3 +1633,18 @@ const profesionalesData = [
         pendientesAdministrativos: []
     }
 ];
+
+// Obtener especialidades únicas de profesionales
+function getEspecialidadesProfesionales() {
+    const especialidades = [...new Set(profesionalesData.map(p => p.especialidad))];
+    return especialidades.sort();
+}
+
+// Obtener días de atención únicos
+function getDiasAtencionProfesionales() {
+    const dias = new Set();
+    profesionalesData.forEach(p => {
+        p.disponibilidad.dias.forEach(d => dias.add(d));
+    });
+    return [...dias].sort();
+}

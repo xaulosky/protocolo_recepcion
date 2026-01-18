@@ -3,12 +3,16 @@
  * Soporta 3 modos de visualización: Lista, Grid, Tarjetas
  */
 
+// Estado del filtro de profesionales
+let profesionalEspecialidadActiva = 'Todas';
+
 // ============================================================================
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
 function ProfesionalesContent() {
     const { profesionalViewMode } = appState.getState();
+    const especialidades = ['Todas', ...getEspecialidadesProfesionales()];
 
     return `
         <div class="space-y-6">
@@ -21,23 +25,41 @@ function ProfesionalesContent() {
                 </div>
             </div>
 
-            <!-- Buscador -->
-            <div class="relative">
-                <input 
-                    type="text" 
-                    id="profesionalSearchInput" 
-                    placeholder="Buscar profesional por nombre, especialidad, servicio..."
-                    class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all text-slate-800 placeholder-slate-400"
-                    oninput="handleProfesionalSearch(this.value)"
-                />
-                <i data-lucide="search" class="absolute left-3 top-3.5 text-purple-500 w-5 h-5"></i>
-                <button 
-                    id="clearProfesionalSearchBtn" 
-                    class="absolute right-3 top-3.5 text-slate-400 hover:text-purple-600 transition-colors hidden"
-                    onclick="clearProfesionalSearch()"
-                >
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+            <!-- Filtros: Búsqueda y Especialidad -->
+            <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-4">
+                <div class="flex flex-col lg:flex-row gap-4">
+                    <!-- Buscador -->
+                    <div class="flex-grow relative">
+                        <input 
+                            type="text" 
+                            id="profesionalSearchInput" 
+                            placeholder="Buscar profesional por nombre, especialidad, servicio..."
+                            class="w-full pl-10 pr-10 py-3 rounded-lg border-2 border-purple-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all text-slate-800 placeholder-slate-400"
+                            oninput="handleProfesionalSearch(this.value)"
+                        />
+                        <i data-lucide="search" class="absolute left-3 top-3.5 text-purple-500 w-5 h-5"></i>
+                        <button 
+                            id="clearProfesionalSearchBtn" 
+                            class="absolute right-3 top-3.5 text-slate-400 hover:text-purple-600 transition-colors hidden"
+                            onclick="clearProfesionalSearch()"
+                        >
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Filtro por Especialidad -->
+                    <div class="min-w-64">
+                        <select id="profesionalEspecialidadSelect" 
+                                onchange="handleProfesionalEspecialidadChange(this.value)"
+                                class="w-full py-3 px-3 rounded-lg border-2 border-purple-200 focus:ring-2 focus:ring-purple-200 focus:border-purple-500 text-sm">
+                            ${especialidades.map(esp => `
+                                <option value="${esp}" ${profesionalEspecialidadActiva === esp ? 'selected' : ''}>
+                                    ${esp === 'Todas' ? '🩺 Todas las especialidades' : esp}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <!-- Selector de Vista -->
@@ -531,13 +553,21 @@ function closeProfesionalModal() {
 // ============================================================================
 
 function filterProfesionales(searchTerm) {
+    let filtered = profesionalesData;
+
+    // Filtrar por especialidad
+    if (profesionalEspecialidadActiva !== 'Todas') {
+        filtered = filtered.filter(p => p.especialidad === profesionalEspecialidadActiva);
+    }
+
+    // Si no hay término de búsqueda, retornar filtrados por especialidad
     if (!searchTerm || searchTerm.trim() === '') {
-        return profesionalesData;
+        return filtered;
     }
 
     const term = searchTerm.toLowerCase().trim();
 
-    return profesionalesData.filter(profesional => {
+    return filtered.filter(profesional => {
         // Buscar en información básica
         if (profesional.nombreCompleto.toLowerCase().includes(term)) return true;
         if (profesional.especialidad.toLowerCase().includes(term)) return true;
@@ -678,4 +708,13 @@ function clearProfesionalSearch() {
         searchInput.focus();
     }
     updateProfesionalesView('');
+}
+
+/**
+ * Maneja el cambio de filtro por especialidad
+ */
+function handleProfesionalEspecialidadChange(especialidad) {
+    profesionalEspecialidadActiva = especialidad;
+    const searchInput = document.getElementById('profesionalSearchInput');
+    updateProfesionalesView(searchInput ? searchInput.value : '');
 }

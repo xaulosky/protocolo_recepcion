@@ -33,28 +33,122 @@ function performSearch(term) {
     const lowerTerm = term.toLowerCase();
     const results = [];
 
-    // Buscar en Protocolos
-    protocolRules.forEach(rule => {
-        if (rule.title.toLowerCase().includes(lowerTerm) || rule.content.toLowerCase().includes(lowerTerm)) {
-            results.push({ ...rule, type: 'Protocolo Base', note: '' });
-        }
-    });
-
-    // Buscar en Guiones
-    Object.keys(scriptsData).forEach(cat => {
-        scriptsData[cat].forEach(script => {
-            if (script.title.toLowerCase().includes(lowerTerm) || script.content.toLowerCase().includes(lowerTerm)) {
-                results.push({ ...script, type: `Guión (${cat})` });
+    // Buscar en Protocolos Base
+    if (typeof protocolRules !== 'undefined') {
+        protocolRules.forEach(rule => {
+            if (rule.title.toLowerCase().includes(lowerTerm) || rule.content.toLowerCase().includes(lowerTerm)) {
+                results.push({ ...rule, type: 'Protocolo Base', note: '' });
             }
         });
-    });
+    }
 
-    // Buscar en Pagos
-    paymentPolicies.forEach(pol => {
-        if (pol.title.toLowerCase().includes(lowerTerm) || pol.content.toLowerCase().includes(lowerTerm)) {
-            results.push({ ...pol, type: 'Política Pago', note: '' });
-        }
-    });
+    // Buscar en Guiones (todas las categorías)
+    if (typeof scriptsData !== 'undefined') {
+        Object.keys(scriptsData).forEach(cat => {
+            scriptsData[cat].forEach(script => {
+                if (script.title.toLowerCase().includes(lowerTerm) || script.content.toLowerCase().includes(lowerTerm)) {
+                    results.push({ ...script, type: `Guión (${cat})` });
+                }
+            });
+        });
+    }
+
+    // Buscar en Políticas de Pago
+    if (typeof paymentPolicies !== 'undefined') {
+        paymentPolicies.forEach(pol => {
+            if (pol.title.toLowerCase().includes(lowerTerm) || pol.content.toLowerCase().includes(lowerTerm)) {
+                results.push({ ...pol, type: 'Política Pago', note: '' });
+            }
+        });
+    }
+
+    // ==================== NUEVAS BÚSQUEDAS ====================
+
+    // Buscar en Tratamientos
+    if (typeof tratamientosData !== 'undefined') {
+        tratamientosData.forEach(trat => {
+            const searchFields = [
+                trat.nombre || '',
+                trat.descripcion || '',
+                trat.profesional || '',
+                trat.categoria || '',
+                trat.subcategoria || ''
+            ].join(' ').toLowerCase();
+
+            if (searchFields.includes(lowerTerm)) {
+                const precio = trat.valorDesde
+                    ? `$${trat.valorDesde.toLocaleString('es-CL')}${trat.valorHasta ? ' - $' + trat.valorHasta.toLocaleString('es-CL') : ''}`
+                    : 'Consultar';
+                results.push({
+                    title: trat.nombre,
+                    content: `${trat.descripcion}\n\n💰 Valor: ${precio}\n👨‍⚕️ Profesional: ${trat.profesional}\n⏱️ Duración: ${trat.duracion || 'Variable'}`,
+                    type: `Tratamiento (${trat.categoria})`,
+                    note: trat.requiereEvaluacion ? '🔍 Requiere evaluación previa' : ''
+                });
+            }
+        });
+    }
+
+    // Buscar en Profesionales
+    if (typeof profesionalesData !== 'undefined') {
+        profesionalesData.forEach(prof => {
+            const searchFields = [
+                prof.nombre || '',
+                prof.especialidad || '',
+                prof.titulo || '',
+                (prof.tratamientos || []).join(' ')
+            ].join(' ').toLowerCase();
+
+            if (searchFields.includes(lowerTerm)) {
+                results.push({
+                    title: prof.nombre,
+                    content: `${prof.especialidad || prof.titulo}\n\n${prof.descripcion || ''}\n\n📅 Horarios: ${prof.horarios || 'Consultar disponibilidad'}`,
+                    type: 'Profesional',
+                    note: ''
+                });
+            }
+        });
+    }
+
+    // Buscar en Consultas
+    if (typeof consultasData !== 'undefined') {
+        consultasData.forEach(cons => {
+            const searchFields = [
+                cons.nombre || cons.title || '',
+                cons.descripcion || cons.content || '',
+                cons.profesional || ''
+            ].join(' ').toLowerCase();
+
+            if (searchFields.includes(lowerTerm)) {
+                results.push({
+                    title: cons.nombre || cons.title,
+                    content: cons.descripcion || cons.content || '',
+                    type: 'Consulta',
+                    note: cons.valor ? `💰 Valor: $${cons.valor.toLocaleString('es-CL')}` : ''
+                });
+            }
+        });
+    }
+
+    // Buscar en Productos
+    if (typeof productsData !== 'undefined') {
+        productsData.forEach(prod => {
+            const searchFields = [
+                prod.nombre || prod.name || '',
+                prod.descripcion || prod.description || '',
+                prod.categoria || prod.category || ''
+            ].join(' ').toLowerCase();
+
+            if (searchFields.includes(lowerTerm)) {
+                results.push({
+                    title: prod.nombre || prod.name,
+                    content: prod.descripcion || prod.description || '',
+                    type: 'Producto',
+                    note: prod.precio || prod.price ? `💰 ${prod.precio || prod.price}` : ''
+                });
+            }
+        });
+    }
 
     return results;
 }

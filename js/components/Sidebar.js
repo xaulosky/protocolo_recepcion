@@ -5,15 +5,20 @@
 
 // Estructura de navegación del sidebar
 const sidebarNavigation = {
-    general: {
-        title: 'General',
-        icon: 'clipboard-list',
+    // Nueva sección: Protocolos Internos (referencia operativa)
+    protocolos: {
+        title: 'Protocolos Internos',
+        icon: 'book-open',
         items: [
-            { id: 'base', label: 'Inicio', icon: 'home' },
-            { id: 'pagos', label: 'Pagos y Citas', icon: 'credit-card' },
-            { id: 'suspension', label: 'Protocolo de Suspensión', icon: 'alert-triangle' }
+            { id: 'protocolos-base', label: 'Protocolos Base', icon: 'shield-alert' },
+            { id: 'proto-recepcion', label: 'Recepción y Atención', icon: 'monitor', category: 'recepcion' },
+            { id: 'proto-caja', label: 'Caja y Pagos', icon: 'banknote', category: 'caja' },
+            { id: 'proto-tens', label: 'Clínico / TENS', icon: 'stethoscope', category: 'tens' },
+            { id: 'proto-inventario', label: 'Inventario', icon: 'package', category: 'inventario' },
+            { id: 'suspension', label: 'Políticas Suspensión', icon: 'alert-triangle' }
         ]
     },
+    // Guiones basados en los protocolos
     guiones: {
         title: 'Guiones',
         icon: 'message-circle',
@@ -33,8 +38,8 @@ const sidebarNavigation = {
         items: [
             { id: 'tratamientos', label: 'Tratamientos', icon: 'sparkles' },
             { id: 'consultas', label: 'Consultas', icon: 'calendar-check' },
-            { id: 'boxes', label: 'Boxes', icon: 'door-open' },
             { id: 'profesionales', label: 'Profesionales', icon: 'users' },
+            { id: 'boxes', label: 'Boxes', icon: 'door-open' },
             { id: 'productos', label: 'Productos', icon: 'shopping-bag' }
         ]
     },
@@ -47,9 +52,9 @@ const sidebarNavigation = {
             { id: 'consentimientos', label: 'Consentimientos', icon: 'file-signature' }
         ]
     },
-    administracion: {
-        title: 'Administración',
-        icon: 'building',
+    herramientas: {
+        title: 'Herramientas',
+        icon: 'wrench',
         items: [
             { id: 'solicitud-reembolso', label: 'Solicitud de Reembolso', icon: 'receipt-text' },
             { id: 'giftcards', label: 'Generar Gift Card', icon: 'gift' }
@@ -63,7 +68,7 @@ const sidebarNavigation = {
  */
 function SidebarNavigation() {
     const state = appState.getState();
-    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos', 'administracion'];
+    const expandedCategories = state.expandedCategories || ['protocolos', 'guiones', 'clinica', 'documentos', 'herramientas'];
     const isCollapsed = state.sidebarCollapsed || false;
     const isActive = state.activeTab === 'base';
 
@@ -137,7 +142,7 @@ function updateSidebarVisualState() {
 function Sidebar() {
     const state = appState.getState();
     const isCollapsed = state.sidebarCollapsed || false;
-    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos', 'administracion'];
+    const expandedCategories = state.expandedCategories || ['protocolos', 'guiones', 'clinica', 'documentos', 'herramientas'];
 
     return `
         <aside id="sidebar" class="sidebar ${isCollapsed ? 'sidebar-collapsed' : ''}" role="navigation">
@@ -309,7 +314,7 @@ function toggleSidebar() {
  */
 function toggleSidebarCategory(categoryKey) {
     const state = appState.getState();
-    const expandedCategories = state.expandedCategories || ['general', 'guiones', 'clinica', 'documentos', 'administracion'];
+    const expandedCategories = state.expandedCategories || ['protocolos', 'guiones', 'clinica', 'documentos', 'herramientas'];
 
     let newExpanded;
     if (expandedCategories.includes(categoryKey)) {
@@ -328,7 +333,7 @@ function navigateToSection(sectionId, category = null) {
     // Cerrar sidebar en móvil
     closeMobileSidebar();
 
-    // Si es un guion con categoría específica
+    // Lógica para guiones con categorías
     if (sectionId.startsWith('guiones-') && category) {
         appState.setState({
             activeTab: 'guiones',
@@ -340,7 +345,17 @@ function navigateToSection(sectionId, category = null) {
             activeTab: 'guiones',
             searchTerm: ''
         });
-    } else {
+    }
+    // Lógica para protocolos genéricos con categorías (Recepción, Caja, TENS, Inventario)
+    else if (sectionId.startsWith('proto-') && category) {
+        appState.setState({
+            activeTab: 'protocolos-genericos',
+            scriptCategory: category, // Reusamos scriptCategory para almacenar la categoría del protocolo
+            searchTerm: ''
+        });
+    }
+    // Navegación estándar
+    else {
         appState.setState({
             activeTab: sectionId,
             searchTerm: ''

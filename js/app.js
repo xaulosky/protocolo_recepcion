@@ -128,14 +128,25 @@ class App {
         // Renderizar contenido según sección activa
         switch (state.activeTab) {
             case 'base':
+                title = 'Inicio';
+                icon = 'layout-dashboard';
+                content = HomeContent();
+                break;
+            case 'protocolos-base':
                 title = 'Protocolo Base';
-                icon = 'check-circle';
+                icon = 'clipboard-list';
                 content = ProtocolBase();
                 break;
             case 'guiones':
                 title = 'Guiones Técnicos';
                 icon = 'message-circle';
                 content = GuionesContent();
+                break;
+            case 'protocolos-genericos':
+                // Nota: El título e icono se gestionan internamente en el componente
+                title = 'Protocolos Internos';
+                icon = 'book-open';
+                content = ProtocolCategoryContent();
                 break;
             case 'pagos':
                 title = 'Pagos y Citas';
@@ -198,9 +209,9 @@ class App {
                 content = GiftCardContent();
                 break;
             default:
-                title = 'Protocolo Base';
-                icon = 'check-circle';
-                content = ProtocolBase();
+                title = 'Inicio';
+                icon = 'layout-dashboard';
+                content = HomeContent();
         }
 
         this.mainContent.innerHTML = `
