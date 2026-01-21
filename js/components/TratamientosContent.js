@@ -156,12 +156,12 @@ function renderTratamientosList() {
 
     if (filtered.length === 0) {
         return `
-    < div class="col-span-full text-center py-12 text-slate-500" >
+            <div class="col-span-full text-center py-12 text-slate-500">
                 <i data-lucide="search-x" class="w-16 h-16 mx-auto mb-4 text-slate-300"></i>
                 <p class="font-medium text-lg">No se encontraron tratamientos</p>
                 <p class="text-sm">Intenta con otro término de búsqueda o categoría</p>
-            </div >
-    `;
+            </div>
+        `;
     }
 
     return filtered.map(t => renderTratamientoCard(t)).join('');
@@ -219,9 +219,9 @@ function renderTratamientoCard(tratamiento) {
     const icono = getCategoriaIcon(tratamiento.categoria);
 
     return `
-    < div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all group cursor-pointer"
-onclick = "openTratamientoModal('${tratamiento.id}')" >
-            < !--Header con gradiente-- >
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all group cursor-pointer"
+            onclick="openTratamientoModal('${tratamiento.id}')">
+            <!-- Header con gradiente -->
             <div class="bg-gradient-to-r ${gradiente} p-3 text-white">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">
@@ -231,40 +231,40 @@ onclick = "openTratamientoModal('${tratamiento.id}')" >
                 </div>
             </div>
             
-            <!--Contenido -->
-    <div class="p-4">
-        <h3 class="font-bold text-slate-800 text-lg mb-2 group-hover:text-purple-600 transition-colors">
-            ${tratamiento.nombre}
-        </h3>
+            <!-- Contenido -->
+            <div class="p-4">
+                <h3 class="font-bold text-slate-800 text-lg mb-2 group-hover:text-purple-600 transition-colors">
+                    ${tratamiento.nombre}
+                </h3>
 
-        <p class="text-sm text-slate-600 mb-3 line-clamp-2">
-            ${tratamiento.descripcion}
-        </p>
+                <p class="text-sm text-slate-600 mb-3 line-clamp-2">
+                    ${tratamiento.descripcion}
+                </p>
 
-        <!-- Profesional -->
-        <div class="flex items-center gap-2 mb-3 text-sm">
-            <i data-lucide="user" class="w-4 h-4 text-purple-500"></i>
-            <span class="text-slate-700 font-medium">${tratamiento.profesional}</span>
-        </div>
+                <!-- Profesional -->
+                <div class="flex items-center gap-2 mb-3 text-sm">
+                    <i data-lucide="user" class="w-4 h-4 text-purple-500"></i>
+                    <span class="text-slate-700 font-medium">${tratamiento.profesional}</span>
+                </div>
 
-        <!-- Info grid -->
-        <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-            <div class="flex items-center gap-1 text-slate-500">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
-                <span>${tratamiento.duracion}</span>
-            </div>
-            <div class="flex items-center gap-1 text-slate-500">
-                <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
-                <span>${tratamiento.sesiones}</span>
-            </div>
-        </div>
+                <!-- Info grid -->
+                <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+                    <div class="flex items-center gap-1 text-slate-500">
+                        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                        <span>${tratamiento.duracion}</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-slate-500">
+                        <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+                        <span>${tratamiento.sesiones}</span>
+                    </div>
+                </div>
 
-        <!-- Precio y evaluación -->
-        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
-            <div class="text-lg font-bold text-purple-600">
-                ${formatPrecio(tratamiento.valorDesde, tratamiento.valorHasta)}
-            </div>
-            ${tratamiento.evaluacionGratuita ? `
+                <!-- Precio y evaluación -->
+                <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                    <div class="text-lg font-bold text-purple-600">
+                        ${formatPrecio(tratamiento.valorDesde, tratamiento.valorHasta)}
+                    </div>
+                    ${tratamiento.evaluacionGratuita ? `
                         <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">
                             Eval. gratuita
                         </span>
@@ -273,16 +273,16 @@ onclick = "openTratamientoModal('${tratamiento.id}')" >
                             Requiere eval.
                         </span>
                     ` : ''}
-        </div>
+                </div>
 
-        <!-- Botón Ver Detalles -->
-        <button class="w-full mt-3 px-4 py-2 bg-gradient-to-r ${gradiente} text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            onclick="event.stopPropagation(); openTratamientoModal('${tratamiento.id}')">
-            <i data-lucide="info" class="w-4 h-4"></i>
-            Ver Detalles Completos
-        </button>
-    </div>
-        </div >
+                <!-- Botón Ver Detalles -->
+                <button class="w-full mt-3 px-4 py-2 bg-gradient-to-r ${gradiente} text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                    onclick="event.stopPropagation(); openTratamientoModal('${tratamiento.id}')">
+                    <i data-lucide="info" class="w-4 h-4"></i>
+                    Ver Detalles Completos
+                </button>
+            </div>
+        </div>
     `;
 }
 
@@ -333,7 +333,7 @@ function renderTratamientoModal(tratamiento) {
     const icono = getCategoriaIcon(tratamiento.categoria);
 
     return `
-    < !--Modal Overlay-- >
+        <!-- Modal Overlay -->
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onclick="closeTratamientoModal()">
             <!-- Modal Content -->
