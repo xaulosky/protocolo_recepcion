@@ -2108,6 +2108,65 @@ const tratamientosData = [
     }
 ];
 
+const tratamientosInfoBase = {
+    'Toxina Botulínica': {
+        titulo: 'Toxina Botulínica',
+        resumen: 'Inyectada en los músculos de expresión para bloquear la liberación de acetilcolina y relajar temporalmente arrugas dinámicas, sin cirugía.',
+        puntos: [
+            'Duración y seguimiento: resultados entre 3 y 7 días y efecto de 4 a 6 meses, por lo que se planifican repeticiones cada ventana de 4 meses para mantener el impacto.',
+            'Indicaciones clave: arrugas dinámicas, prevención de líneas nuevas, corrección de asimetrías, bruxismo, hiperhidrosis y espasmos musculares benignos.',
+            'Cuidados y seguridad: procedimiento ambulatorio sin anestesia general; hematomas, enrojecimiento o cefalea leve suelen desaparecer solos y se minimizan con manos certificadas.'
+        ]
+    },
+    'Ácido Hialurónico': {
+        titulo: 'Ácido Hialurónico',
+        resumen: 'Gel reabsorbible presente de forma natural en la piel, ideal para restaurar volumen, hidratar y suavizar arrugas rellenando surcos y redefiniendo contornos.',
+        puntos: [
+            'Duración y preferencias por zona: labios y ojos requieren retoques cada 6-12 meses, mientras que mentón, pómulos y contornos estructurales duran entre 12 y 18 meses; la reticulación del producto influye.',
+            'Beneficios y cuidados: mejora inmediata de textura, volumen e hidratación con molestias leves; se recomienda evitar ejercicio intenso 48 horas, no manipular la zona y proteger del sol.'
+        ]
+    },
+    'Bioestimuladores': {
+        titulo: 'Bioestimuladores',
+        resumen: 'Inyecciones como Sculptra®, Radiesse® o Ellansé® que estimulan fibroblastos y la síntesis natural de colágeno y elastina para aumentar firmeza y densidad con el tiempo.',
+        puntos: [
+            'Resultados y duración: mejoras progresivas desde las primeras semanas y duración de 12 a 24 meses (y hasta 4 años con Ellansé®), combinando corrección ligera inmediata con remodelación biológica.',
+            'Indicaciones y tolerancia: ideales para flacidez, pérdida de contorno mandibular, papada y manos envejecidas; hinchazón, equimosis o bultitos temporales son los efectos más frecuentes.'
+        ]
+    },
+    'Radiofrecuencia': {
+        titulo: 'Radiofrecuencia Fraccionada (Morpheus 8)',
+        resumen: 'Combina microagujas con radiofrecuencia hasta 4 mm de profundidad para calentar dermis y grasa subcutánea, creando neocolágeno que tensa el óvalo, refinando poros y cicatrices.',
+        puntos: [
+            'Beneficios y recuperación: mejora calidad de la piel y contornos en 4 a 8 semanas; la recuperación dura 24-48 horas con enrojecimiento leve similar a una exposición solar intensa.'
+        ]
+    },
+    'Láser': {
+        titulo: 'Láser CO₂ y CoolPeel',
+        resumen: 'El láser CO₂ fraccionado remueve capas superficiales para tratar manchas, textura irregular y arrugas profundas, mientras CoolPeel reduce el tiempo de recuperación al dejar zonas intactas.',
+        puntos: [
+            'Procedimiento y postratamiento: sesión de alrededor de 15 minutos sin anestesia general, requiere hidratación posterior y evitar retinoides y sol mientras la piel se regenera.',
+            'CoolPeel mantiene áreas intactas para acelerar la recuperación sin sacrificar los beneficios del láser ablativo.'
+        ]
+    },
+    'HIFU': {
+        titulo: 'HIFU Ultraformer III',
+        resumen: 'Ultrasonido micro y macrofocalizado llega hasta la capa SMAS para estimular colágeno y tensar tejidos sin cirugía, ideal para contornos faciales y corporales.',
+        puntos: [
+            'Duración y mantenimiento: sesión de 30 a 90 minutos, resultados que mejoran en 4 a 12 semanas y permanecen entre 12 y 24 meses; se puede repetir cada 6-12 meses para sostener el efecto lifting.',
+            'Sensaciones: calor o cosquilleo controlado con leve enrojecimiento o hinchazón transitoria, sin necesidad de tiempo de inactividad.'
+        ]
+    },
+    'Dermatofuncional': {
+        titulo: 'HydraFacial MD y protocolos de hidratación',
+        resumen: 'Combina limpieza, extracción e hidratación intensiva con sueros personalizados en 30-45 minutos mediante tecnología de vórtex patentada, logrando brillo inmediato.',
+        puntos: [
+            'Resultados y frecuencia: el brillo dura al menos una semana y se recomienda repetir cada 4 a 6 semanas para mantener la piel hidratada y libre de poros congestionados.',
+            'Cuidados posteriores: sin tiempo de inactividad, pero conviene evitar maquillaje intenso, exfoliantes agresivos y ejercicio extenuante durante las primeras 24 horas.'
+        ]
+    }
+};
+
 // Obtener categorías únicas
 function getCategoriasTratamientos() {
     const categorias = [...new Set(tratamientosData.map(t => t.categoria))];

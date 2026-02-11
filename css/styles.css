@@ -3,6 +3,29 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
+/* Ocultar scrollbar manteniendo scroll funcional */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Limitar líneas de texto */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 /* ==================== LAYOUT PRINCIPAL ==================== */
 
 .app-container {

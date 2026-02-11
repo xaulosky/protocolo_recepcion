@@ -3,7 +3,44 @@
 > Documento generado el 13 de Diciembre, 2024  
 > Este documento detalla qué tratamientos realiza cada profesional de la clínica.
 
----
+--- 
+
+## 🧬 Información base ampliada de tratamientos
+
+### Toxina Botulínica
+- ¿Qué es? Inyectada en los músculos de la expresión, bloquea la liberación de acetilcolina para relajar temporalmente las arrugas de frente, entrecejo y patas de gallo sin cirugía. citeturn0search1turn0search4
+- Duración y seguimiento: los resultados empiezan a notarse entre 3 y 7 días y permanecen de 4 a 6 meses (dependiendo de zona, metabolismo y expresividad), por lo que se planifican repeticiones cada ventana de 4 meses para mantener el impacto. citeturn0search0turn0search1
+- Indicaciones clave: además de las arrugas, se usa también para prevenir líneas nuevas, corregir asimetrías, reducir bruxismo o hiperhidrosis, y tratar espasmos musculares leves cuando lo aplica un médico estético. citeturn0search1turn0search4
+- Cuidados y seguridad: es un procedimiento ambulatorio sin anestesia general; los efectos secundarios (hematomas, enrojecimiento, cefalea leve) suelen desaparecer solos, pero requiere manos de profesionales autorizados para minimizar riesgos como la dispersión en músculos no deseados. citeturn0search2turn0search8
+
+### Ácido Hialurónico
+- ¿Qué es? Gel reabsorbible presente de forma natural en la piel que restaura volumen, mejora hidratación y suaviza arrugas al rellenar surcos o redefinir contornos (labios, mentón, pómulos, ojeras, etc.). citeturn1search0turn1search1
+- Duración y preferencias por zona: las regiones más móviles (labios, ojos) suelen necesitar retoques cada 6 a 12 meses, mientras que zonas estructurales (mentón, pómulos) conservan resultados entre 12 y 18 meses; la consistencia y reticulación del producto también influyen. citeturn1search6turn1search9
+- Beneficios y cuidados: ofrece mejora inmediata en textura, volumen e hidratación, con molestias leves y recuperación rápida; se recomienda evitar ejercicio intenso por 48 h, no manipular la zona el primer día y proteger del sol para prolongar la duración. citeturn1search0turn1search7
+
+### Bioestimuladores
+- ¿Qué son? Son inyecciones de sustancias como ácido poli-L-láctico (Sculptra), hidroxiapatita de calcio (Radiesse) o policaprolactona (Ellansé) que estimulan fibroblastos y la síntesis natural de colágeno, fomentando firmeza y densidad gradual. citeturn2search1turn2search4
+- Resultados y duración: pueden notarse mejoras progresivas desde las primeras semanas y perdurar entre 12 y 24 meses (hasta 4 años con Ellansé), combinando corrección inmediata leve con remodelación biológica continuada. citeturn2search0turn2search3
+- Indicaciones y tolerancia: ideales para flacidez, pérdida de contorno mandibular, papada y manos envejecidas; el perfil de seguridad es alto, con hinchazón puntual, equimosis o bultitos temporales como efectos más frecuentes. citeturn2search3turn2search8
+
+### Radiofrecuencia fraccionada con microagujas (Morpheus 8)
+- ¿Qué hace? Combina microagujas con radiofrecuencia para llegar hasta 4 mm de profundidad, calienta la dermis y grasa subcutánea, y genera neocolagénesis que tensa el óvalo, refina poros y suaviza cicatrices sin cirugía. citeturn3search1
+- Beneficios y recuperación: mejora calidad, brillo y contorno facial con resultados graduados en 4 a 8 semanas; la recuperación dura 24-48 horas, con enrojecimiento leve similar a una quemadura solar. citeturn3search1
+
+### Láser CO₂ (CoolPeel y similares)
+- ¿Qué logra? El láser CO₂ fraccionado remueve capas superficiales para tratar manchas, textura irregular y arrugas profundas; CoolPeel reduce el tiempo de recuperación al atacar sólo fracciones de piel y dejar zonas intactas. citeturn3search2turn3news12
+- Procedimiento y postratamiento: dura unos 15 minutos para el rostro completo, no requiere anestesia general y necesita hidratación posterior; el enrojecimiento suele durar 1-2 días, pero hay que evitar retinoides y el sol mientras la piel se regenera. citeturn3search2
+
+### HIFU Ultraformer III
+- ¿Cómo trabaja? Ultrasonido micro y macro focalizado alcanza capas profundas (hasta SMAS) sin cirugía para estimular colágeno, tensar tejidos y moldear contornos faciales y corporales. citeturn5search0
+- Duración y mantenimiento: una sesión suele durar 30-90 minutos según la zona y los resultados continúan mejorando durante 4-12 semanas, con efectos que alcanzan hasta 12-24 meses; puede repetirse cada 6-12 meses para sostener el lifting. citeturn5search0
+- Sensaciones: se percibe calor o cosquilleo y puede haber leve enrojecimiento o hinchazón transitoria, pero no exige tiempo de inactividad. citeturn5search0
+
+### HydraFacial
+- ¿Pasos clave? Limpieza, extracción por succión y nutrición con sueros personalizados en 30-45 minutos; combina exfoliación, extracción e hidratación con tecnología patentada para obtener un brillo inmediato. citeturn4search0turn4search3
+- Resultados y frecuencia: el brillo dura al menos una semana y se recomienda repetir cada 4 a 6 semanas para mantener la piel hidratada, equilibrada y libre de poros congestionados. citeturn4search0turn4search5
+- Cuidados posteriores: no requiere tiempo de inactividad, pero conviene evitar maquillaje intenso, exfoliantes agresivos y ejercicio extenuante durante las primeras 24 horas. citeturn4search6turn4search8
+
 
 ## 📑 Índice de Profesionales
 
