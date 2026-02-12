@@ -413,7 +413,20 @@ const tratamientosData = [
         postTratamiento: ["Reposo con cabecera elevada", "Compresas frías", "Gotas lubricantes oculares"],
         personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
         insumos: [
-            { cantidad: 1, item: 'Kit Blefaroplastia + Lifting', valor: null, nota: null },
+            {
+                cantidad: 1,
+                item: 'Kit Blefaroplastia',
+                valor: null,
+                nota: null,
+                contenidos: ['Mango #3', 'Tijera Westcott', 'Tijera Iris', 'Pinza Adson c/s diente', 'Portaagujas Castroviejo', '2 Desmarres', '4 Mosquitos']
+            },
+            {
+                cantidad: 1,
+                item: 'Kit Básico de Vestimenta',
+                valor: null,
+                nota: null,
+                contenidos: ['Cubre calzado', 'Pechera', 'Gorro', 'Mascarilla']
+            },
             { cantidad: 2, item: 'Sutura Nylon 6-0', valor: null, nota: 'Piel' },
             { cantidad: 1, item: 'Sutura Vicryl 5-0', valor: null, nota: 'Profundo' },
             { cantidad: 3, item: 'Lidocaína 2% c/epi', valor: null, nota: null }

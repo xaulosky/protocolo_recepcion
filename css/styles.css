@@ -8,6 +8,7 @@ body {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
@@ -19,6 +20,7 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+
 .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -43,7 +45,7 @@ body {
     transition: margin-left 0.3s ease;
 }
 
-.sidebar-collapsed ~ .main-content,
+.sidebar-collapsed~.main-content,
 .app-container:has(.sidebar-collapsed) .main-content {
     margin-left: 70px;
 }
@@ -343,7 +345,8 @@ body {
 #mainContent {
     padding: 24px;
     background-color: white;
-    min-height: 100%;
+    height: 100vh;
+    overflow: hidden;
 }
 
 @media (max-width: 640px) {
@@ -475,13 +478,16 @@ body {
     width: 6px;
     height: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 3px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }

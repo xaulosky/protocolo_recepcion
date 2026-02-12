@@ -158,13 +158,13 @@ function TratamientosContent() {
         tratamientoSearchTerm.length > 0;
 
     return `
-        <div class="space-y-5 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_rgba(248,242,226,0.8))] p-4 md:p-6 rounded-[32px] shadow-[0_25px_80px_rgba(15,23,42,0.08)]">
+        <div class="h-full">
 
 
             <!-- Layout principal: 2 columnas -->
-            <div class="grid gap-4 lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] h-full">
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] lg:grid-rows-[minmax(0,1fr)] h-full">
                 <!-- COLUMNA IZQUIERDA: Filtros + Lista -->
-                <div class="bg-white/50 rounded-2xl flex flex-col h-[calc(100vh-6rem)] pr-2">
+                <div class="bg-white/50 rounded-2xl flex flex-col h-full min-h-0 pr-2">
                     <!-- Stats / Badges compactos -->
                     <div class="flex items-center justify-between px-1 py-2 flex-shrink-0">
                         <div class="flex gap-2">
@@ -240,7 +240,7 @@ function TratamientosContent() {
                 </div>
 
                 <!-- COLUMNA DERECHA: Detalle completo -->
-                <div id="tratamientoDetailPanel" class="lg:h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar pl-1">
+                <div id="tratamientoDetailPanel" class="lg:h-full lg:overflow-y-auto min-h-0 custom-scrollbar pl-1">
                     ${renderTratamientoDetailPanel()}
                 </div>
             </div>
@@ -528,7 +528,14 @@ function renderTratamientoDetailPanel() {
                                         ${tratamiento.insumos.map(insumo => `
                                             <tr class="border-b border-orange-50 hover:bg-orange-50/50">
                                                 <td class="py-1.5 px-2 text-center font-medium text-orange-700">${insumo.cantidad}</td>
-                                                <td class="py-1.5 px-2 text-slate-700">${insumo.item}</td>
+                                                <td class="py-1.5 px-2 text-slate-700 whitespace-normal min-w-[150px]">
+                                                    ${insumo.item}
+                                                    ${insumo.contenidos && insumo.contenidos.length > 0 ? `
+                                                        <ul class="mt-1 pl-2 text-xs text-slate-500 border-l-2 border-slate-200 ml-1 space-y-0.5">
+                                                            ${insumo.contenidos.map(c => `<li>• ${c}</li>`).join('')}
+                                                        </ul>
+                                                    ` : ''}
+                                                </td>
                                                 <td class="py-1.5 px-2 text-slate-500">${insumo.valor || '-'}</td>
                                             </tr>
                                         `).join('')}
