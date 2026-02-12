@@ -59,6 +59,13 @@ const sidebarNavigation = {
             { id: 'solicitud-reembolso', label: 'Solicitud de Reembolso', icon: 'receipt-text' },
             { id: 'giftcards', label: 'Generar Gift Card', icon: 'gift' }
         ]
+    },
+    ayuda: {
+        title: 'Ayuda',
+        icon: 'help-circle',
+        items: [
+            { id: 'faq', label: 'Preguntas Frecuentes', icon: 'message-circle-question' }
+        ]
     }
 };
 
@@ -142,7 +149,7 @@ function updateSidebarVisualState() {
 function Sidebar() {
     const state = appState.getState();
     const isCollapsed = state.sidebarCollapsed || false;
-    const expandedCategories = state.expandedCategories || ['protocolos', 'guiones', 'clinica', 'documentos', 'herramientas'];
+    const expandedCategories = state.expandedCategories || ['protocolos', 'guiones', 'clinica', 'documentos', 'herramientas', 'ayuda'];
 
     return `
         <aside id="sidebar" class="sidebar ${isCollapsed ? 'sidebar-collapsed' : ''}" role="navigation">

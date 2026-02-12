@@ -208,6 +208,11 @@ class App {
                 icon = 'gift';
                 content = GiftCardContent();
                 break;
+            case 'faq':
+                title = 'Preguntas Frecuentes';
+                icon = 'help-circle';
+                content = FAQContent();
+                break;
             default:
                 title = 'Inicio';
                 icon = 'layout-dashboard';
@@ -215,12 +220,16 @@ class App {
         }
 
         if (state.activeTab === 'tratamientos') {
+            // Aplicar modo full-height para Tratamientos
+            this.mainContent.classList.add('app-mode-full-height');
             this.mainContent.innerHTML = `
                 <div class="fade-in h-full">
                     ${content}
                 </div>
             `;
         } else {
+            // Modo normal con scroll
+            this.mainContent.classList.remove('app-mode-full-height');
             this.mainContent.innerHTML = `
                 <div class="fade-in">
                     <!-- Header de sección -->

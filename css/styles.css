@@ -17,6 +17,7 @@ body {
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -24,6 +25,7 @@ body {
 .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -345,8 +347,15 @@ body {
 #mainContent {
     padding: 24px;
     background-color: white;
-    height: 100vh;
-    overflow: hidden;
+    /* Removed restrictive height/overflow to allow scrolling in normal sections */
+    height: 100%;
+    min-height: 100%;
+}
+
+/* Base class for full-height applications like Tratamientos */
+.app-mode-full-height {
+    height: 100vh !important;
+    overflow: hidden !important;
 }
 
 @media (max-width: 640px) {

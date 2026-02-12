@@ -17,12 +17,21 @@ function ProfesionalesContent() {
     return `
         <div class="space-y-6">
             <!-- Header Info -->
-            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100 flex items-start gap-3">
-                <i data-lucide="info" class="text-purple-600 w-5 h-5 mt-0.5"></i>
-                <div class="flex-grow">
-                    <h3 class="font-bold text-purple-900 mb-1">Directorio de Profesionales</h3>
-                    <p class="text-sm text-purple-800">Información de contacto, horarios y prestaciones de nuestros especialistas.</p>
+            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100 flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="info" class="text-purple-600 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <h3 class="font-bold text-purple-900 mb-1">Directorio de Profesionales</h3>
+                        <p class="text-sm text-purple-800">Información de contacto, horarios y prestaciones de nuestros especialistas.</p>
+                    </div>
                 </div>
+                <button
+                    onclick="ExcelExporter.exportProfesionalesToExcel(profesionalesData)"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 whitespace-nowrap shadow-sm hover:shadow-md"
+                >
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    Exportar Excel
+                </button>
             </div>
 
             <!-- Filtros: Búsqueda y Especialidad -->

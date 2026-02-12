@@ -89,5 +89,74 @@ const ExcelExporter = {
 
         // 5. Export
         XLSX.writeFile(wb, fileName);
+    },
+
+    exportProfesionalesToExcel: function (data, fileName = 'profesionales_cialo.xlsx') {
+        if (!data || data.length === 0) {
+            alert('No hay datos de profesionales para exportar.');
+            return;
+        }
+
+        const excelData = data.map(p => {
+            const formatList = (list) => Array.isArray(list) ? list.join('\n') : (list || '');
+
+            return {
+                'ID': p.id,
+                'Nombre Completo': p.nombreCompleto,
+                'Especialidad': p.especialidad,
+                'RUT': p.rut || '',
+                'Teléfono': p.telefono || '',
+                'Email': p.email || '',
+                // Disponibilidad
+                'Días Atención': formatList(p.disponibilidad?.dias),
+                'Horarios': p.disponibilidad?.horario || '',
+                'Frecuencia': p.disponibilidad?.frecuencia || '',
+                'Flexibilidad': p.disponibilidad?.flexibilidad || '',
+                // Formación
+                'Pregrado': p.formacion?.pregrado || '',
+                'Especialidad (U)': p.formacion?.especialidad || '',
+                'Subespecialidad': p.formacion?.subespecialidad || '',
+                'Certificaciones': formatList(p.formacion?.certificaciones),
+                'Membresías': formatList(p.formacion?.membresias),
+                // Prestaciones
+                'Servicios': formatList(p.prestaciones?.servicios),
+                'Duración Promedio': p.prestaciones?.duracionPromedio || '',
+                // Logística
+                'Necesita Asistente': p.requisitosLogisticos?.necesitaAsistente ? 'Sí' : 'No',
+                'Insumos Requeridos': formatList(p.requisitosLogisticos?.insumosRequeridos),
+                'Pendientes Administrativos': formatList(p.pendientesAdministrativos)
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(excelData);
+
+        // Adjust column widths
+        const colWidths = [
+            { wch: 20 }, // ID
+            { wch: 30 }, // Nombre
+            { wch: 30 }, // Especialidad
+            { wch: 15 }, // RUT
+            { wch: 15 }, // Telefono
+            { wch: 25 }, // Email
+            { wch: 20 }, // Dias
+            { wch: 30 }, // Horarios
+            { wch: 20 }, // Frecuencia
+            { wch: 10 }, // Flexibilidad
+            { wch: 20 }, // Pregrado
+            { wch: 25 }, // Especialidad U
+            { wch: 25 }, // Subespecialidad
+            { wch: 30 }, // Certificaciones
+            { wch: 30 }, // Membresias
+            { wch: 40 }, // Servicios
+            { wch: 20 }, // Duracion
+            { wch: 15 }, // Asistente
+            { wch: 30 }, // Insumos
+            { wch: 30 }  // Pendientes
+        ];
+        ws['!cols'] = colWidths;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Profesionales");
+        XLSX.writeFile(wb, fileName);
     }
 };
