@@ -214,24 +214,32 @@ class App {
                 content = HomeContent();
         }
 
-        this.mainContent.innerHTML = `
-            <div class="fade-in">
-                <!-- Header de sección -->
-                <div class="mb-6 pb-4 border-b border-slate-200">
-                    <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
-                        <div class="p-2 bg-purple-100 rounded-lg">
-                            <i data-lucide="${icon}" class="w-6 h-6 text-purple-600"></i>
-                        </div>
-                        ${title}
-                    </h1>
-                </div>
-                
-                <!-- Contenido -->
-                <div class="content-area">
+        if (state.activeTab === 'tratamientos') {
+            this.mainContent.innerHTML = `
+                <div class="fade-in h-full">
                     ${content}
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            this.mainContent.innerHTML = `
+                <div class="fade-in">
+                    <!-- Header de sección -->
+                    <div class="mb-6 pb-4 border-b border-slate-200">
+                        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i data-lucide="${icon}" class="w-6 h-6 text-purple-600"></i>
+                            </div>
+                            ${title}
+                        </h1>
+                    </div>
+                    
+                    <!-- Contenido -->
+                    <div class="content-area">
+                        ${content}
+                    </div>
+                </div>
+            `;
+        }
 
         // Inicializar event listeners específicos
         if (state.activeTab === 'guiones') {
