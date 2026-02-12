@@ -18,6 +18,10 @@ const tratamientosData = [
         duracion: '20 min',
         sesiones: '1 sesión (efecto 4-6 meses)',
         protocolo: 'Repetir cada 4–6 meses. Control a los 10–14 días para ajustes. Uso preventivo en pacientes jóvenes.',
+        indicaciones: ["Arrugas dinámicas (Frente, Entrecejo, Patas de Gallo)", "Prevención de arrugas", "Mirada cansada", "Asimetrías leves"],
+        contraindicaciones: ["Embarazo o lactancia", "Enfermedades neuromusculares (ej. Miastenia Gravis)", "Infección activa en la zona de punción", "Alergia a la albúmina (huevo)"],
+        preTratamiento: ["Acudir con la piel limpia y sin maquillaje", "Evitar aspirina o antiinflamatorios 24h antes (disminuye riesgo de hematomas)"],
+        postTratamiento: ["No acostarse ni agachar la cabeza por 4 horas", "No realizar ejercicio físico intenso por 24 horas", "No masajear ni frotar la zona tratada", "Evitar calor extremo (sauna, sol directo) por 24 horas", "Gesticular exageradamente durante la primera hora"],
         requiereEvaluacion: true,
         evaluacionGratuita: true,
         notas: '💰 PRECIOS POR PROFESIONAL:\n• Dr. Nicolás Laucirica: $210.000 (Fidelización: $189.000)\n• Dra. Mariane Kiss: $179.000'
@@ -35,6 +39,10 @@ const tratamientosData = [
         duracion: '20 min',
         sesiones: '1 sesión (efecto 4-6 meses)',
         protocolo: 'Repetir cada 4–6 meses en bruxismo activo. Primeros 2–3 ciclos pueden requerir intervalos más cercanos (3–4 meses). Resultado funcional entre 7–14 días.',
+        indicaciones: ["Bruxismo (apretamiento dental)", "Dolor articular/mandibular", "Hipertrofia de maseteros (cara ancha)", "Cefalea tensional"],
+        contraindicaciones: ["Embarazo o lactancia", "Enfermedades neuromusculares", "Infección activa", "Alergia a la albúmina"],
+        preTratamiento: ["Piel limpia", "Informar uso de relajantes musculares"],
+        postTratamiento: ["No acostarse por 4 horas", "Dieta blanda por 24 horas para reposo muscular", "No masajear la zona", "No ejercicio intenso por 24 horas"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -50,6 +58,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '20 min',
         sesiones: '1 sesión (efecto 4-6 meses)',
+        indicaciones: ["Exposición gingival excesiva al sonreír (>3mm)", "Sonrisa 'caballuna'", "Asimetría de sonrisa"],
+        contraindicaciones: ["Embarazo o lactancia", "Enfermedades neuromusculares", "Infección activa", "Labio superior muy largo (relativo)"],
+        preTratamiento: ["Piel limpia", "Evitar antiinflamatorios"],
+        postTratamiento: ["No acostarse por 4 horas", "No masajear la zona", "No ejercicio intenso por 24 horas"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -66,6 +78,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1 sesión (efecto 4-6 meses)',
         protocolo: 'Cada 4 a 6 meses según necesidad y grado de contracción muscular.',
+        indicaciones: ["Arrugas múltiples en todo el rostro", "Bunny lines (nariz)", "Caída de comisuras labiales", "Bandas platismales (cuello)", "Prevención global"],
+        contraindicaciones: ["Embarazo o lactancia", "Enfermedades neuromusculares", "Infección activa", "Alergia a la albúmina"],
+        preTratamiento: ["Piel limpia sin maquillaje", "Evitar aspirina/ibuprofeno 24h antes"],
+        postTratamiento: ["No acostarse por 4 horas", "No realizar ejercicio por 24 horas", "No masajear las zonas tratadas", "Gesticular suavemente"],
         requiereEvaluacion: true,
         evaluacionGratuita: true,
         notas: '💰 Mismo precio con ambos profesionales: $329.000'
@@ -83,6 +99,10 @@ const tratamientosData = [
         duracion: '20-30 min',
         sesiones: 'Según evaluación',
         protocolo: 'Cada 3–4 meses según severidad. Control a las 2 semanas para evaluar simetría y ajustes.',
+        indicaciones: ["Espasmos hemifaciales", "Sincinesias post-parálisis facial", "Asimetrías funcionales", "Tics musculares"],
+        contraindicaciones: ["Embarazo o lactancia", "Miastenia Gravis", "Infección activa"],
+        preTratamiento: ["Evaluación neurológica o funcional previa", "Piel limpia"],
+        postTratamiento: ["No masajear la zona", "Seguir indicaciones específicas de rehabilitación si aplica"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio variable según cantidad de unidades y músculos afectados. Evaluación presencial requerida.'
@@ -99,6 +119,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30-45 min',
         sesiones: '1 sesión (duración 12-18 meses)',
+        indicaciones: ["Giba dorsal leve o moderada", "Punta nasal caída", "Asimetrías leves", "Puente nasal bajo"],
+        contraindicaciones: ["Nariz operada previamente (requiere evaluación estricta por riesgo vascular)", "Problemas respiratorios funcionales", "Giba ósea muy prominente", "Embarazo/Lactancia", "Infección activa"],
+        preTratamiento: ["No usar lentes si apoyan en la zona a tratar", "Piel limpia", "Evitar alcohol 24h antes"],
+        postTratamiento: ["NO usar lentes por 2 semanas (o que no apoyen en la zona)", "No dormir boca abajo", "No realizar ejercicios de impacto por 72 horas", "No manipular la nariz", "Signos de alarma: dolor intenso o palidez (avisar inmediato)"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -115,6 +139,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1 sesión (duración 10-14 meses)',
         protocolo: 'Control a los 10–14 días para evaluar integración y asimetrías.',
+        indicaciones: ["Aumento de volumen labial", "Definición de perfilado / arco de cupido", "Hidratación profunda", "Corrección de asimetrías"],
+        contraindicaciones: ["Embarazo o lactancia", "Herpes labial activo (esperar resolución)", "Enfermedades autoinmunes activas"],
+        preTratamiento: ["Profilaxis antiviral si tiene historial de herpes recurrente", "Evitar alcohol y anticoagulantes 24h antes"],
+        postTratamiento: ["No consumir bebidas muy calientes por 24 horas", "No morder ni masajear los labios", "No maquillaje labial por 24 horas", "Aplicar frío local si hay mucha inflamación", "Hidratar con bálsamo reparador"],
         requiereEvaluacion: true,
         evaluacionGratuita: true,
         notas: '💰 PRECIOS POR PROFESIONAL:\n• Dr. Nicolás Laucirica: $240.000\n• Dra. Mariane Kiss: $180.000'
@@ -132,6 +160,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1 sesión (duración 12-18 meses)',
         protocolo: 'El valor por jeringa disminuye si es necesario aplicar más de 1 ml en la misma sesión.',
+        indicaciones: ["Retrognatia (mentón retraído) leve/moderada", "Falta de proyección vertical", "Perfilado mandibular", "Armonización facial"],
+        contraindicaciones: ["Embarazo o lactancia", "Infección activa", "Mentón muy pequeño (puede requerir cirugía ortognática)"],
+        preTratamiento: ["Evitar alcohol 24h antes", "Piel limpia"],
+        postTratamiento: ["No manipular ni apoyar el mentón fuertemente", "No maquillaje por 12 horas", "Evitar ejercicio intenso 48 horas", "Dormir boca arriba preferiblemente 2 días"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -139,17 +171,20 @@ const tratamientosData = [
         id: 'pomulos-ah',
         categoria: 'Facial',
         subcategoria: 'Ácido Hialurónico',
-        nombre: 'Relleno de Pómulos / Tercio Medio Facial con Ácido Hialurónico',
-        descripcion: 'Procedimiento estructural avanzado que utiliza ácido hialurónico de alta cohesividad para restaurar el soporte profundo del tercio medio del rostro. Repone volumen perdido por envejecimiento, mejora la proyección del pómulo, reposiciona tejidos descendidos y reduce indirectamente la marcación del surco nasogeniano. Uno de los tratamientos más importantes en armonización facial.',
+        nombre: 'Relleno de Pómulos / Tercio Medio Facial',
+        descripcion: 'Restauración del volumen perdido en la zona de los pómulos y mejillas mediante ácido hialurónico de alta densidad. Recupera el "triángulo de la juventud", da soporte a la estructura facial y mejora indirectamente el surco nasogeniano y las ojeras. Resultado inmediato y natural que refresca el rostro sin cirugía.',
         profesional: 'Dr. Nicolás Laucirica',
         especialidad: 'Cirujano Dentista - Estética Facial',
-        valorDesde: 200000,
+        valorDesde: 380000,
         valorHasta: null,
-        duracion: '30 min',
+        duracion: '30-45 min',
         sesiones: '1 sesión (duración 12-18 meses)',
-        protocolo: 'Cada 12 a 18 meses según necesidad.',
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        indicaciones: ["Pérdida de volumen en pómulos", "Aspecto cansado (ojeras por falta de soporte)", "Flacidez leve del tercio medio"],
+        contraindicaciones: ["Embarazo", "Infección activa en la zona", "Trastornos de coagulación no controlados"],
+        preTratamiento: ["No tomar aspirina/antiinflamatorios 5 días antes (reduce hematomas)", "Piel limpia sin maquillaje"],
+        postTratamiento: ["No dormir sobre la cara 2 noches", "No realizar ejercicio intenso por 24-48 horas", "Aplicar hielo si hay inflamación"]
     },
     {
         id: 'fosa-temporal-ah',
@@ -164,6 +199,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1 sesión (duración 12-18 meses)',
         protocolo: 'Duración promedio 12–18 meses según tipo de AH y grado de depresión temporal.',
+        indicaciones: ["Hundimiento en la sien (fosa temporal)", "Caída de la cola de la ceja", "Esqueletización facial"],
+        contraindicaciones: ["Embarazo/Lactancia", "Infección activa"],
+        preTratamiento: ["Piel limpia", "Evitar aspirina"],
+        postTratamiento: ["No masajear la zona", "No ejercer presión (cascos apretados) por 48h", "No ejercicio 24h"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -179,6 +218,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30 min',
         sesiones: '1 sesión (duración 12-18 meses)',
+        indicaciones: ["Hundimiento del surco lagrimal", "Mirada cansada", "Oscurecimiento por sombra (no por pigmento)"],
+        contraindicaciones: ["Bolsas grasas prominentes (puede empeorar aspecto)", "Flacidez excesiva del párpado", "Infección activa"],
+        preTratamiento: ["Evitar anticoagulantes y alcohol 24h antes", "Dormir bien la noche anterior"],
+        postTratamiento: ["No frotar los ojos", "Dormir con cabecera elevada 1-2 noches", "Aplicar frío local suave si hay edema", "No usar lentes de natación por 1 semana"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -195,6 +238,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1 sesión (duración 12-18 meses)',
         protocolo: 'Cada 12 a 18 meses según necesidad. Requiere soporte estructural previo.',
+        indicaciones: ["Surco nasogeniano marcado", "Pérdida de volumen paranasal"],
+        contraindicaciones: ["Flacidez severa (requiere lifting o tensado previo)", "Infección"],
+        preTratamiento: ["Piel limpia", "Evitar aspirina"],
+        postTratamiento: ["No masajear la zona", "No maquillaje 12h", "No gesticular excesivamente"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -211,6 +258,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1 sesión (duración 12-18 meses)',
         protocolo: 'Retoques periódicos para mantener resultados. Cantidad de AH según biotipo facial e IMC.',
+        indicaciones: ["Falta de definición mandibular", "Mentón retraído", "Flacidez leve del contorno facial", "Masculinización facial"],
+        contraindicaciones: ["Flacidez severa de cuello (requiere lifting)", "Infección activa"],
+        preTratamiento: ["Afeitado en hombres (opcional pero facilita)", "Piel limpia"],
+        postTratamiento: ["No apoyar la cara excesivamente", "No masaje", "No ejercicio 48h"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -227,6 +278,10 @@ const tratamientosData = [
         duracion: '60 min',
         sesiones: '1 única vez',
         protocolo: 'Control postquirúrgico a los 7-10 días. Resultados definitivos entre 3-6 meses. Incluye faja compresora y derecho a pabellón.',
+        indicaciones: ["Cara redonda (Hipertrofia de Bichat)", "Morderse la cara interna de las mejillas", "Deseo de mayor definición de pómulos"],
+        contraindicaciones: ["Rostro muy delgado (esqueletización)", "Flacidez facial importante", "Expectativas irreales"],
+        preTratamiento: ["Higiene oral rigurosa", "Ayuno de 2 horas (anestesia local)", "No fumar"],
+        postTratamiento: ["Dieta blanda y fría por 48 horas", "Uso de faja mentonera según indicación (3-7 días)", "Higiene oral tras cada comida", "No realizar buches fuertes ni usar bombilla (presión negativa)", "Reposo relativo 3 días"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -244,8 +299,19 @@ const tratamientosData = [
         duracion: '60-90 min',
         sesiones: '1 única vez',
         protocolo: 'Control postquirúrgico a los 7 días para retiro de puntos. Resultados visibles desde las 2-3 semanas, definitivos a los 3 meses.',
+        indicaciones: ["Exceso de piel en párpado superior (Dermatochalasis)", "Sensación de peso en los ojos", "Dificultad visual por piel caída"],
+        contraindicaciones: ["Ojo seco severo no controlado", "Glaucoma no controlado", "Coagulopatías"],
+        preTratamiento: ["No usar maquillaje", "Traer gafas de sol para el retorno", "Ayuno si es con sedación"],
+        postTratamiento: ["Frío local indirecto (antifaz gel) primeros 2 días", "Dormir semisentado", "Gotas lubricantes", "No lentes de contacto por 2 semanas", "Retiro de puntos a los 5-7 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Cirujano Plástico / Oculoplástico', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Blefaroplastia', valor: null, nota: null },
+            { cantidad: 1, item: 'Sutura Nylon 6-0', valor: null, nota: 'Piel' },
+            { cantidad: 1, item: 'Electrobisturí', valor: null, nota: 'Coagulación' },
+            { cantidad: 2, item: 'Lidocaína 2% c/epi', valor: null, nota: null }
+        ]
     },
     {
         id: 'blefaroplastia-inferior',
@@ -260,72 +326,126 @@ const tratamientosData = [
         duracion: '60-90 min',
         sesiones: '1 única vez',
         protocolo: 'Control postquirúrgico a los 7 días. Evitar exposición solar directa durante la recuperación. Resultados definitivos a los 3 meses.',
+        indicaciones: ["Bolsas grasas bajo los ojos", "Exceso de piel en párpado inferior", "Aspecto de cansancio crónico"],
+        contraindicaciones: ["Ojo seco severo", "Ectropión previo", "Infección ocular activa"],
+        preTratamiento: ["No usar maquillaje", "Traer gafas de sol", "Suspender anticoagulantes bajo supervisión médica"],
+        postTratamiento: ["Reposo relativo", "Frío local", "Dormir cabecera elevada", "Evitar esfuerzos físicos 14 días", "Drenaje linfático manual suave si se indica"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Cirujano Plástico / Oculoplástico', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Blefaroplastia', valor: null, nota: null },
+            { cantidad: 1, item: 'Sutura Nylon 6-0', valor: null, nota: 'Piel' },
+            { cantidad: 1, item: 'Electrobisturí', valor: null, nota: 'Coagulación' },
+            { cantidad: 2, item: 'Lidocaína 2% c/epi', valor: null, nota: null }
+        ]
     },
     {
         id: 'lifting-cervical',
         categoria: 'Facial',
         subcategoria: 'Cirugía',
         nombre: 'Lifting Cervical',
-        descripcion: 'Procedimiento quirúrgico que tensa y redefine el contorno del cuello, eliminando flacidez, papada y bandas platismales. Mejora significativamente el ángulo cérvico-mandibular, devolviendo definición y juventud al perfil.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirugía Estética Facial',
-        valorDesde: 2600000,
+        descripcion: 'Cirugía orientada a mejorar el contorno del cuello, eliminando el exceso de piel y grasa, y tensando los músculos (platismas) para corregir las "bandas" y la papada. Define el ángulo cérvico-mandibular logrando un perfil más joven y elegante. Puede realizarse aislado o junto a un lifting facial.',
+        profesional: 'Dr. Luis Pérez Lagos',
+        especialidad: 'Cirujano Maxilofacial',
+        valorDesde: 2500000,
         valorHasta: null,
-        duracion: '90-120 min',
-        sesiones: '1 única vez',
-        protocolo: 'Uso de faja cervical postoperatoria. Control a los 7-10 días. Resultados definitivos entre 3-6 meses.',
+        duracion: '2-3 horas',
+        sesiones: '1 cirugía',
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: true,
+        indicaciones: ["Flacidez de cuello (papada, bandas platismales)", "Pérdida del ángulo mandibular", "Envejecimiento cervical"],
+        contraindicaciones: ["Problemas de coagulación severos", "Expectativas no realistas", "Condiciones médicas inestables (diabetes/hipertensión descompensada)"],
+        preTratamiento: ["Exámenes preoperatorios completos", "Ayuno de 8 horas", "Suspender tabaco 2 semanas antes (ideal)"],
+        postTratamiento: ["Uso de faja mentonera 1-2 semanas", "Drenaje linfático postoperatorio", "Reposo relativo 5-7 días"],
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Lifting Cervical', valor: null, nota: null },
+            { cantidad: 2, item: 'Sutura Vicryl 3-0/4-0', valor: null, nota: 'Platistma' },
+            { cantidad: 1, item: 'Sutura Nylon 5-0', valor: null, nota: 'Piel' },
+            { cantidad: 1, item: 'Drenaje aspirativo (opcional)', valor: null, nota: 'Si requiere' },
+            { cantidad: 1, item: 'Faja Mentonera', valor: null, nota: null }
+        ]
     },
     {
         id: 'lifting-cejas',
         categoria: 'Facial',
         subcategoria: 'Cirugía',
         nombre: 'Lifting Directo de Cejas',
-        descripcion: 'Procedimiento quirúrgico que eleva las cejas caídas, abriendo la mirada y corrigiendo el aspecto cansado o triste causado por ptosis de la ceja. Técnica directa con resultados naturales y duraderos.',
-        profesional: 'Dr. Nicolás Laucirica',
-        especialidad: 'Cirugía Estética Facial',
-        valorDesde: 1200000,
+        descripcion: 'Procedimiento quirúrgico mínimamente invasivo para elevar cejas caídas. Se realiza mediante una pequeña incisión oculta en el borde superior de la ceja o en una arruga de la frente. Abre la mirada, reduce el peso sobre el párpado superior y refresca la expresión de forma inmediata y definitiva.',
+        profesional: 'Dr. Luis Pérez Lagos',
+        especialidad: 'Cirujano Maxilofacial',
+        valorDesde: 600000,
         valorHasta: null,
         duracion: '45-60 min',
-        sesiones: '1 única vez',
-        protocolo: 'Control postquirúrgico a los 7 días. Resultados visibles inmediatamente, definitivos a las 4-6 semanas.',
+        sesiones: '1 cirugía',
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: true,
+        indicaciones: ["Cejas caídas (ptosis de cejas)", "Mirada triste o cansada", "Asimetría de cejas"],
+        contraindicaciones: ["Ojo seco severo (evaluar)", "Infección activa"],
+        preTratamiento: ["No maquillaje", "Exámenes preoperatorios básicos"],
+        postTratamiento: ["Hielo local primeras 48 horas", "Retiro de puntos a los 7 días", "Protección solar de la cicatriz"],
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Cirugía Plástica', valor: null, nota: null },
+            { cantidad: 1, item: 'Sutura Vicryl 4-0', valor: null, nota: 'Fijación profunda' },
+            { cantidad: 1, item: 'Sutura Nylon 5-0/6-0', valor: null, nota: 'Piel' },
+            { cantidad: 2, item: 'Lidocaína 2% c/epi', valor: null, nota: null }
+        ]
     },
     {
         id: 'lifting-cejas-blefaro',
         categoria: 'Facial',
         subcategoria: 'Cirugía',
         nombre: 'Lifting Directo de Cejas + Blefaroplastía Sup.',
-        descripcion: 'Corrección de piel párpado superior y elevación de cola de ceja. Rejuvenecimiento de la mirada mediante técnica quirúrgica combinada.',
-        profesional: 'Equipo Quirúrgico',
-        especialidad: 'Cirugía Plástica Facial',
-        valorDesde: 1100000,
+        descripcion: 'Combinación de elevación de cejas y cirugía de párpados superiores en un mismo acto quirúrgico. Ideal para pacientes con descenso de cejas que además tienen exceso de piel en los párpados. Logra un rejuvenecimiento periorbitario completo, abriendo la mirada y despejando el campo visual.',
+        profesional: 'Dr. Luis Pérez Lagos',
+        especialidad: 'Cirujano Maxilofacial',
+        valorDesde: 1200000,
         valorHasta: null,
-        duracion: '120 min',
-        sesiones: '1 sesión',
-        protocolo: 'Requiere evaluación pre-quirúrgica y exámenes.',
+        duracion: '90-120 min',
+        sesiones: '1 cirugía',
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: true,
+        indicaciones: ["Rejuvenecimiento integral del tercio superior", "Cejas caídas + exceso de piel en párpados", "Mirada envejecida"],
+        contraindicaciones: ["Glaucoma no controlado", "Enfermedad ocular activa"],
+        preTratamiento: ["Evaluación oftalmológica (si aplica)", "Ayuno 8 horas (si es con sedación)"],
+        postTratamiento: ["Reposo con cabecera elevada", "Compresas frías", "Gotas lubricantes oculares"],
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Blefaroplastia + Lifting', valor: null, nota: null },
+            { cantidad: 2, item: 'Sutura Nylon 6-0', valor: null, nota: 'Piel' },
+            { cantidad: 1, item: 'Sutura Vicryl 5-0', valor: null, nota: 'Profundo' },
+            { cantidad: 3, item: 'Lidocaína 2% c/epi', valor: null, nota: null }
+        ]
     },
     {
         id: 'lifting-cervical-lipo',
         categoria: 'Facial',
         subcategoria: 'Cirugía',
         nombre: 'Lifting Cervical (Cuello) + Lipoaspiración Facial',
-        descripcion: 'Tratamiento de papada, plicatura de platisma y definición mandibular. Mejora el ángulo cérvico-mental y contorno facial.',
-        profesional: 'Equipo Quirúrgico',
-        especialidad: 'Cirugía Plástica Facial',
-        valorDesde: 1650000,
+        descripcion: 'Procedimiento combinado gold standard para el rejuvenecimiento del tercio inferior y cuello. Incluye tensado de músculos del cuello, resección de piel sobrante y lipoaspiración de papada y contorno mandibular. Logra un cambio drástico en la definición del óvalo facial y eliminación del aspecto de "cuello de pavo".',
+        profesional: 'Dr. Luis Pérez Lagos',
+        especialidad: 'Cirujano Maxilofacial',
+        valorDesde: 3000000,
         valorHasta: null,
-        duracion: '180 min',
-        sesiones: '1 sesión',
-        protocolo: 'Requiere evaluación pre-quirúrgica y exámenes.',
+        duracion: '3-4 horas',
+        sesiones: '1 cirugía',
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: true,
+        indicaciones: ["Cuello con grasa y flacidez", "Cara redonda con papada", "Definición completa del perfil"],
+        contraindicaciones: ["Obesidad mórbida (IMC > 35, requiere baja de peso previa)", "Fumadores activos (riesgo cicatrización)"],
+        preTratamiento: ["Exámenes de sangre y cardiología", "Lavado de cabello con clorhexidina día previo"],
+        postTratamiento: ["Faja compresiva facial obligatoria", "Dormir semisentado", "Dieta blanda primera semana"],
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Lifting + Lipo', valor: null, nota: null },
+            { cantidad: 1, item: 'Cánulas lipoaspiración facial', valor: null, nota: null },
+            { cantidad: 1, item: 'Solución Klein', valor: null, nota: 'Infiltración' },
+            { cantidad: 2, item: 'Sutura Vicryl 4-0', valor: null, nota: 'Músculo' },
+            { cantidad: 1, item: 'Sutura Nylon 5-0', valor: null, nota: 'Piel' },
+            { cantidad: 1, item: 'Faja Mentonera', valor: null, nota: null }
+        ]
     },
     {
         id: 'otoplastia',
@@ -341,7 +461,19 @@ const tratamientosData = [
         sesiones: '1 única vez',
         protocolo: 'Uso de banda elástica postoperatoria por 2-4 semanas. Control a los 7 días. Apto para adultos y niños desde los 6 años.',
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Orejas prominentes (en asa)", "Asimetría auricular", "Falta de pliegues"],
+        contraindicaciones: ["Infección activa (otitis)", "Queloides (relativo)"],
+        preTratamiento: ["Lavado de cabello", "Ayuno"],
+        postTratamiento: ["Cintillo de compresión día y noche por 2-3 semanas", "No dormir de lado sobre la oreja", "Cuidado heridas retroauriculares"],
+        personal: ['Cirujano Plástico / Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Otoplastia', valor: null, nota: null },
+            { cantidad: 1, item: 'Sutura Mersilene/Ethibond 4-0', valor: null, nota: 'Cartílago' },
+            { cantidad: 1, item: 'Sutura Nylon 4-0', valor: null, nota: 'Piel' },
+            { cantidad: 1, item: 'Venda elástica', valor: null, nota: null },
+            { cantidad: 1, item: 'Cintillo compresivo', valor: null, nota: 'Paciente' }
+        ]
     },
     // ==================== QUIRÚRGICO Y POST-QUIRÚRGICO ====================
     {
@@ -357,7 +489,11 @@ const tratamientosData = [
         duracion: '4 horas',
         sesiones: '1',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Cirugías ambulatorias complejas", "Procedimientos bajo sedación"],
+        contraindicaciones: ["N/A"],
+        preTratamiento: ["Llegar 1 hora antes de la cirugía", "Traer ropa cómoda y abrigada", "Venir acompañado de un adulto responsable"],
+        postTratamiento: ["Reposo en sala de recuperación hasta el alta", "Traslado a domicilio acompañado"]
     },
     {
         id: 'anestesia-equipo',
@@ -372,7 +508,11 @@ const tratamientosData = [
         duracion: '4 horas',
         sesiones: '1',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Sedación consciente para cirugías", "Manejo del dolor intraoperatorio"],
+        contraindicaciones: ["Alergia conocida a anestésicos (informar)", "Ayuno no cumplido"],
+        preTratamiento: ["Ayuno absoluto de 8 horas (sólidos y líquidos claros)", "No maquillaje, esmalte de uñas ni joyas"],
+        postTratamiento: ["No conducir vehículos por 24 horas", "No tomar decisiones legales/importantes por 24 horas", "Dieta liviana al inicio"]
     },
     {
         id: 'pack-recuperacion',
@@ -387,7 +527,11 @@ const tratamientosData = [
         duracion: '10 sesiones',
         sesiones: '10 sesiones',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Post-operatorio de liposucción", "Post-operatorio de abdominoplastía", "Reducción de edema y fibrosis"],
+        contraindicaciones: ["Infección activa en herida operatoria", "Trombosis Venosa Profunda activa"],
+        preTratamiento: ["Asistir con faja (si aplica)", "Ropa cómoda"],
+        postTratamiento: ["Mantener uso de faja según indicación", "Hidratación abundante"]
     },
     {
         id: 'armonizacion-facial',
@@ -404,6 +548,10 @@ const tratamientosData = [
         protocolo: 'Mantención: fillers cada 12-18 meses, toxina cada 4-6 meses, bioestimuladores cada 6-12 meses. Plan completamente personalizado.',
         requiereEvaluacion: true,
         evaluacionGratuita: true,
+        indicaciones: ["Pérdida de armonía facial", "Envejecimiento global", "Asimetrías faciales"],
+        contraindicaciones: ["Embarazo", "Infección activa", "Enfermedades autoinmunes no controladas"],
+        preTratamiento: ["Piel limpia", "Fotos clínicas previas"],
+        postTratamiento: ["Seguir indicaciones específicas de cada procedimiento realizado"],
         notas: 'Precio variable según zonas a tratar, grado de envejecimiento y objetivos del paciente.'
     },
     {
@@ -419,6 +567,10 @@ const tratamientosData = [
         duracion: '30-40 min',
         sesiones: '2-3 sesiones separadas por 3 meses',
         protocolo: 'Mantención cada 6 meses. Resultado inicia a las 8–12 semanas, progresivo hasta los 9–12 meses.',
+        indicaciones: ["Flacidez facial y corporal", "Pérdida de volumen difusa", "Mejora de calidad de piel (Glow)", "Celulitis en glúteos"],
+        contraindicaciones: ["Enfermedades autoinmunes activas", "Infección en el sitio de inyección", "Embarazo o lactancia"],
+        preTratamiento: ["Piel limpia y desmaquillada", "Evitar antiinflamatorios"],
+        postTratamiento: ["REGLA DE LOS 5: Masajear la zona 5 minutos, 5 veces al día, por 5 días", "No realizar ejercicio físico por 24 horas", "Evitar exposición solar directa", "Hidratación abundante"],
         requiereEvaluacion: true,
         evaluacionGratuita: true,
         notas: '💰 PRECIOS POR PROFESIONAL:\n• Dr. Nicolás Laucirica: $500.000\n• Dra. Mariane Kiss: $480.000 - $500.000'
@@ -436,6 +588,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1-2 sesiones (duración 12-18 meses)',
         protocolo: 'Cada 6 a 12 meses según necesidad y grado de flacidez.',
+        indicaciones: ["Definición del contorno mandibular", "Rejuvenecimiento de manos", "Flacidez de cuello", "Soporte estructural facial"],
+        contraindicaciones: ["Infección activa", "Embarazo o lactancia", "Cuerpos extraños previos en la zona"],
+        preTratamiento: ["Piel limpia", "No maquillaje"],
+        postTratamiento: ["No masajear vigorosamente (salvo indicación médica)", "Puede haber edema (hinchazón) por 48 horas", "No ejercicio intenso por 24 horas"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -451,6 +607,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '45 min',
         sesiones: '1 sesión',
+        indicaciones: ["Relleno inmediato + Bioestimulación a largo plazo", "Surcos nasogenianos profundos", "Mentón y pómulos", "Larga duración (hasta 2 años)"],
+        contraindicaciones: ["No usar en labios ni ojeras", "Infección activa", "Embarazo"],
+        preTratamiento: ["Piel limpia"],
+        postTratamiento: ["No masajear", "Evitar calor extremo 24h", "No ejercicio"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -467,6 +627,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '3 sesiones separadas por 1 mes',
         protocolo: 'Resultados desde la segunda sesión. Mantención cada 6 meses según calidad de piel.',
+        indicaciones: ["Ojeras pigmentadas", "Piel fina o arrugada en párpados", "Deshidratación periocular", "Mirada cansada"],
+        contraindicaciones: ["Infección activa", "Alergia severa al pescado (precaución)", "Embarazo"],
+        preTratamiento: ["Piel limpia", "Evitar aspirina"],
+        postTratamiento: ["Pápulas (bultitos) visibles por 24-48 horas (es normal)", "No masajear", "No aplicar maquillaje por 12 horas", "Aplicar frío local si hay edema"],
         requiereEvaluacion: true,
         evaluacionGratuita: true,
         notas: '💰 Mismo precio con ambos profesionales: $139.000'
@@ -484,6 +648,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '3 sesiones separadas por 1 mes',
         protocolo: 'Efecto progresivo que se potencia con el tiempo. Mantención cada 6 meses.',
+        indicaciones: ["Piel desvitalizada o apagada", "Cicatrices de acné", "Laxitud cutánea leve", "Envejecimiento fotoinducido"],
+        contraindicaciones: ["Infección activa", "Alergia pescado (precaución)", "Embarazo"],
+        preTratamiento: ["Piel limpia"],
+        postTratamiento: ["Pápulas visibles 24-48h", "Hidratación y fotoprotección", "No maquillaje 12h"],
         requiereEvaluacion: true,
         evaluacionGratuita: true,
         notas: '💰 Mismo precio con ambos profesionales: $190.000'
@@ -500,6 +668,10 @@ const tratamientosData = [
         valorHasta: 1200000,
         duracion: '45-60 min',
         sesiones: '1 sesión',
+        indicaciones: ["Flacidez facial leve a moderada", "Caída de tejidos (lifting biológico)", "Definición mandibular", "Estimulación de colágeno"],
+        contraindicaciones: ["Piel muy fina (hilos pueden notarse)", "Piel muy pesada (efecto insuficiente)", "Infección", "Expectativas de lifting quirúrgico"],
+        preTratamiento: ["Piel limpia", "No aspirina"],
+        postTratamiento: ["No gesticular fuertemente 1-2 semanas", "No abrir la boca excesivamente (bostezos, tratamientos dentales) por 3 semanas", "No masajear la cara por 1 mes", "Dormir boca arriba por 1 semana", "Puede haber irregularidades transitorias"],
         requiereEvaluacion: true,
         evaluacionGratuita: true,
         notas: '💰 PRECIOS POR PROFESIONAL:\n• Dr. Nicolás Laucirica (Tensores): $350.000 - $1.200.000\n• Dra. Mariane Kiss (Revitalizantes): $120.000 por pack de 10 hilos'
@@ -517,6 +689,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '3 sesiones cada 4 semanas',
         protocolo: 'Mantención cada 3-6 meses. Puede combinarse con láser CO₂, Morpheus8, Sculptra, Radiesse.',
+        indicaciones: ["Recuperación post-láser", "Rejuvenecimiento celular", "Rosácea / Piel sensible", "Cicatrices"],
+        contraindicaciones: ["Procesos oncológicos activos (teórico)", "Infección activa"],
+        preTratamiento: ["Piel limpia"],
+        postTratamiento: ["No lavar el rostro por 4 horas", "No usar maquillaje por 24 horas", "Fotoprotección estricta"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -533,6 +709,10 @@ const tratamientosData = [
         duracion: '60 min',
         sesiones: 'Según condición cutánea',
         protocolo: 'Mantención: cada 4-8 semanas. Piel acneica: cada 2-4 semanas. Preparación pre-tratamientos: 7-10 días antes.',
+        indicaciones: ["Puntos negros / Comedones", "Piel opaca", "Poros dilatados", "Hidratación profunda", "Preparación para evento"],
+        contraindicaciones: ["Alergia a la aspirina (ácido salicílico)", "Alergia a mariscos (algunos serums)", "Heridas abiertas", "Acné inflamatorio severo"],
+        preTratamiento: ["Suspender retinoides o ácidos fuertes 3 días antes", "Afeitarse 24h antes (hombres)"],
+        postTratamiento: ["Piel luminosa inmediata", "Usar protector solar", "No usar exfoliantes en casa por 1 semana", "Hidratación normal"],
         requiereEvaluacion: false,
         evaluacionGratuita: false
     },
@@ -548,6 +728,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30-45 min',
         sesiones: '3-6 sesiones recomendadas',
+        indicaciones: ["Piel grasa", "Poros dilatados", "Piel apagada", "Efecto Glow inmediato para eventos"],
+        contraindicaciones: ["Piel bronceada recientemente", "Isotretinoína < 6 meses", "Infección activa"],
+        preTratamiento: ["Piel limpia", "No sol directo previo"],
+        postTratamiento: ["Fotoprotección estricta", "Hidratación", "Vida normal inmediata"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -564,6 +748,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '3 sesiones cada 4 semanas',
         protocolo: 'Mejoría progresiva desde primera sesión. Mantención cada 3-6 meses según calidad dérmica.',
+        indicaciones: ["Fotoenvejecimiento", "Arrugas finas", "Poros dilatados", "Textura irregular"],
+        contraindicaciones: ["Uso de Isotretinoína últimos 6 meses", "Bronceado activo", "Embarazo", "Vitiligo (riesgo Koebner)"],
+        preTratamiento: ["Evitar sol 4 semanas antes", "Profilaxis herpes si corresponde", "Suspender ácidos 1 semana antes"],
+        postTratamiento: ["Sensación de calor/ardor 2-4 horas", "Enrojecimiento 24-48 horas (aspecto quemadura solar)", "Piel áspera (formación de microcostras invisible) días 3-5", "Hidratación constante y Fotoprotección estricta", "No maquillaje 24h"],
         requiereEvaluacion: false,
         evaluacionGratuita: false,
         notas: 'Valor de oferta. Se agenda directamente sin evaluación previa.'
@@ -581,6 +769,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: 'Múltiples sesiones cada 2-4 semanas',
         protocolo: 'Manejo continuo con mantención. Combina láser + rutina médica + medicación según necesidad. Especial cuidado en períodos de exposición UV.',
+        indicaciones: ["Melasma epidérmico/dérmico", "Hiperpigmentación post-inflamatoria", "Manchas solares resistentes"],
+        contraindicaciones: ["Embarazo (limitación de fármacos/laser)", "Bronceado activo", "Fotosensibilidad"],
+        preTratamiento: ["Evitar sol estricto 4 semanas antes", "Uso de despigmentantes previos según indicación"],
+        postTratamiento: ["Fotoprotección cada 2-3 horas estricta", "No exponerse al sol directo", "Hidratación", "Evitar fuentes de calor"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'No se entrega presupuesto sin evaluación previa. Plan según tipo de melasma, extensión, profundidad y fototipo.'
@@ -598,6 +790,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '1-6 sesiones cada 3-6 semanas',
         protocolo: 'Manchas superficiales responden más rápido; profundas requieren protocolos combinados.',
+        indicaciones: ["Léntigos solares (manchas de edad)", "Pecas (efélides)", "Manchas café con leche"],
+        contraindicaciones: ["Sospecha de malignidad (requiere biopsia)", "Bronceado activo"],
+        preTratamiento: ["Piel sin bronceado", "Fotoprotección previa"],
+        postTratamiento: ["La mancha se oscurece (costra) por 5-10 días", "Se cae sola (no arrancar)", "Fotoprotección estricta"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Tratamiento definido exclusivamente tras evaluación médica especializada.'
@@ -615,6 +811,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: 'Según protocolo definido en evaluación',
         protocolo: 'Personalizado según grado de flacidez, tecnologías, profundidad y tiempos de recuperación.',
+        indicaciones: ["Flacidez facial leve a moderada", "Pérdida de definición", "Laxitud de piel"],
+        contraindicaciones: ["Flacidez severa (quirúrgica)", "Expectativas irreales"],
+        preTratamiento: ["Piel limpia", "Hidratación"],
+        postTratamiento: ["Eritema (rojez) leve", "Edema leve", "Hidratación", "Fotoprotección"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Presupuesto tras evaluación. Precio según tecnologías necesarias y área involucrada.'
@@ -632,6 +832,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '3-5 sesiones cada 4 semanas',
         protocolo: 'Mantención según subtipo de rosácea. Contamos con 4 tipos de láser vascular.',
+        indicaciones: ["Rosácea eritematotelangiectásica (rojez/vasitos)", "Flushing (calor facial)", "Cuperosis"],
+        contraindicaciones: ["Bronceado reciente", "Uso de fotosensibilizantes"],
+        preTratamiento: ["No sol directo", "Piel limpia"],
+        postTratamiento: ["Puede haber inflamación 24-48h", "Evitar comidas picantes, alcohol y calor extremo por 48h", "Fotoprotección", "Hidratación suave"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio determinado en evaluación según tipo de rosácea, fototipo y tecnología a utilizar.'
@@ -649,6 +853,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '3-6 sesiones cada 4-8 semanas',
         protocolo: 'Algunos casos requieren combinaciones en misma sesión (láser + subcisión + bioestimulación). Más de 30 protocolos disponibles.',
+        indicaciones: ["Cicatrices de acné (Rolling, Boxcar, Icepick)", "Poros dilatados", "Textura irregular"],
+        contraindicaciones: ["Isotretinoína oral < 6 meses", "Infección activa", "Queloides activos (valorar riesgo)"],
+        preTratamiento: ["Profilaxis herpes", "No sol 4 semanas"],
+        postTratamiento: ["Piel roja/bronceada por 5-7 días (CO2)", "Microcostras (tacto lija)", "No arrancar costras", "Hidratación reparadora constante", "Fotoprotección absoluta"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio determinado en evaluación según tipo y severidad de cicatrices, tecnologías necesarias y número de sesiones.'
@@ -666,6 +874,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '1-3 sesiones cada 1-2 meses',
         protocolo: 'Downtime 3-7 días según profundidad. Mantención anual según envejecimiento cutáneo.',
+        indicaciones: ["Rejuvenecimiento severo", "Arrugas profundas", "Laxitud importante", "Cicatrices"],
+        contraindicaciones: ["Isotretinoína < 6 meses", "Fototipos oscuros (riesgo hiperpigmentación)", "Infección"],
+        preTratamiento: ["Profilaxis herpes obligatoria", "Despigmentantes previos", "No sol 1 mes"],
+        postTratamiento: ["Downtime (baja médica) 5-7 días", "Edema importante 48h", "Costras visibles", "Cuidados estrictos de aseo e hidratación", "Protección solar total"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Valor exacto tras evaluación clínica según protocolo, profundidad, área y tecnología.'
@@ -683,6 +895,10 @@ const tratamientosData = [
         duracion: '60 min',
         sesiones: '3-4 sesiones cada 4-6 semanas',
         protocolo: 'Personalizado según zona, profundidad PIN, energía, grado de flacidez. Posibilidad de combinar activos/vitaminas. Mantención anual.',
+        indicaciones: ["Flacidez facial y cuello", "Grasa subdermal (papada, jowls)", "Cicatrices de acné", "Poros dilatados"],
+        contraindicaciones: ["Marcapasos o desfibrilador", "Implantes metálicos en zona de tratamiento", "Embarazo"],
+        preTratamiento: ["Piel limpia", "Llegar 45 min antes para anestesia tópica"],
+        postTratamiento: ["Enrojecimiento y edema (1-3 días)", "Puntos de entrada visibles (microcostras)", "No maquillaje 24h", "Hidratación"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio según zonas, profundidad, energía, número de pasadas y objetivo del paciente.'
@@ -700,6 +916,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '3-5 sesiones cada 3-4 semanas',
         protocolo: 'Estimulación de colágeno progresiva, resultados notorios desde segunda sesión. Mantención anual opcional.',
+        indicaciones: ["Rejuvenecimiento suave", "Estrías (rojas/blancas)", "Cicatrices quirúrgicas", "Líneas finas"],
+        contraindicaciones: ["Isotretinoína < 6 meses", "Embarazo", "Bronceado activo"],
+        preTratamiento: ["No sol directo", "Piel limpia"],
+        postTratamiento: ["Edema leve", "Enrojecimiento por 24-48 horas", "Piel aspera (lija) por 3-5 días", "Vida normal rápida"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Valor según área, energía, densidad, profundidad, objetivos y complejidad del protocolo.'
@@ -717,6 +937,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: 'Única o múltiples según necesidad',
         protocolo: 'Control a los 10-14 días para evaluar corrección. Casos complejos pueden requerir repetir dosis.',
+        indicaciones: ["Corrección de ácido hialurónico previo", "Nódulos o granulomas de AH", "Isquemia vascular (urgencia)", "Edema persistente por AH"],
+        contraindicaciones: ["Alergia a la picadura de himenópteros (abejas/avispas) - requiere test", "Infección activa"],
+        preTratamiento: ["Realizar test cutáneo de alergia antes de aplicar"],
+        postTratamiento: ["Observación en clínica por 30-60 min", "Puede haber inflamación local", "No masajear"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio variable según tipo de corrección (estética/urgencia), nódulos, isquemia, cantidad de unidades y complejidad anatómica.'
@@ -734,6 +958,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1 sesión',
         protocolo: 'Generalmente 1 sesión para resultados deseados.',
+        indicaciones: ["Acrocordones (fibromas blandos) en cuello/axilas", "Verrugas vulgares (previa evaluación)", "Queratosis seborreicas"],
+        contraindicaciones: ["Lesiones sospechosas de malignidad", "Cicatrización queloide (relativo)", "Infección"],
+        preTratamiento: ["Piel limpia", "Anestesia local o tópica según número"],
+        postTratamiento: ["Costra pequeña por 5-7 días", "No arrancar costras", "Lavado suave con agua y jabón", "Antiséptico local si se indica"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio puede aumentar según cantidad, tamaño, localización y complejidad de zona (párpados, cuello, axilas).'
@@ -751,6 +979,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1-6 sesiones cada 3-6 semanas',
         protocolo: 'Uso estricto de fotoprotección posterior indispensable.',
+        indicaciones: ["Léntigos solares (manchas de edad)", "Pecas (efélides)", "Manchas café con leche"],
+        contraindicaciones: ["Sospecha de malignidad (requiere biopsia)", "Bronceado activo"],
+        preTratamiento: ["Piel sin bronceado", "Fotoprotección previa"],
+        postTratamiento: ["La mancha se oscurece (costra) por 5-10 días", "Se cae sola (no arrancar)", "Fotoprotección estricta"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Presupuesto requiere evaluación. Precio según cantidad, tamaño, profundidad, zona y tecnología.'
@@ -768,6 +1000,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '1-2 sesiones cada 6-12 semanas',
         protocolo: 'Resultado progresivo con mejoría continua por meses. Mantención anual opcional.',
+        indicaciones: ["Laxitud palpebral leve a moderada", "Arrugas finas perioculares", "Deseo de no cirugía"],
+        contraindicaciones: ["Exceso de piel severo (quirúrgico)", "Bolsas grasas prominentes", "Infección ocular"],
+        preTratamiento: ["No sol", "Profilaxis herpes"],
+        postTratamiento: ["Edema importante 3-5 días", "Costras puntiformes", "No arrancar", "Fotoprotección estricta", "Lubricación ocular"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio según severidad de laxitud, zona(s) a tratar, láser a utilizar, profundidad y sesiones necesarias.'
@@ -785,6 +1021,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '3-5 sesiones cada 2-4 semanas',
         protocolo: 'Mantención cada 2-3 meses para sostener luminosidad y función dérmica.',
+        indicaciones: ["Piel apagada", "Deshidratación", "Prevención de envejecimiento", "Líneas finas"],
+        contraindicaciones: ["Infección activa", "Alergia a componentes del cóctel"],
+        preTratamiento: ["Piel limpia"],
+        postTratamiento: ["Pápulas visibles por 24h", "Pequeños hematomas posibles", "No maquillaje por 12 horas", "Fotoprotección"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio según tipo/concentración de vitaminas, técnica (inyección, Dermapen, CO₂, RF), zonas y objetivo clínico.'
@@ -802,6 +1042,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1-6 sesiones cada 3-4 semanas',
         protocolo: 'Según respuesta vascular y tamaño de vasos. Mantenimiento anual en algunos casos.',
+        indicaciones: ["Arañitas vasculares (telangiectasias)", "Puntos rubí", "Cuperosis"],
+        contraindicaciones: ["Bronceado reciente", "Toma de anticoagulantes (relativo)", "Embarazo"],
+        preTratamiento: ["No sol directo", "Piel limpia"],
+        postTratamiento: ["Puede haber costra pequeña o hematoma", "Fotoprotección estricta", "Evitar calor extremo 24h"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Presupuesto requiere evaluación. Precio según cantidad, zona, profundidad, calibre, tecnología láser y sesiones.'
@@ -819,6 +1063,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '1 sesión cada 6-12 meses',
         protocolo: 'Refuerzo a 3-4 meses en casos avanzados. Combinable con Sculptra, Radiesse o Morpheus8.',
+        indicaciones: ["Flacidez SMAS (profunda)", "Pérdida de contorno mandibular", "Lifting no quirúrgico de cejas/mejillas", "Papada"],
+        contraindicaciones: ["Rostro muy delgado o con poca grasa subcutánea (puede atrofiar grasa)", "Hilos tensores recientes (<2 meses)", "Implantes dentales metálicos (usar gasa aislante)"],
+        preTratamiento: ["Tomar analgésico oral 1h antes (opcional)", "Piel limpia"],
+        postTratamiento: ["Sensación de 'agujetas' o dolor muscular profundo por 1-2 semanas", "Piel sensible al tacto", "Edema leve", "Efecto lifting inmediato (30%) y progresivo (90 días)"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio según zona (rostro, papada, cuello, corporal), cartuchos, disparos y grado de flacidez.'
@@ -836,6 +1084,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '3-6 sesiones cada 4-8 semanas',
         protocolo: 'Resultados progresivos asociados a remodelación de colágeno y tipo de cicatriz.',
+        indicaciones: ["Cicatrices atróficas/hipertróficas", "Secuelas de acné", "Cicatrices post-traumáticas/quirúrgicas"],
+        contraindicaciones: ["Queloides activos (riesgo)", "Infección", "Isotretinoína < 6m"],
+        preTratamiento: ["No sol", "Piel limpia"],
+        postTratamiento: ["Cuidados según tecnología (CO2/ResurFX/Subcisión)", "Fotoprotección", "Reparación epidérmica"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio según tipo de cicatriz, extensión, profundidad, plan de tratamiento y número de sesiones.'
@@ -853,6 +1105,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '1 sesión + control a las 2-3 semanas',
         protocolo: 'Mantención cada 8-12 meses. Arrugas profundas pueden requerir combinar con láser CO₂ superficial.',
+        indicaciones: ["Arrugas verticales labio superior (código de barras)", "Pérdida de estructura perioral"],
+        contraindicaciones: ["Herpes labial activo", "Infección", "Embarazo"],
+        preTratamiento: ["Profilaxis antiviral si antecedente de herpes", "Piel limpia"],
+        postTratamiento: ["No depilar zona (cera/hilo) por 1 semana", "No masajear", "Edema leve posible"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -869,6 +1125,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '1-2 sesiones separadas por 6-8 semanas',
         protocolo: 'Control a los 7-10 días para seguimiento de cicatrización. Lesiones profundas pueden requerir 2 sesiones.',
+        indicaciones: ["Xantelasmas (depósitos de colesterol en párpados)", "Siringomas"],
+        contraindicaciones: ["Infección activa", "Cicatrización queloide"],
+        preTratamiento: ["Piel limpia", "Anestesia local infiltrativa"],
+        postTratamiento: ["Edema palpebral 2-3 días", "Costra por 7 días", "Ojo seco transitorio", "No maquillar la zona hasta caída de costra"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio según tamaño, número de lesiones, profundidad, extensión y tecnología CO₂ utilizada.'
@@ -885,6 +1145,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30 min',
         sesiones: 'Cada 4 a 6 meses según necesidad',
+        indicaciones: ["Arrugas en una zona específica (Solo frente, o solo patas de gallo)", "Retoque puntual", "Prevención focalizada"],
+        contraindicaciones: ["Embarazo o lactancia", "Enfermedades neuromusculares", "Infección activa"],
+        preTratamiento: ["Piel limpia", "Evitar aspirina"],
+        postTratamiento: ["No acostarse por 4 horas", "No ejercicio 24 hs", "No masajear"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -902,6 +1166,10 @@ const tratamientosData = [
         duracion: '30-60 min',
         sesiones: '6-8 sesiones (1 vez por semana)',
         protocolo: 'Según evaluación. Sin dolor, sin tiempo de recuperación.',
+        indicaciones: ["Flacidez facial leve a moderada", "Arrugas finas", "Adiposidad localizada en papada", "Rejuvenecimiento cuello/escote"],
+        contraindicaciones: ["Marcapasos o desfibrilador (Contraindicación absoluta)", "Implantes metálicos en la zona", "Embarazo", "Cáncer activo"],
+        preTratamiento: ["Hidratación abundante (beber 2 litros de agua día previo)", "Retirar joyas/metales"],
+        postTratamiento: ["Eritema (rojez) y calor local por unas horas", "Vida normal inmediata", "Mantener hidratación"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -918,6 +1186,10 @@ const tratamientosData = [
         duracion: '60 min',
         sesiones: '6-8 sesiones (1 vez por semana)',
         protocolo: 'Según evaluación. Sin dolor, sin tiempo de recuperación.',
+        indicaciones: ["Adiposidad localizada pequeña/moderada", "Flacidez cutánea corporal", "Celulitis"],
+        contraindicaciones: ["Marcapasos", "Embarazo", "DIU de cobre (si es zona abdominal/pélvica)", "Implantes metálicos zona"],
+        preTratamiento: ["Hidratación muy abundante (2-3 litros) día previo y día de sesión", "Piel limpia"],
+        postTratamiento: ["Beber mucha agua para eliminar toxinas", "Realizar actividad física ligera ayuda", "Eritema leve"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -934,6 +1206,10 @@ const tratamientosData = [
         duracion: '120 min',
         sesiones: '4 sesiones (1 vez al mes)',
         protocolo: 'Según evaluación. Ideal para flacidez leve a moderada y resultados avanzados sin cirugía.',
+        indicaciones: ["Flacidez corporal (brazos, abdomen, muslos)", "Celulitis", "Estrías (rojas/blancas)", "Cicatrices"],
+        contraindicaciones: ["Marcapasos", "Implantes metálicos en zona", "Embarazo"],
+        preTratamiento: ["Piel limpia", "Anestesia tópica extensa 45-60 min antes"],
+        postTratamiento: ["Enrojecimiento y edema (hinchazón) 2-4 días", "Puntos visibles (microcostras) 1 semana", "Hidratación", "No sol"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -950,6 +1226,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '8-10 sesiones (2 por semana)',
         protocolo: 'Precio: $500.000 por 10 sesiones. Ideal post parto, sedentarios, fitness, levantamiento glúteos sin cirugía.',
+        indicaciones: ["Hipotonía muscular (falta de tono)", "Levantamiento de glúteos", "Diástasis abdominal leve post-parto", "Fortalecimiento Core"],
+        contraindicaciones: ["Marcapasos", "Implantes metálicos (cadera/rótula)", "DIU de cobre (abdomen)", "Embarazo", "Hernias"],
+        preTratamiento: ["Ropa cómoda", "No comer comidas pesadas 1 hora antes", "Hidratación"],
+        postTratamiento: ["Dolor muscular (agujetas) al día siguiente", "Ingesta adecuada de proteínas", "Vida normal inmediata"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -966,6 +1246,10 @@ const tratamientosData = [
         duracion: '30-120 min',
         sesiones: '6-8 sesiones (1 vez al mes)',
         protocolo: 'Según zona a tratar. Seguro en todo tipo de piel, incluso oscuras.',
+        indicaciones: ["Eliminación de vello no deseado", "Foliculitis (pelos encarnados)", "Hirsutismo"],
+        contraindicaciones: ["Bronceado reciente intenso (piel roja)", "Uso de medicamentos fotosensibilizantes", "Embarazo"],
+        preTratamiento: ["Rasurar la zona 12-24 horas antes (al ras)", "No usar cera/pinzas por 3-4 semanas antes", "Piel limpia (sin cremas/desodorante)"],
+        postTratamiento: ["Evitar sol directo en zona tratada", "Usar bloqueador solar", "No agua muy caliente ni sauna por 24h", "Hidratación"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -983,7 +1267,11 @@ const tratamientosData = [
         sesiones: '1 sesión al mes',
         protocolo: 'Limpieza profunda, reducción puntos negros, mejora hidratación, brillo y textura. Prepara piel para otros tratamientos.',
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Piel congestionada", "Puntos negros", "Piel deshidratada/opaca", "Preparación para eventos"],
+        contraindicaciones: ["Rosácea activa inflamada (pústulas)", "Heridas abiertas", "Alergia a mariscos/aspirina (avisar para cambiar sueros)"],
+        preTratamiento: ["Suspender ácidos/retinoles 3 días antes", "Hombres: afeitarse el día anterior (no el mismo día)"],
+        postTratamiento: ["No lavar la cara hasta el día siguiente (dejar actuar sueros)", "Protector solar", "Maquillaje permitido al día siguiente"]
     },
     {
         id: 'hifu-facial-keren',
@@ -998,6 +1286,10 @@ const tratamientosData = [
         duracion: '60-90 min',
         sesiones: '1 sesión al año',
         protocolo: 'Ideal desde 30-35 años. Para flacidez leve a moderada. Resultados duraderos, todo tipo de piel.',
+        indicaciones: ["Flacidez facial SMAS", "Definición de óvalo facial", "Papada", "Lifting de cejas"],
+        contraindicaciones: ["Rostro muy delgado", "Hilos recientes", "Implantes metálicos dentales (gasa)", "Embarazo"],
+        preTratamiento: ["Tomar analgésico oral 1h antes (opcional)", "Piel limpia"],
+        postTratamiento: ["Dolor muscular tipo agujetas", "Piel sensible", "Edema leve", "Efecto progresivo"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio variable según zonas y protocolo.'
@@ -1015,6 +1307,10 @@ const tratamientosData = [
         duracion: '60 min',
         sesiones: '10-20 sesiones (2 veces por semana)',
         protocolo: 'Reduce inflamación, dolor, fibrosis, adherencias, durezas. Mejora movilidad, cicatrización y resultados quirúrgicos.',
+        indicaciones: ["Edema (hinchazón) post-quirúrgico", "Fibrosis", "Hematomas", "Dolor e inflamación"],
+        contraindicaciones: ["Infección en herida operatoria", "Trombosis venosa profunda activa", "Fiebre"],
+        preTratamiento: ["Indicación/pase médico del cirujano tratante", "Traer faja si corresponde"],
+        postTratamiento: ["Uso de faja/compresión según indicación médica", "Reposo relativo según cirugía"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Precio variable según tipo de cirugía y cantidad de sesiones requeridas.'
@@ -1032,6 +1328,10 @@ const tratamientosData = [
         valorFidelizacion: 189000,
         duracion: '20 min',
         sesiones: 'Cada 4-6 meses. Control a los 10-14 días.',
+        indicaciones: ["Arrugas dinámicas tercio superior", "Prevención de envejecimiento"],
+        contraindicaciones: ["Embarazo/Lactancia", "Enfermedades neuromusculares", "Infección"],
+        preTratamiento: ["Piel limpia", "Sin maquillaje"],
+        postTratamiento: ["No acostarse 4 horas", "No ejercicio 24 horas", "No masajear"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1049,6 +1349,10 @@ const tratamientosData = [
         valorHasta: 350000,
         duracion: 'Según zona',
         sesiones: '6-10 sesiones',
+        indicaciones: ["Eliminación de vello no deseado", "Foliculitis (pelos encarnados)", "Hirsutismo"],
+        contraindicaciones: ["Bronceado reciente intenso (piel roja)", "Uso de medicamentos fotosensibilizantes", "Embarazo"],
+        preTratamiento: ["Rasurar la zona 12-24 horas antes (al ras)", "No usar cera/pinzas por 3-4 semanas antes", "Piel limpia (sin cremas/desodorante)"],
+        postTratamiento: ["Evitar sol directo en zona tratada", "Usar bloqueador solar", "No agua muy caliente ni sauna por 24h", "Hidratación"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1065,6 +1369,10 @@ const tratamientosData = [
         duracion: '45 min - 6 hrs (según zonas)',
         sesiones: '1-3 sesiones según evaluación',
         protocolo: 'Ideal para grasa localizada moderada a marcada. Post parto con adiposidad persistente.',
+        indicaciones: ["Adiposidad localizada rebelde (abdomen, flancos)", "Papada", "Brazos (alas de murciélago)", "Muslos (bananas)"],
+        contraindicaciones: ["Crioglobulinemia (alergia al frío)", "Hernias en la zona a tratar", "Embarazo", "Enfermedad de Raynaud"],
+        preTratamiento: ["Piel sana sin heridas", "Buena hidratación"],
+        postTratamiento: ["Masaje vigoroso post-sesión (realizado por profesional)", "Eritema y sensación de acorchamiento por 1-2 semanas", "Pérdida de sensibilidad transitoria", "Hidratación abundante"],
         requiereEvaluacion: true,
         evaluacionGratuita: true,
         notas: 'Precio según cantidad de zonas y cabezales necesarios.'
@@ -1081,6 +1389,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '45-60 min',
         sesiones: '1-2 sesiones por zona',
+        indicaciones: ["Adiposidad localizada (mínimo 2.5cm de panículo adiposo)", "Celulitis dura o compacta"],
+        contraindicaciones: ["Embarazo", "Menos de 1cm de grasa en la zona", "Hernias abdominales"],
+        preTratamiento: ["No comer comidas muy pesadas antes", "Ropa cómoda"],
+        postTratamiento: ["Posibles hematomas leves", "Dolor al tacto (como moretón) por unos días", "Beber agua para facilitar eliminación de grasa"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1096,6 +1408,10 @@ const tratamientosData = [
         valorHasta: 600000,
         duracion: '45-90 min',
         sesiones: '1-2 sesiones anuales',
+        indicaciones: ["Flacidez corporal (abdomen, brazos, piernas)", "Ombligo triste (post parto)", "Cara interna de muslo"],
+        contraindicaciones: ["Embarazo", "Implantes metálicos en la zona", "Heridas abiertas"],
+        preTratamiento: ["Piel limpia"],
+        postTratamiento: ["Sensación de agujetas musculares", "Edema leve", "Efecto tensor progresivo"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1111,6 +1427,10 @@ const tratamientosData = [
         valorHasta: 600000,
         duracion: '45-60 min',
         sesiones: '3-4 sesiones',
+        indicaciones: ["Flacidez corporal (brazos, abdomen, muslos)", "Celulitis", "Estrías (rojas/blancas)", "Cicatrices"],
+        contraindicaciones: ["Marcapasos", "Implantes metálicos en zona", "Embarazo"],
+        preTratamiento: ["Piel limpia", "Anestesia tópica extensa 45-60 min antes"],
+        postTratamiento: ["Enrojecimiento y edema (hinchazón) 2-4 días", "Puntos visibles (microcostras) 1 semana", "Hidratación", "No sol"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1126,6 +1446,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30-45 min',
         sesiones: '4-6 sesiones',
+        indicaciones: ["Adiposidad localizada pequeña/moderada", "Flacidez cutánea corporal", "Celulitis"],
+        contraindicaciones: ["Marcapasos", "Embarazo", "DIU de cobre (si es zona abdominal/pélvica)", "Implantes metálicos zona"],
+        preTratamiento: ["Hidratación muy abundante (2-3 litros) día previo y día de sesión", "Piel limpia"],
+        postTratamiento: ["Beber mucha agua para eliminar toxinas", "Realizar actividad física ligera ayuda", "Eritema leve"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1141,6 +1465,10 @@ const tratamientosData = [
         valorHasta: 150000,
         duracion: '30 min',
         sesiones: '8-12 sesiones',
+        indicaciones: ["Hipotonía muscular (falta de tono)", "Levantamiento de glúteos", "Diástasis abdominal leve post-parto", "Fortalecimiento Core"],
+        contraindicaciones: ["Marcapasos", "Implantes metálicos (cadera/rótula)", "DIU de cobre (abdomen)", "Embarazo", "Hernias"],
+        preTratamiento: ["Ropa cómoda", "No comer comidas pesadas 1 hora antes", "Hidratación"],
+        postTratamiento: ["Dolor muscular (agujetas) al día siguiente", "Ingesta adecuada de proteínas", "Vida normal inmediata"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1159,7 +1487,11 @@ const tratamientosData = [
         duracion: '40 min',
         sesiones: 'Primera consulta',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Caída de cabello (Efluvio)", "Alopecia Androgenética", "Picazón o descamación del cuero cabelludo", "Pérdida de densidad"],
+        contraindicaciones: ["Ninguna (procedimiento diagnóstico)"],
+        preTratamiento: ["Idealmente asistir con cabello lavado el día anterior (no el mismo día) para correcta visualización en tricoscopía", "Evitar uso de fibras capilares (Toppik) o geles"],
+        postTratamiento: ["Ninguno", "Agendar tratamiento sugerido"]
     },
     {
         id: 'mesoterapia-dutasteride',
@@ -1173,6 +1505,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30 min',
         sesiones: 'Mensual',
+        indicaciones: ["Alopecia Androgenética (patrón masculino/femenino)", "Miniaturización folicular"],
+        contraindicaciones: ["Embarazo o lactancia", "Mujeres en edad fértil sin método anticonceptivo (riesgo teratogénico)", "Donación de sangre (<6 meses)"],
+        preTratamiento: ["Lavado de cabello día previo", "No aplicar fibras capilares (Toppik) el día de la sesión"],
+        postTratamiento: ["No lavar cabello por 24 horas", "No realizar tinte de cabello por 3 días", "Vida normal"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1188,6 +1524,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '45 min',
         sesiones: 'Mensual por 4-6 meses',
+        indicaciones: ["Efluvio telógeno (caída por estrés/postparto)", "Alopecia androgenética", "Post-injerto capilar"],
+        contraindicaciones: ["Trombocitopenia (plaquetas bajas)", "Cáncer activo", "Infección en cuero cabelludo"],
+        preTratamiento: ["Hidratación abundante (agua) previo a la extracción", "No tomar antiinflamatorios (AINES) 5 días antes"],
+        postTratamiento: ["No lavar cabello por 24 horas", "No sauna ni piscina por 24 horas", "No ejercicio intenso ese día"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1203,6 +1543,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '90 min',
         sesiones: '1 sesión (duración 2+ años)',
+        indicaciones: ["Alopecia Androgenética grados iniciales a medios", "Mejora de densidad sin cirugía"],
+        contraindicaciones: ["Alopecia Cicatricial activa (relativo)", "Infección en zona donante", "Trastornos de coagulación"],
+        preTratamiento: ["Piel limpia (retroauricular)", "Lavado de cabello"],
+        postTratamiento: ["Pequeña curación en zona donante (detrás de la oreja) por 3-5 días", "No lavar cabello por 24 horas", "Vida normal"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1219,8 +1563,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '4-6 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-1500uf-zafiro',
@@ -1234,8 +1593,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '5-7 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-2000uf-zafiro',
@@ -1249,8 +1623,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '6-8 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-2500uf-zafiro',
@@ -1264,8 +1653,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '6-8 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-3000uf-zafiro',
@@ -1279,8 +1683,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '7-9 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-3500uf-zafiro',
@@ -1294,8 +1713,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '8-10 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
 
     // ==================== INJERTO CAPILAR - FUE CORTO IMPLANTERS ====================
@@ -1311,8 +1745,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '4-6 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-1500uf-implanters',
@@ -1326,8 +1775,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '5-7 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-2000uf-implanters',
@@ -1341,8 +1805,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '6-8 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-2500uf-implanters',
@@ -1356,8 +1835,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '6-8 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-3000uf-implanters',
@@ -1371,8 +1865,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '7-9 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-3500uf-implanters',
@@ -1386,8 +1895,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '8-10 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas pronunciadas", "Coronilla despoblada", "Cejas o Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes inestables"],
+        preTratamiento: ["Rasurado de cabello (se realiza en clínica)", "Analítica sanguínea previa", "Suspender Minoxidil 1 semana antes", "No alcohol 48h"],
+        postTratamiento: ["Dormir semisentado 3 días", "Lavado especial diario (te enseñamos)", "No tocar zona receptora", "No sol 1 mes", "Caída de costras 10-15 días"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs, Pinzas' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
 
     // ==================== INJERTO CAPILAR - FUE PELO LARGO ====================
@@ -1403,8 +1927,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '5-7 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia sin rasurado visible", "Pacientes que no pueden raparse (trabajo/estética)"],
+        contraindicaciones: ["Zona donante pobre", "Alopecia difusa extensa"],
+        preTratamiento: ["Lavado cabello día previo", "No rasurado total (solo ventanas invisibles)", "Analítica previa"],
+        postTratamiento: ["Cuidado zona receptora", "No lavar 24h", "Vida social inmediata (sin costras visibles)"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs especiales' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-1500uf-pelo-largo',
@@ -1418,8 +1957,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '6-8 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia sin rasurado visible", "Pacientes que no pueden raparse (trabajo/estética)"],
+        contraindicaciones: ["Zona donante pobre", "Alopecia difusa extensa"],
+        preTratamiento: ["Lavado cabello día previo", "No rasurado total (solo ventanas invisibles)", "Analítica previa"],
+        postTratamiento: ["Cuidado zona receptora", "No lavar 24h", "Vida social inmediata (sin costras visibles)"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs especiales' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-2000uf-pelo-largo',
@@ -1433,8 +1987,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '7-9 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia sin rasurado visible", "Pacientes que no pueden raparse (trabajo/estética)"],
+        contraindicaciones: ["Zona donante pobre", "Alopecia difusa extensa"],
+        preTratamiento: ["Lavado cabello día previo", "No rasurado total (solo ventanas invisibles)", "Analítica previa"],
+        postTratamiento: ["Cuidado zona receptora", "No lavar 24h", "Vida social inmediata (sin costras visibles)"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs especiales' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-2500uf-pelo-largo',
@@ -1448,8 +2017,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '7-9 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia sin rasurado visible", "Pacientes que no pueden raparse (trabajo/estética)"],
+        contraindicaciones: ["Zona donante pobre", "Alopecia difusa extensa"],
+        preTratamiento: ["Lavado cabello día previo", "No rasurado total (solo ventanas invisibles)", "Analítica previa"],
+        postTratamiento: ["Cuidado zona receptora", "No lavar 24h", "Vida social inmediata (sin costras visibles)"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs especiales' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-3000uf-pelo-largo',
@@ -1463,8 +2047,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '8-10 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia sin rasurado visible", "Pacientes que no pueden raparse (trabajo/estética)"],
+        contraindicaciones: ["Zona donante pobre", "Alopecia difusa extensa"],
+        preTratamiento: ["Lavado cabello día previo", "No rasurado total (solo ventanas invisibles)", "Analítica previa"],
+        postTratamiento: ["Cuidado zona receptora", "No lavar 24h", "Vida social inmediata (sin costras visibles)"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs especiales' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
     {
         id: 'injerto-3500uf-pelo-largo',
@@ -1478,8 +2077,23 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '9-11 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia sin rasurado visible", "Pacientes que no pueden raparse (trabajo/estética)"],
+        contraindicaciones: ["Zona donante pobre", "Alopecia difusa extensa"],
+        preTratamiento: ["Lavado cabello día previo", "No rasurado total (solo ventanas invisibles)", "Analítica previa"],
+        postTratamiento: ["Cuidado zona receptora", "No lavar 24h", "Vida social inmediata (sin costras visibles)"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Médico Cirujano Capilar', 'Enfermeros/Técnicos Capilares (3-4)', 'Arsenaler(a)'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Microcirugía Capilar', valor: null, nota: 'Punchs especiales' },
+            { cantidad: 1, item: 'Micromotor de Extracción', valor: null, nota: null },
+            { cantidad: 1, item: 'Implanters / Pinzas Siembra', valor: null, nota: 'Según técnica' },
+            { cantidad: 5, item: 'Suero Fisiológico Frío', valor: null, nota: 'Conservación' },
+            { cantidad: 1, item: 'Anestesia Tumescente', valor: null, nota: 'Klein modificada' },
+            { cantidad: 1, item: 'Placas de Petri', valor: null, nota: 'Conteo' },
+            { cantidad: 10, item: 'Campos Estériles', valor: null, nota: null },
+            { cantidad: 1, item: 'Set Post-OP Paciente', valor: null, nota: 'Cintillo/Gorro' }
+        ]
     },
 
     // ==================== UROLOGÍA - DR. CONTRERAS / DR. ULLOA ====================
@@ -1495,6 +2109,10 @@ const tratamientosData = [
         valorHasta: 800000,
         duracion: '60-90 min',
         sesiones: '1 procedimiento',
+        indicaciones: ["Aumento grosor peniano", "Mejora estética genital", "Aumento confianza sexual"],
+        contraindicaciones: ["Infección activa", "Enfermedad de Peyronie activa (fase inflamatoria)", "Expectativas irreales"],
+        preTratamiento: ["Aseo genital exhaustivo", "Rasurado zona base"],
+        postTratamiento: ["Abstinencia sexual 3-4 semanas", "Masaje modelador diario", "No usar ropa ajustada"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1510,6 +2128,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '45-60 min',
         sesiones: '1 cirugía',
+        indicaciones: ["Fimosis", "Parafimosis", "Balanitis recurrentes", "Higiene/Estética"],
+        contraindicaciones: ["Infección activa aguda", "Trastornos coagulación"],
+        preTratamiento: ["Aseo genital", "Ayuno liviano"],
+        postTratamiento: ["Curaciones diarias", "Abstinencia sexual 4 semanas", "Retiro de puntos 10-14 días"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1525,6 +2147,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30-45 min',
         sesiones: '1 cirugía',
+        indicaciones: ["Anticoncepción definitiva masculina"],
+        contraindicaciones: ["Duda sobre fertilidad futura (debe estar 100% seguro)", "Infección escrotal"],
+        preTratamiento: ["Aseo genital", "Rasurado testicular"],
+        postTratamiento: ["Reposo relativo 2-3 días", "Hielo local", "Uso preservativo hasta azoospermia confirmada (3 meses)"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1540,6 +2166,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30 min',
         sesiones: '1 cirugía',
+        indicaciones: ["Frenillo corto", "Dolor en erección", "Desgarros recurrentes"],
+        contraindicaciones: ["Infección activa"],
+        preTratamiento: ["Aseo genital"],
+        postTratamiento: ["Abstinencia sexual 3-4 semanas", "Aseo diario con agua y jabón neutro"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1557,6 +2187,10 @@ const tratamientosData = [
         valorHasta: 350000,
         duracion: '30-45 min',
         sesiones: '3 sesiones',
+        indicaciones: ["Laxitud vaginal post-parto", "Sequedad vaginal (atrofia)", "Incontinencia urinaria de esfuerzo leve"],
+        contraindicaciones: ["Embarazo", "Infección vaginal activa", "Lesiones sospechosas en cuello uterino (PAP alterado)"],
+        preTratamiento: ["PAP vigente normal", "Cultivo vaginal negativo (según caso)", "Depilación zona vulvar (no obligatoria pero recomendada)"],
+        postTratamiento: ["Abstinencia sexual 5-7 días", "No baño de inmersión/piscina 1 semana", "Óvulos regeneradores (según indicación)"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1572,6 +2206,10 @@ const tratamientosData = [
         valorHasta: 60000,
         duracion: '20-30 min',
         sesiones: '1 procedimiento',
+        indicaciones: ["Anticoncepción largo plazo reversible", "Sangrado menstrual abundante (Mirena)"],
+        contraindicaciones: ["Embarazo sospechado", "Infección pélvica aguda", "Malformación uterina"],
+        preTratamiento: ["PAP vigente", "Idealmente durante menstruación (cuello más abierto)", "Test embarazo negativo"],
+        postTratamiento: ["Abstinencia sexual 3-4 días", "No tampones/copa 1 semana", "Control ecográfico al mes"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1587,6 +2225,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '15-20 min',
         sesiones: '1 procedimiento',
+        indicaciones: ["Anticoncepción largo plazo (3 años)", "Mujeres que olvidan pastillas diarios"],
+        contraindicaciones: ["Embarazo", "Trombosis activa", "Enfermedad hepática grave"],
+        preTratamiento: ["Test embarazo negativo"],
+        postTratamiento: ["Vendaje compresivo 24h", "Evitar golpes en zona del brazo", "Control a la semana"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1602,6 +2244,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '45-60 min',
         sesiones: '3-4 sesiones cada 4-6 semanas',
+        indicaciones: ["Liquen Escleroso Vulvar", "Atrofia vulvar severa", "Prurito crónico vulvar"],
+        contraindicaciones: ["Infección activa", "Cáncer vulvar"],
+        preTratamiento: ["Biopsia previa confirmatoria (idealmente)", "Aseo genital"],
+        postTratamiento: ["Uso de ropa interior algodón", "Cremas regeneradoras", "No relaciones sexuales 3-5 días"],
         requiereEvaluacion: true,
         evaluacionGratuita: false,
         notas: 'Tratamiento innovador para liquen escleroso. Se requiere evaluación ginecológica previa.'
@@ -1619,8 +2265,20 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '45-60 min',
         sesiones: '1 cirugía',
+        indicaciones: ["Rostro redondo", "Falta de definición de pómulos", "Muerde mejillas al comer"],
+        contraindicaciones: ["Rostro muy delgado o alargado", "Flacidez excesiva", "Expectativas irreales"],
+        preTratamiento: ["Higiene oral exhaustiva", "No fumar"],
+        postTratamiento: ["Faja mentonera 3-5 días", "Dieta blanda y fría", "Aseo bucal con clorhexidina", "Hielo local"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Cirugía Bucal', valor: null, nota: null },
+            { cantidad: 1, item: 'Separadores Farabeuf/Minesota', valor: null, nota: null },
+            { cantidad: 1, item: 'Sutura Vicryl 4-0', valor: null, nota: 'Reabsorbible' },
+            { cantidad: 3, item: 'Carpules Anestesia', valor: null, nota: 'Lidocaína' },
+            { cantidad: 1, item: 'Bisturí 15', valor: null, nota: null }
+        ]
     },
     {
         id: 'blefaroplastia-quirurgica',
@@ -1634,8 +2292,19 @@ const tratamientosData = [
         valorHasta: 1500000,
         duracion: '60-90 min',
         sesiones: '1 cirugía',
+        indicaciones: ["Párpados caídos (dermatochalasis)", "Bolsas grasas bajo los ojos", "Mirada cansada"],
+        contraindicaciones: ["Ojo seco severo", "Glaucoma no controlado", "Coagulopatías"],
+        preTratamiento: ["Evaluación oftalmológica si corresponde", "No maquillaje", "Suspender anticoagulantes (con pase médico)"],
+        postTratamiento: ["Hielo local constante 48h", "Dormir semisentado", "Gotas oftálmicas lubricantes", "No lentes contacto 2 semanas"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Blefaroplastia', valor: null, nota: null },
+            { cantidad: 1, item: 'Sutura Nylon 6-0', valor: null, nota: 'Piel' },
+            { cantidad: 1, item: 'Electrobisturí', valor: null, nota: null },
+            { cantidad: 2, item: 'Lidocaína 2% c/epi', valor: null, nota: null }
+        ]
     },
     {
         id: 'otoplastia',
@@ -1649,6 +2318,16 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '60-90 min',
         sesiones: '1 cirugía',
+        indicaciones: ["Orejas prominentes (en asa)", "Asimetría auricular", "Falta de pliegues"],
+        contraindicaciones: ["Infección activa (otitis)", "Queloides (relativo)"],
+        preTratamiento: ["Lavado de cabello", "Ayuno"],
+        postTratamiento: ["Cintillo de compresión día y noche por 2-3 semanas", "No dormir de lado sobre la oreja", "Cuidado heridas retroauriculares"],
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Otoplastia', valor: null, nota: null },
+            { cantidad: 1, item: 'Sutura Mersilene 4-0', valor: null, nota: 'Cartílago' },
+            { cantidad: 1, item: 'Sutura Nylon 4-0', valor: null, nota: 'Piel' }
+        ],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1664,8 +2343,19 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '60-90 min',
         sesiones: '1 cirugía',
+        indicaciones: ["Acúmulo de grasa submentoniana (papada)", "Pérdida de ángulo mandibular"],
+        contraindicaciones: ["Flacidez excesiva de cuello (requiere lifting)", "Obesidad mórbida"],
+        preTratamiento: ["Ayuno liviano", "Hombres: afeitarse zona"],
+        postTratamiento: ["Faja mentonera obligatoria 1-2 semanas", "Masaje drenaje linfático", "Evitar movimientos bruscos de cuello"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Lipo Aspiración', valor: null, nota: 'Cánulas finas' },
+            { cantidad: 1, item: 'Solución Klein', valor: null, nota: 'Tumescencia' },
+            { cantidad: 1, item: 'Bisturí 11', valor: null, nota: 'Puntiforme' },
+            { cantidad: 1, item: 'Faja Mentonera', valor: null, nota: 'Obligatoria' }
+        ]
     },
     {
         id: 'lobuloplastia',
@@ -1679,8 +2369,18 @@ const tratamientosData = [
         valorHasta: 700000,
         duracion: '90 min',
         sesiones: '1 cirugía',
+        indicaciones: ["Lóbulo rasgado por aros", "Agujero expandido (expansiones)", "Lóbulo envejecido"],
+        contraindicaciones: ["Infección activa", "Queloides"],
+        preTratamiento: ["Aseo zona"],
+        postTratamiento: ["Puntos 10-14 días", "No usar aros por 1-2 meses", "Reinserción de aros en zona sana"],
         requiereEvaluacion: true,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        personal: ['Cirujano Maxilofacial', 'Arsenaler(a)', 'TENS'],
+        insumos: [
+            { cantidad: 1, item: 'Kit Cirugía Menor', valor: null, nota: null },
+            { cantidad: 1, item: 'Sutura Nylon 5-0', valor: null, nota: 'Piel' },
+            { cantidad: 1, item: 'Anestesia local', valor: null, nota: null }
+        ]
     },
 
     // ==================== VASCULAR - DRA. FRANCISCA GONZÁLEZ ====================
@@ -1697,7 +2397,11 @@ const tratamientosData = [
         duracion: '30-45 min',
         sesiones: 'Primera consulta',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Várices visibles", "Pesadez o dolor de piernas", "Arañitas vasculares", "Edema (hinchazón) vespertino"],
+        contraindicaciones: ["Ninguna (procedimiento diagnóstico)"],
+        preTratamiento: ["Traer exámenes o Ecografía Doppler previos si los tiene", "Ropa cómoda que permita examinar las piernas"],
+        postTratamiento: ["Ninguno", "Realizar exámenes solicitados si aplica"]
     },
     {
         id: 'escleroterapia-pequenas',
@@ -1711,6 +2415,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30 min',
         sesiones: '2-4 sesiones',
+        indicaciones: ["Arañitas vasculares (telangiectasias)", "Várices reticulares pequeñas"],
+        contraindicaciones: ["Trombosis Venosa Profunda activa", "Embarazo/Lactancia", "Alergia polidocanol", "Infección piel"],
+        preTratamiento: ["No depilarse el mismo día", "No aplicar cremas en las piernas"],
+        postTratamiento: ["Uso de medias de compresión 3-7 días", "No sol directo en la zona (manchas)", "Deambulación inmediata"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1726,6 +2434,10 @@ const tratamientosData = [
         valorHasta: 500000,
         duracion: '45-60 min',
         sesiones: 'Según evaluación',
+        indicaciones: ["Várices de mayor calibre", "Insuficiencia venosa superficial"],
+        contraindicaciones: ["Trombosis Venosa Profunda", "Foramen Oval Permeable (para espuma)", "Embarazo"],
+        preTratamiento: ["No depilarse el mismo día", "Eco Doppler previo indispensable"],
+        postTratamiento: ["Medias de compresión 7-14 días", "No sol directo", "Caminar diariamente"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1744,7 +2456,11 @@ const tratamientosData = [
         duracion: '30-45 min',
         sesiones: 'Primera consulta',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Diagnóstico de alopecia", "Caída estacional", "Adelgazamiento capilar"],
+        contraindicaciones: ["Ninguna"],
+        preTratamiento: ["Cabello limpio del día anterior", "Sin productos de peinado ni fibras de camuflaje"],
+        postTratamiento: ["Ninguno"]
     },
     {
         id: 'mesoterapia-capilar',
@@ -1758,6 +2474,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30-45 min',
         sesiones: 'Según plan capilar',
+        indicaciones: ["Caída de cabello (Efluvio)", "Alopecia Androgenética", "Mejora calidad capilar"],
+        contraindicaciones: ["Infección cuero cabelludo", "Embarazo"],
+        preTratamiento: ["Lavado de cabello", "No fibras capilares"],
+        postTratamiento: ["No lavar 24h", "No tinte 3 días"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1773,6 +2493,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '45-60 min',
         sesiones: 'Según plan capilar',
+        indicaciones: ["Efluvio telógeno", "Alopecia androgenética", "Post-injerto capilar"],
+        contraindicaciones: ["Trombocitopenia", "Cáncer activo", "Infección"],
+        preTratamiento: ["Hidratación abundante", "No AINES 5 días antes"],
+        postTratamiento: ["No lavar 24h", "No sauna/piscina 24h"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1788,6 +2512,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '4-8 horas',
         sesiones: '1 cirugía',
+        indicaciones: ["Alopecia Androgenética", "Entradas/Coronilla", "Cejas/Barba"],
+        contraindicaciones: ["Zona donante insuficiente", "Alopecia Areata activa", "Enfermedades autoinmunes"],
+        preTratamiento: ["Rasurado", "Analítica previa"],
+        postTratamiento: ["Dormir semisentado", "Lavado especial", "No sol 1 mes"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1803,6 +2531,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '90-120 min',
         sesiones: '1 sesión',
+        indicaciones: ["Alopecia Androgenética grados iniciales/medios"],
+        contraindicaciones: ["Alopecia Cicatricial", "Infección"],
+        preTratamiento: ["Piel limpia"],
+        postTratamiento: ["Curación zona donante", "No lavar 24h"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1821,7 +2553,11 @@ const tratamientosData = [
         duracion: '30-45 min',
         sesiones: 'Primera consulta (sin costo)',
         requiereEvaluacion: false,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        indicaciones: ["Interés en modelado corporal", "Flacidez cutánea", "Celulitis", "Adiposidad localizada"],
+        contraindicaciones: ["Ninguna"],
+        preTratamiento: ["Disponibilidad de 30 minutos", "Traer dudas anotadas"],
+        postTratamiento: ["Ninguno"]
     },
     {
         id: 'depilacion-axilas-sesion',
@@ -1835,6 +2571,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '15-20 min',
         sesiones: '1 sesión',
+        indicaciones: ["Vello no deseado", "Foliculitis"],
+        contraindicaciones: ["Bronceado reciente", "Fotosensibilidad"],
+        preTratamiento: ["Rasurado previo 12-24h", "Piel limpia (sin desodorante)"],
+        postTratamiento: ["No sol", "Hidratación", "No desodorante con alcohol inmediata"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1850,6 +2590,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '60-90 min',
         sesiones: '1 sesión',
+        indicaciones: ["Vello no deseado", "Foliculitis"],
+        contraindicaciones: ["Bronceado reciente", "Fotosensibilidad"],
+        preTratamiento: ["Rasurado previo 12-24h", "Piel limpia"],
+        postTratamiento: ["No sol", "Hidratación"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1865,6 +2609,10 @@ const tratamientosData = [
         valorHasta: 130000,
         duracion: '2-3 horas',
         sesiones: '1 sesión',
+        indicaciones: ["Vello no deseado", "Foliculitis"],
+        contraindicaciones: ["Bronceado reciente", "Fotosensibilidad"],
+        preTratamiento: ["Rasurado previo 12-24h", "Piel limpia (sin cremas)"],
+        postTratamiento: ["No sol", "Hidratación", "No sauna/calor extremo 24h"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1880,6 +2628,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '60 min por cabezal',
         sesiones: '1-2 sesiones por zona',
+        indicaciones: ["Grasa localizada rebelde", "Moldeado corporal"],
+        contraindicaciones: ["Crioglobulinemia", "Hernias", "Embarazo", "Raynaud"],
+        preTratamiento: ["Piel sana", "Hidratación"],
+        postTratamiento: ["Masaje post-sesión", "Eritema transitorio", "Beber agua"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -1898,7 +2650,11 @@ const tratamientosData = [
         duracion: '30-45 min',
         sesiones: 'Primera consulta',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Control ginecológico anual", "Alteraciones del flujo rojo", "Dolor pélvico", "Anticoncepción", "Menopausia"],
+        contraindicaciones: ["Ninguna"],
+        preTratamiento: ["Idealmente sin menstruación (salvo urgencia o indicación contraria)", "Traer exámenes previos"],
+        postTratamiento: ["Ninguno", "Seguir indicaciones médicas"]
     },
     {
         id: 'laser-co2-vaginal',
@@ -1912,6 +2668,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30-45 min',
         sesiones: '1-3 sesiones',
+        indicaciones: ["Laxitud vaginal", "Sequedad", "Incontinencia leve"],
+        contraindicaciones: ["Embarazo", "Infección activa", "PAP alterado"],
+        preTratamiento: ["PAP al día", "Cultivo negativo"],
+        postTratamiento: ["Abstinencia sexual 5-7 días", "No piscina"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1928,7 +2688,11 @@ const tratamientosData = [
         duracion: '30-45 min',
         sesiones: 'Primera consulta',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Control salud sexual", "Métodos anticonceptivos", "Dudas ginecológicas generales"],
+        contraindicaciones: ["Ninguna"],
+        preTratamiento: ["Traer carnet de control si tiene", "Lista de dudas"],
+        postTratamiento: ["Ninguno"]
     },
     {
         id: 'peeling-intimo',
@@ -1942,6 +2706,10 @@ const tratamientosData = [
         valorHasta: 150000,
         duracion: '30-45 min',
         sesiones: '4-6 sesiones (cada 15-21 días)',
+        indicaciones: ["Hiperpigmentación genital/anal", "Rejuvenecimiento"],
+        contraindicaciones: ["Piel irritada", "Infección", "Embarazo"],
+        preTratamiento: ["Rasurado 3 días antes", "Piel limpia"],
+        postTratamiento: ["Hidratación", "Ropa interior algodón", "No relaciones 3-5 días"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1958,6 +2726,10 @@ const tratamientosData = [
         duracion: '30 min',
         sesiones: '6-8 sesiones (cada 2-4 semanas)',
         protocolo: 'Protocolo adaptado a cada caso según grado de pigmentación. Complementación con peeling químico para mejores resultados.',
+        indicaciones: ["Hiperpigmentación profunda", "Manchas resistentes"],
+        contraindicaciones: ["Embarazo", "Infección", "Piel bronceada"],
+        preTratamiento: ["Rasurado previo", "Piel limpia"],
+        postTratamiento: ["Hidratación", "Fotoprotección (si zona expuesta)", "No relaciones 3 días"],
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
@@ -1976,7 +2748,11 @@ const tratamientosData = [
         duracion: '30-45 min',
         sesiones: 'Primera consulta',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Dudas sobre salud masculina", "Chequeo prostático", "Disfunción eréctil", "Estética genital"],
+        contraindicaciones: ["Ninguna"],
+        preTratamiento: ["Traer antígeno prostático o ecografías si posee", "Higiene genital normal"],
+        postTratamiento: ["Ninguno"]
     },
 
     // ==================== AH GLÚTEO ====================
@@ -1992,6 +2768,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '60-90 min',
         sesiones: '1 sesión (duración 18-24 meses)',
+        indicaciones: ["Aumento volumen glúteo", "Corrección hip dips"],
+        contraindicaciones: ["Biopolímeros previos (Absoluta)", "Infección", "Embarazo"],
+        preTratamiento: ["Piel limpia", "No AINES"],
+        postTratamiento: ["No dormir boca arriba 5 días", "No inyecciones IM"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -2007,6 +2787,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '90-120 min',
         sesiones: '1 sesión (duración 18-24 meses)',
+        indicaciones: ["Aumento volumen glúteo", "Corrección hip dips"],
+        contraindicaciones: ["Biopolímeros previos (Absoluta)", "Infección", "Embarazo"],
+        preTratamiento: ["Piel limpia", "No AINES"],
+        postTratamiento: ["No dormir boca arriba 5 días", "No inyecciones IM"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -2022,6 +2806,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30-45 min',
         sesiones: 'Según evaluación (3-6 sesiones recomendadas)',
+        indicaciones: ["Grasa localizada pequeña", "Remodelación"],
+        contraindicaciones: ["Alergia componentes (soja)", "Embarazo", "Infección"],
+        preTratamiento: ["Piel limpia"],
+        postTratamiento: ["Masaje circular", "Beber agua", "Inflamación 24-48h"],
         requiereEvaluacion: true,
         evaluacionGratuita: true
     },
@@ -2040,7 +2828,11 @@ const tratamientosData = [
         duracion: '45-60 min',
         sesiones: 'Primera consulta + controles mensuales',
         requiereEvaluacion: false,
-        evaluacionGratuita: false
+        evaluacionGratuita: false,
+        indicaciones: ["Control de peso", "Aumento de masa muscular", "Mejora de hábitos alimenticios", "Nutrición deportiva"],
+        contraindicaciones: ["Ninguna para la consulta"],
+        preTratamiento: ["Traer exámenes de sangre recientes (colesterol, glicemia, etc.)", "Ayuno de 2 horas (para InBody)", "Ropa ligera"],
+        postTratamiento: ["Seguir pauta alimentaria", "Agendar control mensual"]
     },
     {
         id: 'examen-inbody',
@@ -2054,6 +2846,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '15 min',
         sesiones: '1 examen',
+        indicaciones: ["Evaluación composición corporal", "Control peso"],
+        contraindicaciones: ["Marcapasos (Absoluta)", "Embarazo (No existen tablas validadas)"],
+        preTratamiento: ["Ayuno 2-3h", "Vejiga vacía", "No ejercicio previo"],
+        postTratamiento: ["Ninguno"],
         requiereEvaluacion: false,
         evaluacionGratuita: false
     },
@@ -2069,6 +2865,10 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '30 min',
         sesiones: '1 examen',
+        indicaciones: ["Medición metabolismo basal exacto", "Estancamiento en peso"],
+        contraindicaciones: ["Claustrofobia severa (usa máscara)", "Fiebre"],
+        preTratamiento: ["Ayuno 4h", "No ejercicio 12h antes", "No cafeína"],
+        postTratamiento: ["Ninguno"],
         requiereEvaluacion: false,
         evaluacionGratuita: false
     },
@@ -2086,7 +2886,12 @@ const tratamientosData = [
         valorHasta: null,
         duracion: '60-90 min',
         sesiones: '1 sesión',
+        indicaciones: ["Hipertrofia labios menores", "Molestias con ropa/deporte", "Estética"],
+        contraindicaciones: ["Infección activa", "Trastornos coagulación"],
+        preTratamiento: ["Rasurado completo", "Higiene zona"],
+        postTratamiento: ["Hielo local", "Abstinencia sexual 4-6 semanas", "Reposo relativo 3 días"],
         espacio: 'Pabellón Menor',
+        personal: ['Ginecóloga Estética / Matrona', 'TENS', 'Arsenaler(a)'],
         equipo: 'Láser CO2 Ginecoestético',
         insumos: [
             { cantidad: 1, item: 'Lápiz dermográfico estéril para marcaje', valor: '$10.000', nota: 'No reutilizable' },

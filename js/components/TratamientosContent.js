@@ -159,32 +159,28 @@ function TratamientosContent() {
 
     return `
         <div class="space-y-5 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_rgba(248,242,226,0.8))] p-4 md:p-6 rounded-[32px] shadow-[0_25px_80px_rgba(15,23,42,0.08)]">
-            <!-- Header -->
-            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Catálogo y documentación</p>
-                    <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Tratamientos de Clínica Cialo</h2>
-                </div>
-                <div class="flex flex-wrap items-center gap-2 text-xs">
-                    <span class="px-3 py-1.5 rounded-full bg-purple-100 text-purple-700 font-semibold">
-                        <i data-lucide="layers" class="w-3 h-3 inline-block mr-1"></i>${totalTratamientos} tratamientos
-                    </span>
-                    <span id="tratamientosVisibleBadge" class="px-3 py-1.5 rounded-full ${filteredCount < totalTratamientos ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'} font-medium transition-colors">
-                        <i data-lucide="eye" class="w-3 h-3 inline-block mr-1"></i>${filteredCount} visibles
-                    </span>
-                    ${hasActiveFilters ? `
-                        <button onclick="resetTratamientoFilters()" class="px-3 py-1.5 rounded-full bg-red-50 text-red-600 font-medium hover:bg-red-100 transition-colors flex items-center gap-1">
-                            <i data-lucide="x-circle" class="w-3 h-3"></i> Limpiar
-                        </button>
-                    ` : ''}
 
-                </div>
-            </div>
 
             <!-- Layout principal: 2 columnas -->
-            <div class="grid gap-4 lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]">
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)] h-full">
                 <!-- COLUMNA IZQUIERDA: Filtros + Lista -->
-                <div class="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto space-y-3 pr-1">
+                <div class="bg-white/50 rounded-2xl flex flex-col h-[calc(100vh-6rem)] pr-2">
+                    <!-- Stats / Badges compactos -->
+                    <div class="flex items-center justify-between px-1 py-2 flex-shrink-0">
+                        <div class="flex gap-2">
+                             <span class="px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold">
+                                ${totalTratamientos}
+                            </span>
+                            <span id="tratamientosVisibleBadge" class="px-2.5 py-1 rounded-full ${filteredCount < totalTratamientos ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'} text-xs font-medium transition-colors">
+                                ${filteredCount} visibles
+                            </span>
+                        </div>
+                         ${hasActiveFilters ? `
+                            <button onclick="resetTratamientoFilters()" class="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
+                                <i data-lucide="x-circle" class="w-3 h-3"></i> Limpiar
+                            </button>
+                        ` : ''}
+                    </div>
                     <!-- Toggle filtros mobile -->
                     <button id="btnToggleTratamientoFilters"
                         class="lg:hidden w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors ${hasActiveFilters ? 'ring-2 ring-purple-200 border-purple-300' : ''}"
@@ -193,9 +189,9 @@ function TratamientosContent() {
                         ${hasActiveFilters ? '<span class="w-2 h-2 bg-purple-500 rounded-full"></span>' : ''}
                     </button>
 
-                    <!-- Panel de Filtros unificado -->
+                    <!-- Panel de Filtros unificado (FIJO) -->
                     <aside id="tratamientoFiltersSidebar"
-                        class="bg-white/90 backdrop-blur border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3">
+                        class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3 flex-shrink-0 mb-3">
 
                         <div class="flex items-center justify-between">
                             <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -207,79 +203,44 @@ function TratamientosContent() {
                         </div>
 
                         <!-- Buscar -->
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-slate-500">Buscar</label>
-                            <div class="relative">
-                                <input type="text" id="tratamientoSearchInput"
-                                    placeholder="Nombre, categoría o palabra clave"
-                                    class="w-full pl-9 pr-9 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm transition-shadow focus:shadow-md"
-                                    value="${tratamientoSearchTerm}" />
-                                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"></i>
-                                ${tratamientoSearchTerm ? `
-                                    <button onclick="clearTratamientoSearch()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5">
-                                        <i data-lucide="x" class="w-4 h-4"></i>
-                                    </button>
-                                ` : ''}
-                            </div>
+                        <div class="relative">
+                            <input type="text" id="tratamientoSearchInput"
+                                placeholder="Buscar tratamiento..."
+                                class="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm transition-all"
+                                value="${tratamientoSearchTerm}" />
+                            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4"></i>
+                            ${tratamientoSearchTerm ? `
+                                <button onclick="clearTratamientoSearch()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            ` : ''}
                         </div>
 
-                        <!-- Categoría -->
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-slate-500">Categoría</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <!-- Categoría -->
                             <select id="tratamientoCategoriaSelect"
-                                class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white">
-                                ${categorias.map(cat => `<option value="${cat}" ${tratamientoCategoriaActiva === cat ? 'selected' : ''}>${cat === 'Todas' ? 'Todas (categorías)' : cat} (${_getCountByCategoria(cat)})</option>`).join('')}
+                                class="w-full py-1.5 px-2 rounded-lg border border-slate-200 text-xs focus:ring-purple-500 focus:border-purple-500 bg-white">
+                                ${categorias.map(cat => `<option value="${cat}" ${tratamientoCategoriaActiva === cat ? 'selected' : ''}>${cat === 'Todas' ? 'Todas Cat.' : cat}</option>`).join('')}
                             </select>
-                        </div>
 
-                        <!-- Subcategoría -->
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-slate-500">Subcategoría</label>
+                            <!-- Subcategoría -->
                             <select id="tratamientoSubcategoriaSelect"
-                                class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white">
-                                ${subcategorias.map(sub => `<option value="${sub}" ${tratamientoSubcategoriaActiva === sub ? 'selected' : ''}>${sub === 'Todas' ? 'Todas (subcategorías)' : sub} (${_getCountBySubcategoria(sub)})</option>`).join('')}
+                                class="w-full py-1.5 px-2 rounded-lg border border-slate-200 text-xs focus:ring-purple-500 focus:border-purple-500 bg-white">
+                                ${subcategorias.map(sub => `<option value="${sub}" ${tratamientoSubcategoriaActiva === sub ? 'selected' : ''}>${sub === 'Todas' ? 'Todas Sub.' : sub}</option>`).join('')}
                             </select>
                         </div>
-
-                        <!-- Profesional -->
-                        <div class="space-y-1">
-                            <label class="text-xs font-semibold text-slate-500">Profesional</label>
-                            <select id="tratamientoProfesionalSelect"
-                                class="w-full py-2 px-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white">
-                                ${profesionales.map(prof => `<option value="${prof}" ${tratamientoProfesionalActivo === prof ? 'selected' : ''}>${prof === 'Todos' ? 'Clínica' : prof} (${_getCountByProfesional(prof)})</option>`).join('')}
-                            </select>
-                        </div>
-
-                        <!-- Evaluación previa -->
-                        <label class="flex items-center gap-2.5 text-sm text-slate-600 py-1 cursor-pointer hover:text-slate-800 transition-colors">
-                            <input type="checkbox" id="tratamientoSoloConEvaluacion"
-                                class="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500" ${tratamientoSoloConEvaluacion ? 'checked' : ''}>
-                            <span>Solo tratamientos con evaluación previa</span>
-                        </label>
-
-                        <!-- Limpiar filtros -->
-                        ${hasActiveFilters ? `
-                            <button id="btnLimpiarFiltrosTratamientos"
-                                class="w-full px-4 py-2 text-sm font-semibold rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
-                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Limpiar filtros
-                            </button>
-                        ` : ''}
                     </aside>
 
-                    <!-- Lista de tratamientos -->
-                    <div class="space-y-2 min-w-0">
-                        <div id="tratamientoResultsCount" class="text-xs text-slate-500 flex items-center justify-between">
-                            <span>${getTratamientoResultsCount()}</span>
-                        </div>
-                        <div id="tratamientoResultsContainer"
-                            class="grid grid-cols-2 gap-3">
+                    <!-- Lista de tratamientos (SCROLLABLE) -->
+                    <div class="flex-1 overflow-y-auto min-h-0 pr-1 custom-scrollbar space-y-2">
+                        <div id="tratamientoResultsContainer" class="grid grid-cols-1 gap-2.5">
                             ${renderTratamientosList(filtered)}
                         </div>
                     </div>
                 </div>
 
                 <!-- COLUMNA DERECHA: Detalle completo -->
-                <div id="tratamientoDetailPanel" class="lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+                <div id="tratamientoDetailPanel" class="lg:h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar pl-1">
                     ${renderTratamientoDetailPanel()}
                 </div>
             </div>
@@ -469,57 +430,91 @@ function renderTratamientoDetailPanel() {
                     </div>
                 </div>
 
-                <details class="group" open>
-                    <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-800 py-1.5 hover:text-purple-700 transition-colors">
-                        <span class="flex items-center gap-2">
-                            <i data-lucide="file-text" class="w-4 h-4 text-purple-500"></i>
-                            Descripción clínica
-                        </span>
-                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
-                    </summary>
-                    <p class="text-sm text-slate-600 leading-relaxed mt-1.5 pl-6">${tratamiento.descripcion}</p>
-                </details>
+                <div class="py-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-500"></i> Descripción clínica
+                    </h4>
+                    <p class="text-sm text-slate-600 leading-relaxed pl-5">${tratamiento.descripcion}</p>
+                </div>
+
+                ${/* Sección Indicaciones */ tratamiento.indicaciones && tratamiento.indicaciones.length > 0 ? `
+                <div class="py-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-green-500"></i> Indicaciones
+                    </h4>
+                    <ul class="text-sm text-slate-600 space-y-1 pl-6 list-disc marker:text-green-300">
+                        ${tratamiento.indicaciones.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>` : ''}
+
+                ${/* Sección Contraindicaciones */ tratamiento.contraindicaciones && tratamiento.contraindicaciones.length > 0 ? `
+                <div class="py-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-500"></i> Contraindicaciones
+                    </h4>
+                    <ul class="text-sm text-slate-600 space-y-1 pl-6 list-disc marker:text-red-300">
+                        ${tratamiento.contraindicaciones.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>` : ''}
+
+                ${/* Sección Pre-Tratamiento */ tratamiento.preTratamiento && tratamiento.preTratamiento.length > 0 ? `
+                <div class="py-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5 text-blue-500"></i> Preparación (Pre-Tratamiento)
+                    </h4>
+                    <ul class="text-sm text-slate-600 space-y-1 pl-6 list-disc marker:text-blue-300">
+                        ${tratamiento.preTratamiento.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>` : ''}
+
+                ${/* Sección Post-Tratamiento */ tratamiento.postTratamiento && tratamiento.postTratamiento.length > 0 ? `
+                <div class="py-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-purple-500"></i> Cuidados Posteriores
+                    </h4>
+                    <ul class="text-sm text-slate-600 space-y-1 pl-6 list-disc marker:text-purple-300">
+                        ${tratamiento.postTratamiento.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>` : ''}
 
                 ${renderTratamientoGeneralInfo(tratamiento)}
 
                 ${tratamiento.protocolo ? `
-                    <details class="group">
-                        <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-800 py-1.5 hover:text-purple-700 transition-colors">
-                            <span class="flex items-center gap-2">
-                                <i data-lucide="clipboard-list" class="w-4 h-4 text-purple-500"></i>
-                                Protocolo operativo
-                            </span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
-                        </summary>
-                        <p class="text-sm text-slate-600 leading-relaxed mt-1.5 pl-6">${tratamiento.protocolo.replace(/\\n/g, '<br>')}</p>
-                    </details>
+                    <div class="py-2">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <i data-lucide="clipboard-list" class="w-3.5 h-3.5 text-purple-500"></i> Protocolo operativo
+                        </h4>
+                        <p class="text-sm text-slate-600 leading-relaxed pl-5">${tratamiento.protocolo.replace(/\\n/g, '<br>')}</p>
+                    </div>
                 ` : ''}
 
                 ${tratamiento.notas ? `
-                    <details class="group">
-                        <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-800 py-1.5 hover:text-purple-700 transition-colors">
-                            <span class="flex items-center gap-2">
-                                <i data-lucide="sticky-note" class="w-4 h-4 text-amber-500"></i>
-                                Notas y precios
-                            </span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
-                        </summary>
-                        <div class="text-sm text-slate-600 leading-relaxed mt-1.5 pl-6 bg-amber-50/50 border border-amber-100 rounded-xl p-3">
+                    <div class="py-2">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <i data-lucide="sticky-note" class="w-3.5 h-3.5 text-amber-500"></i> Notas y precios
+                        </h4>
+                        <div class="text-sm text-slate-600 leading-relaxed pl-5 bg-amber-50/50 border border-amber-100 rounded-xl p-3">
                             ${tratamiento.notas.replace(/\\n/g, '<br>')}
                         </div>
-                    </details>
+                    </div>
                 ` : ''}
 
+                ${tratamiento.personal && tratamiento.personal.length > 0 ? `
+                <div class="py-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i data-lucide="users" class="w-3.5 h-3.5 text-blue-500"></i> Personal requerido
+                    </h4>
+                    <ul class="text-sm text-slate-600 space-y-1 pl-6 list-disc marker:text-blue-300">
+                        ${tratamiento.personal.map(p => `<li>${p}</li>`).join('')}
+                    </ul>
+                </div>` : ''}
+
                 ${tratamiento.insumos && tratamiento.insumos.length > 0 ? `
-                    <details class="group">
-                        <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-800 py-1.5 hover:text-purple-700 transition-colors">
-                            <span class="flex items-center gap-2">
-                                <i data-lucide="package" class="w-4 h-4 text-orange-500"></i>
-                                Insumos requeridos (${tratamiento.insumos.length})
-                            </span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
-                        </summary>
-                        <div class="mt-1.5 pl-6">
+                    <div class="py-2">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <i data-lucide="package" class="w-3.5 h-3.5 text-orange-500"></i> Insumos requeridos (${tratamiento.insumos.length})
+                        </h4>
+                        <div class="pl-5">
                             <div class="overflow-x-auto">
                                 <table class="w-full text-xs">
                                     <thead>
@@ -541,7 +536,7 @@ function renderTratamientoDetailPanel() {
                                 </table>
                             </div>
                         </div>
-                    </details>
+                    </div>
                 ` : ''}
 
                 <button type="button" onclick="openTratamientoModal('${tratamiento.id}')"
@@ -561,19 +556,15 @@ function renderTratamientoGeneralInfo(tratamiento) {
     const puntos = info.puntos.map(p => '<li class="text-sm text-slate-600 leading-relaxed">' + p + '</li>').join('');
 
     return `
-        <details class="group">
-            <summary class="flex items-center justify-between cursor-pointer text-sm font-semibold text-slate-800 py-1.5 hover:text-purple-700 transition-colors">
-                <span class="flex items-center gap-2">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-purple-500"></i>
-                    Info general · ${info.titulo}
-                </span>
-                <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 group-open:rotate-180 transition-transform"></i>
-            </summary>
-            <div class="mt-1.5 pl-6 space-y-2">
+        <div class="py-2">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-purple-500"></i> Info general · ${info.titulo}
+            </h4>
+            <div class="pl-5 space-y-2">
                 <p class="text-sm text-slate-600 leading-relaxed">${info.resumen}</p>
                 <ul class="list-disc list-inside space-y-1">${puntos}</ul>
             </div>
-        </details>
+        </div>
     `;
 }
 
@@ -794,6 +785,65 @@ function renderTratamientoModal(tratamiento) {
     var gradiente = getCategoriaColor(tratamiento.categoria);
     var icono = getCategoriaIcon(tratamiento.categoria);
 
+    // Sección de Protocolos Médicos (Pre/Post/Indicaciones)
+    let medicalInfoHtml = '';
+
+    // Indicaciones (Para qué sirve)
+    if (tratamiento.indicaciones && tratamiento.indicaciones.length > 0) {
+        medicalInfoHtml += `
+            <div class="mb-4">
+                <h4 class="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-green-500"></i> Indicaciones
+                </h4>
+                <ul class="text-sm text-slate-600 space-y-1 pl-6 list-disc marker:text-green-300">
+                    ${tratamiento.indicaciones.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    // Contraindicaciones
+    if (tratamiento.contraindicaciones && tratamiento.contraindicaciones.length > 0) {
+        medicalInfoHtml += `
+            <div class="mb-4 bg-red-50 p-3 rounded-lg border border-red-100">
+                <h4 class="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
+                    <i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i> Contraindicaciones
+                </h4>
+                <ul class="text-sm text-red-600 space-y-1 pl-5 list-disc marker:text-red-400">
+                    ${tratamiento.contraindicaciones.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    // Pre-Tratamiento
+    if (tratamiento.preTratamiento && tratamiento.preTratamiento.length > 0) {
+        medicalInfoHtml += `
+            <div class="mb-4">
+                <h4 class="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                    <i data-lucide="arrow-right-circle" class="w-4 h-4 text-blue-500"></i> Pre-Tratamiento
+                </h4>
+                <ul class="text-sm text-slate-600 space-y-1 pl-6 list-disc marker:text-blue-300">
+                    ${tratamiento.preTratamiento.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
+    // Post-Tratamiento
+    if (tratamiento.postTratamiento && tratamiento.postTratamiento.length > 0) {
+        medicalInfoHtml += `
+            <div class="mb-4">
+                <h4 class="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-purple-500"></i> Cuidados Post-Tratamiento
+                </h4>
+                <ul class="text-sm text-slate-600 space-y-1 pl-6 list-disc marker:text-purple-300">
+                    ${tratamiento.postTratamiento.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+
     return `
         <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onclick="closeTratamientoModal()">
@@ -869,6 +919,8 @@ function renderTratamientoModal(tratamiento) {
                         </h3>
                         <p class="text-sm text-slate-700 leading-relaxed">${tratamiento.descripcion}</p>
                     </div>
+
+                    ${medicalInfoHtml}
 
                     ${renderTratamientoGeneralInfoModal(tratamiento)}
 
