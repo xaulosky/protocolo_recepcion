@@ -175,11 +175,18 @@ function TratamientosContent() {
                                 ${filteredCount} visibles
                             </span>
                         </div>
-                         ${hasActiveFilters ? `
-                            <button onclick="resetTratamientoFilters()" class="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
-                                <i data-lucide="x-circle" class="w-3 h-3"></i> Limpiar
+                        <div class="flex items-center gap-2">
+                            ${hasActiveFilters ? `
+                                <button onclick="resetTratamientoFilters()" class="text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1 mr-1">
+                                    <i data-lucide="x-circle" class="w-3 h-3"></i> Limpiar
+                                </button>
+                            ` : ''}
+                            <button onclick="ExcelExporter.exportToExcel(tratamientosData)" title="Descargar catálogo completo en Excel" 
+                                class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border border-emerald-200 shadow-sm">
+                                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> 
+                                <span class="hidden sm:inline">Exportar</span>
                             </button>
-                        ` : ''}
+                        </div>
                     </div>
                     <!-- Toggle filtros mobile -->
                     <button id="btnToggleTratamientoFilters"
@@ -494,7 +501,42 @@ function renderTratamientoDetailPanel() {
                             <i data-lucide="sticky-note" class="w-3.5 h-3.5 text-amber-500"></i> Notas y precios
                         </h4>
                         <div class="text-sm text-slate-600 leading-relaxed pl-5 bg-amber-50/50 border border-amber-100 rounded-xl p-3">
-                            ${tratamiento.notas.replace(/\\n/g, '<br>')}
+                            ${tratamiento.notas.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${tratamiento.zonas && tratamiento.zonas.length > 0 ? `
+                    <div class="py-2">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <i data-lucide="tag" class="w-3.5 h-3.5 text-pink-500"></i> Tarifas por Zona
+                        </h4>
+                        <div class="pl-2 space-y-4">
+                            ${tratamiento.zonas.map(cat => `
+                                <div class="bg-white border boundary-slate-100 rounded-xl overflow-hidden shadow-sm">
+                                    <div class="bg-slate-50 px-3 py-2 border-b border-slate-100">
+                                        <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wide">${cat.categoria}</h5>
+                                    </div>
+                                    <table class="w-full text-xs">
+                                        <thead>
+                                            <tr class="bg-slate-50/50 border-b border-slate-100 text-slate-500">
+                                                <th class="py-2 px-3 text-left font-medium w-1/2">Zona</th>
+                                                <th class="py-2 px-3 text-right font-medium">Sesión</th>
+                                                <th class="py-2 px-3 text-right font-medium">Pack</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-50">
+                                            ${cat.items.map(zona => `
+                                                <tr class="hover:bg-slate-50/80 transition-colors">
+                                                    <td class="py-2 px-3 font-medium text-slate-700">${zona.zona}</td>
+                                                    <td class="py-2 px-3 text-right text-slate-500">$${zona.precioSesion.toLocaleString('es-CL').replace(/,/g, '.')}</td>
+                                                    <td class="py-2 px-3 text-right font-bold text-purple-600">$${zona.precioPack.toLocaleString('es-CL').replace(/,/g, '.')}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 ` : ''}

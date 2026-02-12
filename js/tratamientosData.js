@@ -1233,26 +1233,7 @@ const tratamientosData = [
         requiereEvaluacion: true,
         evaluacionGratuita: false
     },
-    {
-        id: 'depilacion-laser-keren',
-        categoria: 'Corporal',
-        subcategoria: 'Depilación',
-        nombre: 'Depilación Láser Soprano Alma',
-        descripcion: 'Sistema de depilación definitiva con láser en movimiento (SHR) que calienta el folículo progresivamente, segura y prácticamente indolora. Trata todo tipo de piel, incluso bronceadas. Elimina/reduce vello de forma duradera, previene vellos encarnados y foliculitis, mejora suavidad y textura de la piel. Para piernas, axilas, bikini, espalda, brazos, rostro.',
-        profesional: 'Keren Hapuc Matus Islas',
-        especialidad: 'Kinesióloga Dermatofuncional',
-        valorDesde: 60000,
-        valorHasta: 780000,
-        duracion: '30-120 min',
-        sesiones: '6-8 sesiones (1 vez al mes)',
-        protocolo: 'Según zona a tratar. Seguro en todo tipo de piel, incluso oscuras.',
-        indicaciones: ["Eliminación de vello no deseado", "Foliculitis (pelos encarnados)", "Hirsutismo"],
-        contraindicaciones: ["Bronceado reciente intenso (piel roja)", "Uso de medicamentos fotosensibilizantes", "Embarazo"],
-        preTratamiento: ["Rasurar la zona 12-24 horas antes (al ras)", "No usar cera/pinzas por 3-4 semanas antes", "Piel limpia (sin cremas/desodorante)"],
-        postTratamiento: ["Evitar sol directo en zona tratada", "Usar bloqueador solar", "No agua muy caliente ni sauna por 24h", "Hidratación"],
-        requiereEvaluacion: true,
-        evaluacionGratuita: false
-    },
+
     {
         id: 'hydrafacial',
         categoria: 'Facial',
@@ -1343,8 +1324,8 @@ const tratamientosData = [
         subcategoria: 'Depilación Láser',
         nombre: 'Depilación Láser Soprano Titanium',
         descripcion: 'Depilación definitiva con tecnología Soprano Titanium de Alma Lasers, el estándar de oro en depilación láser. Combina tres longitudes de onda (Alejandrita, Diodo y Nd:YAG) para tratar todos los tipos de piel y vello. Tecnología SHR (Super Hair Removal) prácticamente indolora. Apto para todo el año y todo tipo de piel, incluyendo pieles bronceadas.',
-        profesional: 'María Jesús Contreras Merino',
-        especialidad: 'Enfermera - Aparatología Estética',
+        profesional: 'Keren Matus / María Jesús Contreras / Susana Pereira',
+        especialidad: 'Kinesióloga / Enfermera / Cosmetóloga',
         valorDesde: 25000,
         valorHasta: 350000,
         duracion: 'Según zona',
@@ -1354,7 +1335,82 @@ const tratamientosData = [
         preTratamiento: ["Rasurar la zona 12-24 horas antes (al ras)", "No usar cera/pinzas por 3-4 semanas antes", "Piel limpia (sin cremas/desodorante)"],
         postTratamiento: ["Evitar sol directo en zona tratada", "Usar bloqueador solar", "No agua muy caliente ni sauna por 24h", "Hidratación"],
         requiereEvaluacion: true,
-        evaluacionGratuita: true
+        evaluacionGratuita: true,
+        zonas: [
+            {
+                categoria: "Rostro (Packs de 8 Sesiones)",
+                items: [
+                    { zona: "Pómulos", precioSesion: 17600, precioPack: 72000 },
+                    { zona: "Entrecejo / Perfilado de Cejas", precioSesion: 14400, precioPack: 56000 },
+                    { zona: "Patillas", precioSesion: 17600, precioPack: 72000 },
+                    { zona: "Mentón", precioSesion: 17600, precioPack: 72000 },
+                    { zona: "Bozo", precioSesion: 14400, precioPack: 72000 },
+                    { zona: "Mejillas", precioSesion: 17600, precioPack: 104000 },
+                    { zona: "Frente", precioSesion: 17600, precioPack: 104000 },
+                    { zona: "Cuello Anterior", precioSesion: 17600, precioPack: 104000 },
+                    { zona: "Orejas", precioSesion: 14400, precioPack: 56000 },
+                    { zona: "Perfilado de Barba (Pómulos y Cuello)", precioSesion: 24000, precioPack: 112000 },
+                    { zona: "Barba Completa", precioSesion: 28000, precioPack: 144000 },
+                    { zona: "Rostro Completo sin Cuello", precioSesion: 28000, precioPack: 152000 },
+                    { zona: "Medio Rostro", precioSesion: 24000, precioPack: 112000 },
+                    { zona: "Rostro Completo (Frente a Cuello)", precioSesion: 28000, precioPack: 168000 }
+                ]
+            },
+            {
+                categoria: "Cuerpo - Torso (Packs de 6 Sesiones)",
+                items: [
+                    { zona: "Tórax Completo", precioSesion: 32000, precioPack: 132000 },
+                    { zona: "Abdomen Completo", precioSesion: 32000, precioPack: 132000 },
+                    { zona: "Tórax + Abdomen", precioSesion: 35000, precioPack: 180000 },
+                    { zona: "Línea Alba", precioSesion: 17600, precioPack: 54000 },
+                    { zona: "Areola de Pezón", precioSesion: 17600, precioPack: 54000 }
+                ]
+            },
+            {
+                categoria: "Cuerpo - Espalda (Packs de 6 Sesiones)",
+                items: [
+                    { zona: "Espalda Completa", precioSesion: 35000, precioPack: 180000 },
+                    { zona: "Espalda Superior", precioSesion: 32000, precioPack: 132000 },
+                    { zona: "Espalda Baja", precioSesion: 28000, precioPack: 132000 },
+                    { zona: "Cuello Posterior", precioSesion: 24000, precioPack: 78000 }
+                ]
+            },
+            {
+                categoria: "Cuerpo - Brazos (Packs de 6 Sesiones)",
+                items: [
+                    { zona: "Brazos Completos (Incluye Manos)", precioSesion: 28000, precioPack: 180000 },
+                    { zona: "Medio Brazo", precioSesion: 24000, precioPack: 108000 },
+                    { zona: "Axilas", precioSesion: 17600, precioPack: 78000 },
+                    { zona: "Manos y Dedos", precioSesion: 17600, precioPack: 78000 }
+                ]
+            },
+            {
+                categoria: "Cuerpo - Piernas (Packs de 6 Sesiones)",
+                items: [
+                    { zona: "Piernas Completas (Incluye Pies y Dedos)", precioSesion: 32000, precioPack: 192000 },
+                    { zona: "Media Pierna", precioSesion: 28000, precioPack: 132000 },
+                    { zona: "Pies y Dedos", precioSesion: 17600, precioPack: 78000 }
+                ]
+            },
+            {
+                categoria: "Cuerpo - Glúteos e Íntima (Packs de 6 Sesiones)",
+                items: [
+                    { zona: "Glúteos", precioSesion: 28000, precioPack: 108000 },
+                    { zona: "Rebaje Completo", precioSesion: 24000, precioPack: 120000 },
+                    { zona: "Rebaje Bikini", precioSesion: 17600, precioPack: 84000 },
+                    { zona: "Interglúteo", precioSesion: 17600, precioPack: 84000 },
+                    { zona: "Rebaje Completo + Interglúteo", precioSesion: 28000, precioPack: 144000 },
+                    { zona: "Rebaje Normal", precioSesion: 24000, precioPack: 120000 }
+                ]
+            },
+            {
+                categoria: "Packs Cuerpo Completo (6 Sesiones)",
+                items: [
+                    { zona: "Cuerpo Completo (Piernas, Brazos, Rebaje, Axilas, Bozo)", precioSesion: 100000, precioPack: 480000 },
+                    { zona: "Cuerpo Completo Full (Rostro completo a Pies)", precioSesion: 130000, precioPack: 624000 }
+                ]
+            }
+        ]
     },
     {
         id: 'clatuu-alpha',
@@ -2559,63 +2615,7 @@ const tratamientosData = [
         preTratamiento: ["Disponibilidad de 30 minutos", "Traer dudas anotadas"],
         postTratamiento: ["Ninguno"]
     },
-    {
-        id: 'depilacion-axilas-sesion',
-        categoria: 'Corporal',
-        subcategoria: 'Depilación Láser',
-        nombre: 'Depilación Láser Axilas (1 sesión)',
-        descripcion: 'Sesión individual de depilación láser en axilas con Soprano Titanium, tecnología de triple longitud de onda que permite reducción progresiva del vello de forma segura y confortable. Mejora higiene y aspecto de la piel.',
-        profesional: 'María Jesús Contreras',
-        especialidad: 'Depilación Láser',
-        valorDesde: 22000,
-        valorHasta: null,
-        duracion: '15-20 min',
-        sesiones: '1 sesión',
-        indicaciones: ["Vello no deseado", "Foliculitis"],
-        contraindicaciones: ["Bronceado reciente", "Fotosensibilidad"],
-        preTratamiento: ["Rasurado previo 12-24h", "Piel limpia (sin desodorante)"],
-        postTratamiento: ["No sol", "Hidratación", "No desodorante con alcohol inmediata"],
-        requiereEvaluacion: true,
-        evaluacionGratuita: true
-    },
-    {
-        id: 'depilacion-piernas-completas',
-        categoria: 'Corporal',
-        subcategoria: 'Depilación Láser',
-        nombre: 'Depilación Láser Piernas Completas (1 sesión)',
-        descripcion: 'Sesión de depilación láser en piernas completas (muslos hasta pies y dedos) con Soprano Titanium. Reduce dependencia de cera o rasuradora, evitando irritación, foliculitis y sombreado.',
-        profesional: 'María Jesús Contreras',
-        especialidad: 'Depilación Láser',
-        valorDesde: 60000,
-        valorHasta: null,
-        duracion: '60-90 min',
-        sesiones: '1 sesión',
-        indicaciones: ["Vello no deseado", "Foliculitis"],
-        contraindicaciones: ["Bronceado reciente", "Fotosensibilidad"],
-        preTratamiento: ["Rasurado previo 12-24h", "Piel limpia"],
-        postTratamiento: ["No sol", "Hidratación"],
-        requiereEvaluacion: true,
-        evaluacionGratuita: true
-    },
-    {
-        id: 'depilacion-cuerpo-completo',
-        categoria: 'Corporal',
-        subcategoria: 'Depilación Láser',
-        nombre: 'Depilación Láser Cuerpo Completo (1 sesión)',
-        descripcion: 'Sesión de depilación láser de cuerpo completo con Soprano Titanium, incluyendo piernas, brazos, axilas, zona íntima, abdomen, espalda y glúteos según evaluación.',
-        profesional: 'María Jesús Contreras',
-        especialidad: 'Depilación Láser',
-        valorDesde: 100000,
-        valorHasta: 130000,
-        duracion: '2-3 horas',
-        sesiones: '1 sesión',
-        indicaciones: ["Vello no deseado", "Foliculitis"],
-        contraindicaciones: ["Bronceado reciente", "Fotosensibilidad"],
-        preTratamiento: ["Rasurado previo 12-24h", "Piel limpia (sin cremas)"],
-        postTratamiento: ["No sol", "Hidratación", "No sauna/calor extremo 24h"],
-        requiereEvaluacion: true,
-        evaluacionGratuita: true
-    },
+
     {
         id: 'criolipolis-clatuu',
         categoria: 'Corporal',

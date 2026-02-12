@@ -70,7 +70,7 @@ const tratamientosProfesionalesData = [
     { tratamientoId: 'morpheus8-corporal-keren', profesionalId: 'keren-matus' },
     { tratamientoId: 'clatuu-alpha', profesionalId: 'keren-matus' },
     { tratamientoId: 'embody-corporal-keren', profesionalId: 'keren-matus' },
-    { tratamientoId: 'depilacion-laser-keren', profesionalId: 'keren-matus' },
+    { tratamientoId: 'depilacion-laser', profesionalId: 'keren-matus' },
     { tratamientoId: 'hydrafacial', profesionalId: 'keren-matus' },
     { tratamientoId: 'hifu-facial-keren', profesionalId: 'keren-matus' },
     { tratamientoId: 'postquirurgicos-keren', profesionalId: 'keren-matus' },
@@ -172,13 +172,15 @@ const tratamientosProfesionalesData = [
 
     // ==================== MARÍA JESÚS CONTRERAS - Aparatología (adicionales) ====================
     { tratamientoId: 'consulta-corporal', profesionalId: 'maria-jesus-contreras' },
-    { tratamientoId: 'depilacion-axilas-sesion', profesionalId: 'maria-jesus-contreras' },
-    { tratamientoId: 'depilacion-piernas-completas', profesionalId: 'maria-jesus-contreras' },
-    { tratamientoId: 'depilacion-cuerpo-completo', profesionalId: 'maria-jesus-contreras' },
     { tratamientoId: 'criolipolis-clatuu', profesionalId: 'maria-jesus-contreras' },
 
+
+
     // ==================== DR. GUILLERMO CONTRERAS - Urología (adicionales) ====================
-    { tratamientoId: 'consulta-urologica', profesionalId: 'guillermo-contreras' }
+    { tratamientoId: 'consulta-urologica', profesionalId: 'guillermo-contreras' },
+
+    // ==================== SUSANA PEREIRA - Cosmetóloga ====================
+    { tratamientoId: 'depilacion-laser', profesionalId: 'susana-pereira' }
 ];
 
 // ==================== FUNCIONES AUXILIARES ====================
