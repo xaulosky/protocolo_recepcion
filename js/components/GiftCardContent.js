@@ -194,6 +194,7 @@ function GiftCardContent() {
                             <option value="modern">🌸 Rose Gold</option>
                             <option value="classic">🌊 Ocean Blue</option>
                             <option value="dark">🌙 Midnight Purple</option>
+                            <option value="cream">🥂 Cream Elegance</option>
                         </select>
                     </div>
                 </div>
@@ -275,18 +276,27 @@ function GiftCardContent() {
 
 // Variable para almacenar el logo cargado
 let giftCardLogoImage = null;
+let giftCardCreamLogoImage = null;
 
 /**
  * Inicializa el contenido de Gift Card
  */
 function initGiftCardContent() {
-    // Cargar el logo de Cialo
+    // Cargar el logo de Cialo (para estilos oscuros)
     giftCardLogoImage = new Image();
     giftCardLogoImage.crossOrigin = 'anonymous';
     giftCardLogoImage.onload = function () {
         updateGiftCardPreview();
     };
     giftCardLogoImage.src = 'assets/logo-cialo-claro.png';
+
+    // Cargar el logo de Cialo para estilo cream
+    giftCardCreamLogoImage = new Image();
+    giftCardCreamLogoImage.crossOrigin = 'anonymous';
+    giftCardCreamLogoImage.onload = function () {
+        updateGiftCardPreview();
+    };
+    giftCardCreamLogoImage.src = 'assets/logo-cialo.png';
 
     // Establecer fecha por defecto (6 meses desde hoy)
     const expiryInput = document.getElementById('giftCardExpiry');
@@ -429,6 +439,21 @@ function getGiftCardStyles(style) {
             borderColor: '#8b5cf6',
             pattern: 'stars',
             glow: true
+        },
+        cream: {
+            name: 'Cream Elegance',
+            bgColor: '#faf8f5',
+            bgGradient: [
+                { pos: 0, color: '#faf8f5' },
+                { pos: 1, color: '#f5f0e8' }
+            ],
+            accentColor: '#c9a962',
+            accentGradient: ['#b8943f', '#d4b896', '#c9a962'],
+            textColor: '#2c2c2c',
+            secondaryText: '#8b7355',
+            borderColor: '#c9a962',
+            pattern: 'none',
+            glow: false
         }
     };
     return styles[style] || styles.elegant;
@@ -466,6 +491,12 @@ function updateGiftCardPreview() {
 
     // Limpiar canvas (usar dimensiones completas del canvas)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // ========== RENDERIZADO ESPECIAL PARA ESTILO CREAM ==========
+    if (style === 'cream') {
+        renderCreamGiftCard(ctx, width, height, colors, cardType, amount, treatment, code, recipient, sender, message, expiry);
+        return;
+    }
 
     // ========== FONDO CON GRADIENTE MULTI-STOP ==========
     const bgGradient = ctx.createLinearGradient(0, 0, width, height);
@@ -744,6 +775,351 @@ function updateGiftCardPreview() {
     ctx.fillStyle = hexToRgba(colors.secondaryText, 0.5);
     ctx.font = '300 9px "Inter", "Helvetica Neue", Arial, sans-serif';
     ctx.fillText('No canjeable por dinero  •  Sujeta a disponibilidad  •  Un solo uso', 50, 455);
+}
+
+/**
+ * Renderiza el diseño Cream Elegance para Gift Card
+ */
+function renderCreamGiftCard(ctx, width, height, colors, cardType, amount, treatment, code, recipient, sender, message, expiry) {
+    const gold = colors.accentColor;
+    const goldLight = colors.accentGradient[1];
+    const darkText = colors.textColor;
+    const secondaryText = colors.secondaryText;
+
+    // ========== FONDO CREMA CON GRADIENTE ==========
+    const bgGradient = ctx.createLinearGradient(0, 0, width, height);
+    bgGradient.addColorStop(0, '#faf8f5');
+    bgGradient.addColorStop(0.5, '#f8f4ec');
+    bgGradient.addColorStop(1, '#f5f0e8');
+    ctx.fillStyle = bgGradient;
+    roundRect(ctx, 0, 0, width, height, 24);
+    ctx.fill();
+
+    // ========== BORDES DORADOS DECORATIVOS EN ESQUINAS ==========
+    ctx.strokeStyle = gold;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+
+    // Esquina superior izquierda - arco decorativo
+    ctx.beginPath();
+    ctx.moveTo(30, 80);
+    ctx.quadraticCurveTo(30, 30, 80, 30);
+    ctx.stroke();
+
+    // Líneas paralelas en esquina superior izquierda
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = goldLight;
+    ctx.beginPath();
+    ctx.moveTo(40, 75);
+    ctx.quadraticCurveTo(40, 40, 75, 40);
+    ctx.stroke();
+
+    // Esquina inferior derecha - arco decorativo
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = gold;
+    ctx.beginPath();
+    ctx.moveTo(width - 80, height - 30);
+    ctx.quadraticCurveTo(width - 30, height - 30, width - 30, height - 80);
+    ctx.stroke();
+
+    // Líneas paralelas en esquina inferior derecha
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = goldLight;
+    ctx.beginPath();
+    ctx.moveTo(width - 75, height - 40);
+    ctx.quadraticCurveTo(width - 40, height - 40, width - 40, height - 75);
+    ctx.stroke();
+
+    // ========== BORDE EXTERIOR SUTIL ==========
+    ctx.strokeStyle = gold;
+    ctx.lineWidth = 2;
+    roundRect(ctx, 20, 20, width - 40, height - 40, 18);
+    ctx.stroke();
+
+    // ========== LOGO CIALO ==========
+    if (giftCardCreamLogoImage && giftCardCreamLogoImage.complete && giftCardCreamLogoImage.naturalWidth > 0) {
+        const logoHeight = 55;
+        const logoWidth = (giftCardCreamLogoImage.width / giftCardCreamLogoImage.height) * logoHeight;
+        const logoX = (width - logoWidth) / 2;
+        ctx.drawImage(giftCardCreamLogoImage, logoX, 40, logoWidth, logoHeight);
+    } else {
+        // Texto alternativo si no hay logo
+        ctx.fillStyle = darkText;
+        ctx.font = 'bold 32px "Inter", "Helvetica Neue", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('CIALO', width / 2, 85);
+    }
+
+    // ========== SEPARADOR CON ESTRELLA ==========
+    ctx.strokeStyle = goldLight;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(width / 2 - 80, 115);
+    ctx.lineTo(width / 2 - 15, 115);
+    ctx.stroke();
+
+    // Estrella/Diamante central
+    ctx.fillStyle = gold;
+    drawDiamond(ctx, width / 2, 115, 6);
+
+    ctx.beginPath();
+    ctx.moveTo(width / 2 + 15, 115);
+    ctx.lineTo(width / 2 + 80, 115);
+    ctx.stroke();
+
+    // ========== TÍTULO "GIFT CARD" ==========
+    ctx.fillStyle = gold;
+    ctx.font = '300 52px "Georgia", "Times New Roman", serif';
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '8px';
+    ctx.fillText('GIFT CARD', width / 2, 170);
+
+    // ========== SEPARADOR CON FLOR DE LOTO ==========
+    ctx.strokeStyle = goldLight;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(width / 2 - 60, 195);
+    ctx.lineTo(width / 2 - 15, 195);
+    ctx.stroke();
+
+    // Flor de loto simplificada
+    drawLotus(ctx, width / 2, 195, 10, gold);
+
+    ctx.beginPath();
+    ctx.moveTo(width / 2 + 15, 195);
+    ctx.lineTo(width / 2 + 60, 195);
+    ctx.stroke();
+
+    // ========== SLOGAN ==========
+    ctx.fillStyle = secondaryText;
+    ctx.font = '400 13px "Inter", "Helvetica Neue", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '4px';
+    ctx.fillText('TU BIENESTAR. TU MEJOR VERSIÓN.', width / 2, 230);
+
+    // ========== CAMPOS DE INFORMACIÓN ==========
+    const fieldsY = 280;
+    const lineHeight = 55;
+    const fieldMargin = 80;
+
+    ctx.font = 'italic 400 18px "Georgia", "Times New Roman", serif';
+    ctx.fillStyle = darkText;
+    ctx.textAlign = 'left';
+
+    // Icono de regalo + De
+    drawGiftIcon(ctx, 60, fieldsY - 5, gold);
+    ctx.fillStyle = secondaryText;
+    ctx.font = '400 14px "Inter", sans-serif';
+    ctx.fillText('De:', 90, fieldsY - 5);
+    ctx.fillStyle = darkText;
+    ctx.font = 'italic 400 20px "Georgia", serif';
+    const senderText = sender || '____________________';
+    ctx.fillText(senderText, 190, fieldsY - 5);
+
+    // Línea decorativa
+    ctx.strokeStyle = goldLight;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(60, fieldsY + 10);
+    ctx.lineTo(width - 60, fieldsY + 10);
+    ctx.stroke();
+
+    // Icono de corazón + Para
+    drawHeartIcon(ctx, 60, fieldsY + lineHeight - 5, gold);
+    ctx.fillStyle = secondaryText;
+    ctx.font = '400 14px "Inter", sans-serif';
+    ctx.fillText('Para:', 90, fieldsY + lineHeight - 5);
+    ctx.fillStyle = darkText;
+    ctx.font = 'italic 400 20px "Georgia", serif';
+    const recipientText = recipient || '____________________';
+    ctx.fillText(recipientText, 190, fieldsY + lineHeight - 5);
+
+    // Línea decorativa
+    ctx.beginPath();
+    ctx.moveTo(60, fieldsY + lineHeight + 10);
+    ctx.lineTo(width - 60, fieldsY + lineHeight + 10);
+    ctx.stroke();
+
+    // Icono de estrella + Regalo
+    drawStarIcon(ctx, 60, fieldsY + lineHeight * 2 - 5, gold);
+    ctx.fillStyle = secondaryText;
+    ctx.font = '400 14px "Inter", sans-serif';
+    ctx.fillText('Regalo:', 90, fieldsY + lineHeight * 2 - 5);
+    ctx.fillStyle = darkText;
+    ctx.font = 'italic 400 20px "Georgia", serif';
+
+    let giftValue = '';
+    if (cardType === 'treatment' && treatment) {
+        giftValue = treatment;
+    } else if (amount) {
+        giftValue = `$${amount}`;
+    } else {
+        giftValue = '____________________';
+    }
+    ctx.fillText(giftValue, 205, fieldsY + lineHeight * 2 - 5);
+
+    // Línea decorativa
+    ctx.beginPath();
+    ctx.moveTo(60, fieldsY + lineHeight * 2 + 10);
+    ctx.lineTo(width - 60, fieldsY + lineHeight * 2 + 10);
+    ctx.stroke();
+
+    // ========== SEPARADOR INFERIOR CON ESTRELLA ==========
+    const bottomY = height - 90;
+    ctx.strokeStyle = goldLight;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(width / 2 - 60, bottomY);
+    ctx.lineTo(width / 2 - 10, bottomY);
+    ctx.stroke();
+
+    drawDiamond(ctx, width / 2, bottomY, 5);
+
+    ctx.beginPath();
+    ctx.moveTo(width / 2 + 10, bottomY);
+    ctx.lineTo(width / 2 + 60, bottomY);
+    ctx.stroke();
+
+    // ========== FOOTER ==========
+    ctx.fillStyle = secondaryText;
+    ctx.font = '400 11px "Inter", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.letterSpacing = '3px';
+    ctx.fillText('CLÍNICA DE MEDICINA ESTÉTICA', width / 2, height - 65);
+
+    // Código y fecha si existen
+    if (code || expiry) {
+        ctx.fillStyle = hexToRgba(secondaryText, 0.7);
+        ctx.font = '300 10px "Inter", sans-serif';
+        let footerText = '';
+        if (code) footerText += `Código: ${code}`;
+        if (code && expiry) footerText += '  •  ';
+        if (expiry) {
+            const expiryDate = new Date(expiry + 'T00:00:00');
+            footerText += `Válida hasta: ${expiryDate.toLocaleDateString('es-CL')}`;
+        }
+        ctx.fillText(footerText, width / 2, height - 45);
+    }
+}
+
+/**
+ * Dibuja un icono de regalo
+ */
+function drawGiftIcon(ctx, x, y, color) {
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 1.5;
+
+    // Caja
+    ctx.strokeRect(x, y - 8, 16, 12);
+
+    // Lazo horizontal
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y - 8);
+    ctx.lineTo(x + 8, y + 4);
+    ctx.stroke();
+
+    // Lazo vertical
+    ctx.beginPath();
+    ctx.moveTo(x, y - 2);
+    ctx.lineTo(x + 16, y - 2);
+    ctx.stroke();
+
+    // Moño izquierdo
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y - 8);
+    ctx.quadraticCurveTo(x + 3, y - 14, x + 5, y - 10);
+    ctx.stroke();
+
+    // Moño derecho
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y - 8);
+    ctx.quadraticCurveTo(x + 13, y - 14, x + 11, y - 10);
+    ctx.stroke();
+}
+
+/**
+ * Dibuja un icono de corazón
+ */
+function drawHeartIcon(ctx, x, y, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    const size = 7;
+    ctx.moveTo(x + size, y + size / 4);
+    ctx.quadraticCurveTo(x + size, y, x + size / 2, y);
+    ctx.quadraticCurveTo(x, y, x, y + size / 4);
+    ctx.quadraticCurveTo(x, y + size / 2, x + size, y + size);
+    ctx.quadraticCurveTo(x + size * 2, y + size / 2, x + size * 2, y + size / 4);
+    ctx.quadraticCurveTo(x + size * 2, y, x + size * 1.5, y);
+    ctx.quadraticCurveTo(x + size, y, x + size, y + size / 4);
+    ctx.fill();
+}
+
+/**
+ * Dibuja un icono de estrella
+ */
+function drawStarIcon(ctx, x, y, color) {
+    ctx.fillStyle = color;
+    const spikes = 4;
+    const outerRadius = 8;
+    const innerRadius = 4;
+    let rot = Math.PI / 2 * 3;
+    let cx = x + 8;
+    let cy = y;
+    const step = Math.PI / spikes;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+
+    for (let i = 0; i < spikes; i++) {
+        let px = cx + Math.cos(rot) * outerRadius;
+        let py = cy + Math.sin(rot) * outerRadius;
+        ctx.lineTo(px, py);
+        rot += step;
+
+        px = cx + Math.cos(rot) * innerRadius;
+        py = cy + Math.sin(rot) * innerRadius;
+        ctx.lineTo(px, py);
+        rot += step;
+    }
+
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+    ctx.fill();
+}
+
+/**
+ * Dibuja un diamante/rombo
+ */
+function drawDiamond(ctx, x, y, size) {
+    ctx.fillStyle = ctx.fillStyle || '#c9a962';
+    ctx.beginPath();
+    ctx.moveTo(x, y - size);
+    ctx.lineTo(x + size * 0.6, y);
+    ctx.lineTo(x, y + size);
+    ctx.lineTo(x - size * 0.6, y);
+    ctx.closePath();
+    ctx.fill();
+}
+
+/**
+ * Dibuja una flor de loto simplificada
+ */
+function drawLotus(ctx, x, y, size, color) {
+    ctx.fillStyle = color;
+    // Pétalos
+    for (let i = 0; i < 5; i++) {
+        const angle = (i * Math.PI * 2 / 5) - Math.PI / 2;
+        const px = x + Math.cos(angle) * size * 0.5;
+        const py = y + Math.sin(angle) * size * 0.3;
+        ctx.beginPath();
+        ctx.ellipse(px, py, size * 0.4, size * 0.2, angle, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    // Centro
+    ctx.beginPath();
+    ctx.arc(x, y, size * 0.15, 0, Math.PI * 2);
+    ctx.fill();
 }
 
 /**
