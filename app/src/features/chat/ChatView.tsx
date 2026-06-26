@@ -44,34 +44,37 @@ const esCanal = (c: { roles: string[] }) => c.roles.length > 0;
 // ───────────────────────── Lista de conversaciones ─────────────────────────
 
 function ConversationList({ variant }: { variant: Variant }) {
-  const { conversations, activeId, openConversation } = useChat();
-  const [nuevo, setNuevo] = useState(false);
+  const { conversations, activeId, openConversation, newChatOpen, setNewChatOpen } = useChat();
+  const floating = variant === 'floating';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <div style={{
-        padding: '12px 14px', borderBottom: '1px solid var(--border-soft)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
-      }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Mensajes</span>
-        <button
-          onClick={() => setNuevo((v) => !v)}
-          title="Nuevo chat"
-          style={{
-            width: 28, height: 28, borderRadius: 7, border: '1px solid var(--cream-border)',
-            background: nuevo ? 'var(--primary)' : 'var(--primary-soft)',
-            color: nuevo ? '#fff' : 'var(--primary)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-          }}
-        >
-          <Icon name={nuevo ? 'close' : 'plus'} size={15} />
-        </button>
-      </div>
+      {/* En la flotante la cabecera la pone el popup; aquí solo en sección/kiosko. */}
+      {!floating && (
+        <div style={{
+          padding: '12px 14px', borderBottom: '1px solid var(--border-soft)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+        }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Mensajes</span>
+          <button
+            onClick={() => setNewChatOpen(!newChatOpen)}
+            title="Nuevo chat"
+            style={{
+              width: 28, height: 28, borderRadius: 7, border: '1px solid var(--cream-border)',
+              background: newChatOpen ? 'var(--primary)' : 'var(--primary-soft)',
+              color: newChatOpen ? '#fff' : 'var(--primary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}
+          >
+            <Icon name={newChatOpen ? 'close' : 'plus'} size={15} />
+          </button>
+        </div>
+      )}
 
-      {nuevo && <NewChatPanel onDone={() => setNuevo(false)} />}
+      {newChatOpen && <NewChatPanel onDone={() => setNewChatOpen(false)} />}
 
       <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-        {conversations.length === 0 && !nuevo && (
+        {conversations.length === 0 && !newChatOpen && (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--muted-2)', fontSize: 13 }}>
             No tienes conversaciones aún.<br />Toca <strong>＋</strong> para empezar una.
           </div>
@@ -276,7 +279,7 @@ function NewChatPanel({ onDone }: { onDone: () => void }) {
 
 // ───────────────────────── Hilo de mensajes ─────────────────────────
 
-function MessageThread({ variant, onBack }: { variant: Variant; onBack?: () => void }) {
+function MessageThread({ variant }: { variant: Variant }) {
   const { conversations, activeId, messages, myId, send, loadingMessages } = useChat();
   const conv = conversations.find((c) => c.id === activeId);
   const [texto, setTexto] = useState('');
@@ -327,22 +330,19 @@ function MessageThread({ variant, onBack }: { variant: Variant; onBack?: () => v
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, background: 'var(--surface)' }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
-        borderBottom: '1px solid var(--border-soft)', flexShrink: 0,
-      }}>
-        {variant === 'floating' && (
-          <button onClick={onBack} title="Volver" style={iconBtnStyle}>
-            <Icon name="colL" size={18} />
-          </button>
-        )}
-        <Avatar name={conv.titulo} size={34} grupo={conv.esGrupo && !canal} canal={canal} />
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.titulo}</div>
-          <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>{subtitulo}</div>
+      {/* Header — en la flotante lo provee el popup, aquí solo en sección/kiosko. */}
+      {variant !== 'floating' && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
+          borderBottom: '1px solid var(--border-soft)', flexShrink: 0,
+        }}>
+          <Avatar name={conv.titulo} size={34} grupo={conv.esGrupo && !canal} canal={canal} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.titulo}</div>
+            <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>{subtitulo}</div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Mensajes */}
       <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 8px', minHeight: 0, background: 'var(--surface-soft)' }}>
@@ -441,11 +441,11 @@ function Bubble({ m, mine, grupo, agrupado }: { m: ChatMessage; mine: boolean; g
 // ───────────────────────── Contenedor reutilizable ─────────────────────────
 
 export function ChatView({ variant }: { variant: Variant }) {
-  const { activeId, closeConversation } = useChat();
+  const { activeId } = useChat();
 
   if (variant === 'floating') {
     return activeId
-      ? <MessageThread variant="floating" onBack={closeConversation} />
+      ? <MessageThread variant="floating" />
       : <ConversationList variant="floating" />;
   }
 
@@ -472,10 +472,6 @@ const inputStyle: CSSProperties = {
   borderRadius: 7, outline: 'none', fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--text)',
 };
 
-const iconBtnStyle: CSSProperties = {
-  width: 30, height: 30, borderRadius: 7, border: 'none', background: 'none',
-  color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-};
 
 function tabStyle(active: boolean): CSSProperties {
   return {

@@ -24,6 +24,8 @@ interface ChatContextValue {
   createGroup: (nombre: string, memberIds: string[]) => Promise<void>;
   createChannel: (nombre: string, roles: string[]) => Promise<void>;
   setFloatingOpen: (open: boolean) => void;
+  newChatOpen: boolean;
+  setNewChatOpen: (open: boolean) => void;
   refresh: () => void;
   alertsEnabled: boolean;
   enableAlerts: () => Promise<void>;
@@ -41,6 +43,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [floatingOpen, setFloatingOpen] = useState(false);
+  const [newChatOpen, setNewChatOpen] = useState(false);
 
   // Refs para evitar closures obsoletos dentro de los intervalos.
   const activeRef = useRef<string | null>(null);
@@ -150,6 +153,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     activeRef.current = id;
     msgCountRef.current = 0;
     setMessages([]);
+    setNewChatOpen(false);
     setLoadingMessages(true);
     fetchMessages(id).finally(() => setLoadingMessages(false));
     markRead(id);
@@ -263,10 +267,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ChatContextValue>(() => ({
     conversations, unread, users, activeId, messages, loadingMessages, floatingOpen, myId,
     openConversation, closeConversation, send, startDm, createGroup, createChannel, setFloatingOpen,
+    newChatOpen, setNewChatOpen,
     refresh: refreshConversations, alertsEnabled, enableAlerts,
   }), [conversations, unread, users, activeId, messages, loadingMessages, floatingOpen, myId,
     openConversation, closeConversation, send, startDm, createGroup, createChannel, refreshConversations,
-    alertsEnabled, enableAlerts]);
+    newChatOpen, alertsEnabled, enableAlerts]);
 
   return <ChatContext value={value}>{children}</ChatContext>;
 }

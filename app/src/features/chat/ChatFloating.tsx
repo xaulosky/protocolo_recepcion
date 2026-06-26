@@ -11,12 +11,18 @@ import { Icon } from '../../lib/icons';
  * Se oculta cuando ya estás en la sección de Chat para no duplicar la UI.
  */
 export function ChatFloating() {
-  const { unread, floatingOpen, setFloatingOpen, activeId, closeConversation } = useChat();
+  const {
+    unread, floatingOpen, setFloatingOpen, activeId, closeConversation,
+    conversations, newChatOpen, setNewChatOpen,
+  } = useChat();
   const { view } = useApp();
   const { user } = useAuth();
 
   if (view === 'chat') return null;
   if (!canView(user, 'chat')) return null;
+
+  const activeConv = activeId ? conversations.find((c) => c.id === activeId) : null;
+  const enConversacion = Boolean(activeConv);
 
   return createPortal(
     <div className="no-print" style={{ position: 'fixed', right: 20, bottom: 20, zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
@@ -24,33 +30,47 @@ export function ChatFloating() {
         <div
           className="fade-up"
           style={{
-            width: 'min(372px, calc(100vw - 32px))',
-            height: 'min(544px, calc(100vh - 116px))',
-            background: 'var(--surface)', borderRadius: 14, overflow: 'hidden',
-            border: '1px solid var(--border)', boxShadow: '0 12px 40px rgba(0,0,0,0.18)',
+            width: 'min(384px, calc(100vw - 32px))',
+            height: 'min(600px, calc(100dvh - 104px))',
+            background: 'var(--surface)', borderRadius: 16, overflow: 'hidden',
+            border: '1px solid var(--border)', boxShadow: '0 16px 48px rgba(0,0,0,0.20)',
             display: 'flex', flexDirection: 'column',
           }}
         >
-          {/* Barra superior del popup */}
+          {/* Cabecera única: lista o conversación */}
           <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 14px', background: 'var(--primary)', color: '#fff', flexShrink: 0,
+            display: 'flex', alignItems: 'center', gap: 10, minHeight: 52,
+            padding: '0 12px 0 14px', background: 'var(--primary)', color: '#fff', flexShrink: 0,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14, fontWeight: 600 }}>
-              <Icon name="msg" size={17} />
-              Chat interno
-            </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {activeId && (
-                <button onClick={closeConversation} title="Conversaciones" style={topBtn}>
-                  <Icon name="menu" size={16} />
+            {enConversacion ? (
+              <>
+                <button onClick={closeConversation} title="Volver" style={topBtn}>
+                  <Icon name="colL" size={18} />
                 </button>
-              )}
-              <button onClick={() => setFloatingOpen(false)} title="Cerrar" style={topBtn}>
-                <Icon name="close" size={16} />
-              </button>
-            </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {activeConv!.titulo}
+                  </div>
+                  <div style={{ fontSize: 11, opacity: 0.8 }}>
+                    {activeConv!.roles.length > 0 ? `Canal · ${activeConv!.members.length} integrantes`
+                      : activeConv!.esGrupo ? `${activeConv!.members.length} integrantes` : 'Mensaje directo'}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <Icon name="msg" size={18} />
+                <span style={{ flex: 1, fontSize: 15, fontWeight: 600 }}>Chat interno</span>
+                <button onClick={() => setNewChatOpen(!newChatOpen)} title="Nuevo chat" style={topBtn}>
+                  <Icon name={newChatOpen ? 'close' : 'plus'} size={17} />
+                </button>
+              </>
+            )}
+            <button onClick={() => setFloatingOpen(false)} title="Cerrar" style={topBtn}>
+              <Icon name="close" size={17} />
+            </button>
           </div>
+
           <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
             <ChatView variant="floating" />
           </div>
@@ -85,6 +105,6 @@ export function ChatFloating() {
 }
 
 const topBtn: React.CSSProperties = {
-  width: 28, height: 28, borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.18)',
-  color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+  width: 30, height: 30, borderRadius: 7, border: 'none', background: 'rgba(255,255,255,0.16)',
+  color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
 };
