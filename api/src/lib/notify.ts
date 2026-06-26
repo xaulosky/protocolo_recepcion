@@ -36,6 +36,26 @@ interface NotifyInput {
   push?: boolean;
 }
 
+/** Envía solo Web Push a todas las suscripciones de un usuario (sin crear Notification en BD). */
+export async function sendPush(userId: string, payload: { title: string; body: string; data?: Record<string, unknown> }) {
+  if (!pushEnabled) return;
+  const subs = await prisma.pushSubscription.findMany({ where: { userId } });
+  if (subs.length === 0) return;
+  const body = JSON.stringify(payload);
+  await Promise.all(
+    subs.map((s) =>
+      webpush
+        .sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, body)
+        .catch(async (err: { statusCode?: number }) => {
+          // Suscripción expirada/inválida → eliminar.
+          if (err?.statusCode === 404 || err?.statusCode === 410) {
+            await prisma.pushSubscription.delete({ where: { id: s.id } }).catch(() => {});
+          }
+        }),
+    ),
+  );
+}
+
 export async function notify(input: NotifyInput) {
   const notification = await prisma.notification.create({
     data: {
@@ -58,21 +78,8 @@ export async function notify(input: NotifyInput) {
   }
 
   // Push
-  if (pushEnabled && input.push !== false) {
-    const subs = await prisma.pushSubscription.findMany({ where: { userId: input.userId } });
-    const payload = JSON.stringify({ title: input.title, body: input.body, data: input.data });
-    await Promise.all(
-      subs.map((s) =>
-        webpush
-          .sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload)
-          .catch(async (err: { statusCode?: number }) => {
-            // Suscripción expirada/inválida → eliminar.
-            if (err?.statusCode === 404 || err?.statusCode === 410) {
-              await prisma.pushSubscription.delete({ where: { id: s.id } }).catch(() => {});
-            }
-          }),
-      ),
-    );
+  if (input.push !== false) {
+    await sendPush(input.userId, { title: input.title, body: input.body, data: input.data });
   }
 
   return notification;

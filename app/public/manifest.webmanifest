@@ -1,0 +1,14 @@
+{
+  "name": "Cialo Mensajería",
+  "short_name": "Mensajería",
+  "description": "Mensajería interna de Clínica Cialo — boxes y recepción",
+  "start_url": "/mensajeria",
+  "scope": "/mensajeria",
+  "display": "standalone",
+  "background_color": "#F8F7F5",
+  "theme_color": "#7C6247",
+  "icons": [
+    { "src": "/chat-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/chat-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
+import { sendPush } from '../../lib/notify.ts';
 
 const memberSelect = { id: true, nombre: true, role: true } as const;
 
@@ -204,11 +205,31 @@ export async function chatRoutes(app: FastifyInstance) {
     });
     // Tocar updatedAt (para ordenar) y marcar leído para el autor.
     const now = new Date();
-    await prisma.conversation.update({ where: { id }, data: { updatedAt: now } });
+    const conv = await prisma.conversation.update({
+      where: { id }, data: { updatedAt: now },
+      select: { esGrupo: true, nombre: true, roles: true },
+    });
     await prisma.conversationMember.update({
       where: { conversationId_userId: { conversationId: id, userId: req.user.sub } },
       data: { lastReadAt: now },
     });
+
+    // Push a los demás miembros (no al autor). El título indica de dónde viene.
+    const otros = await prisma.conversationMember.findMany({
+      where: { conversationId: id, userId: { not: req.user.sub } },
+      select: { userId: true },
+    });
+    const esCanalOGrupo = conv.esGrupo || conv.roles.length > 0;
+    const title = esCanalOGrupo && conv.nombre
+      ? `${conv.nombre} · ${message.autor.nombre}`
+      : message.autor.nombre;
+    const body = parsed.data.contenido.slice(0, 140);
+    await Promise.all(
+      otros.map((m) =>
+        sendPush(m.userId, { title, body, data: { url: '/mensajeria', conversationId: id } }),
+      ),
+    );
+
     return reply.code(201).send({ message });
   });
 

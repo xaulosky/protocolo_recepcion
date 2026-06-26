@@ -6,7 +6,7 @@ import { Icon } from '../../lib/icons';
 import { colorFromString, initials } from '../../lib/format';
 import type { ChatMessage, ChatUser, Conversation } from '../../lib/types';
 
-type Variant = 'full' | 'floating';
+type Variant = 'full' | 'floating' | 'kiosk';
 
 function hhmm(iso: string) {
   return new Date(iso).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
@@ -449,16 +449,18 @@ export function ChatView({ variant }: { variant: Variant }) {
       : <ConversationList variant="floating" />;
   }
 
-  // full: lista + hilo lado a lado
+  // En kiosko (PWA) ocupa todo el alto disponible del contenedor; en sección, alto fijo.
+  const kiosk = variant === 'kiosk';
   return (
     <div style={{
-      display: 'flex', height: 'calc(100vh - 132px)', background: 'var(--surface)',
-      border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', overflow: 'hidden',
+      display: 'flex', height: kiosk ? '100%' : 'calc(100vh - 132px)', background: 'var(--surface)',
+      border: kiosk ? 'none' : '1px solid var(--border)',
+      borderRadius: kiosk ? 0 : 'var(--radius-card)', overflow: 'hidden', minHeight: 0,
     }}>
-      <div style={{ width: 300, borderRight: '1px solid var(--border-soft)', flexShrink: 0 }}>
-        <ConversationList variant="full" />
+      <div style={{ width: kiosk ? 320 : 300, borderRight: '1px solid var(--border-soft)', flexShrink: 0 }}>
+        <ConversationList variant={variant} />
       </div>
-      <MessageThread variant="full" />
+      <MessageThread variant={variant} />
     </div>
   );
 }
