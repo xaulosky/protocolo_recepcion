@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#F8F7F5;color:#1A1918;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#D5CDC4;border-radius:3px}
+@keyframes fadeUp{from{transform:translateY(7px)}to{transform:translateY(0)}}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+nav[data-current-view="dashboard"] [data-navid="dashboard"],
+nav[data-current-view="tareas"] [data-navid="tareas"],
+nav[data-current-view="protocolos"] [data-navid="protocolos"],
+nav[data-current-view="guiones"] [data-navid="guiones"],
+nav[data-current-view="pagos"] [data-navid="pagos"],
+nav[data-current-view="suspensiones"] [data-navid="suspensiones"],
+nav[data-current-view="tratamientos"] [data-navid="tratamientos"],
+nav[data-current-view="profesionales"] [data-navid="profesionales"],
+nav[data-current-view="consultas"] [data-navid="consultas"],
+nav[data-current-view="boxes"] [data-navid="boxes"],
+nav[data-current-view="productos"] [data-navid="productos"],
+nav[data-current-view="presupuestos"] [data-navid="presupuestos"],
+nav[data-current-view="giftcards"] [data-navid="giftcards"],
+nav[data-current-view="consentimientos"] [data-navid="consentimientos"],
+nav[data-current-view="faq"] [data-navid="faq"],
+nav[data-current-view="reembolso"] [data-navid="reembolso"]
+{ background:#F5F0E8 !important; color:#7C6247 !important; font-weight:500 !important; }
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;overflow:hidden;position:relative;background:#F8F7F5;">
+
+  <!-- Backdrop móvil -->
+  <sc-if value="{{ mobileMenuOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ toggleMobile }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:40;animation:overlayIn .2s ease;"></div>
+  </sc-if>
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside style="position:fixed;top:0;left:0;height:100vh;width:{{ sidebarWidth }};background:#fff;border-right:1px solid #E5E0D8;display:flex;flex-direction:column;z-index:50;overflow:hidden;transition:transform .25s ease,width .25s ease;transform:{{ sidebarTransform }};">
+    <div style="height:60px;padding:0 14px;border-bottom:1px solid #F0EBE4;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <div style="width:32px;height:32px;background:#7C6247;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" innerHTML="{{ logoSvg }}"></div>
+      <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:600;color:#1A1918;letter-spacing:-0.2px;">Cialo Hub</div>
+          <div style="font-size:11px;color:#9A8F84;">Clínica Cialo</div>
+        </div>
+      </sc-if>
+      <button onClick="{{ toggleSidebar }}" style="flex-shrink:0;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;background:none;cursor:pointer;color:#B0A89E;outline:none;transition:background .15s;" style-hover="background:#F5F0E8;" innerHTML="{{ collapseIcon }}"></button>
+    </div>
+    <nav style="flex:1;overflow-y:auto;overflow-x:hidden;padding:8px;" id="cialo-nav">
+      <div id="cialo-nav-items"></div>
+    </nav>
+    <sc-if value="{{ showLabels }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:10px 14px;border-top:1px solid #F0EBE4;font-size:10px;color:#C0B5AA;flex-shrink:0;">v1.0 · Hub interno</div>
+    </sc-if>
+  </aside>
+
+  <!-- ══════════ ÁREA PRINCIPAL ══════════ -->
+  <div style="flex:1;display:flex;flex-direction:column;margin-left:{{ mainMargin }};transition:margin-left .25s ease;overflow:hidden;min-width:0;">
+
+    <!-- Header -->
+    <header style="height:56px;background:#fff;border-bottom:1px solid #E5E0D8;padding:0 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:sticky;top:0;z-index:20;">
+      <button onClick="{{ toggleMobile }}" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;border:none;background:none;cursor:pointer;color:#7A7066;outline:none;transition:background .12s;" style-hover="background:#F5F0E8;" innerHTML="{{ menuSvg }}"></button>
+      <span style="font-size:15px;font-weight:500;color:#1A1918;flex:1;letter-spacing:-0.2px;">{{ viewLabel }}</span>
+    </header>
+
+    <!-- Contenido scrollable -->
+    <main style="flex:1;overflow-y:auto;padding:24px;">
+
+      <!-- ─── DASHBOARD ─── -->
+      <sc-if value="{{ v_dashboard }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="margin-bottom:22px;">
+            <h2 style="font-size:21px;font-weight:300;color:#1A1918;letter-spacing:-0.4px;">Bienvenida 👋</h2>
+            <p style="font-size:13px;color:#7A7066;margin-top:3px;">Sistema interno de protocolos y herramientas de Clínica Cialo.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:28px;">
+            <sc-for list="{{ dashStats }}" as="st" hint-placeholder-count="6">
+              <div onClick="{{ st.go }}" style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:16px;cursor:pointer;transition:box-shadow .15s,border-color .15s;" style-hover="box-shadow:0 2px 8px rgba(0,0,0,.07);border-color:#C8BDB3;">
+                <div style="font-size:26px;font-weight:600;color:#7C6247;line-height:1;">{{ st.n }}</div>
+                <div style="font-size:12px;color:#7A7066;margin-top:4px;font-weight:500;">{{ st.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:10.5px;font-weight:700;color:#B0A89E;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px;">Accesos rápidos</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;">
+            <sc-for list="{{ dashQuick }}" as="qa" hint-placeholder-count="6">
+              <button onClick="{{ qa.go }}" style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#fff;border:1px solid #E5E0D8;border-radius:10px;text-align:left;cursor:pointer;transition:all .15s;outline:none;" style-hover="box-shadow:0 2px 8px rgba(0,0,0,.06);border-color:#C8BDB3;transform:translateY(-1px);">
+                <div style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:{{ qa.iconBg }};" innerHTML="{{ qa.iconEl }}"></div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:#1A1918;margin-bottom:2px;">{{ qa.label }}</div>
+                  <div style="font-size:11.5px;color:#9A8F84;">{{ qa.sub }}</div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+          <!-- Widget tareas -->
+          <div style="margin-top:28px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="font-size:10.5px;font-weight:700;color:#B0A89E;letter-spacing:0.8px;text-transform:uppercase;">Tareas activas</div>
+              <button onClick="{{ goTareas }}" style="font-size:12px;color:#7C6247;border:none;background:none;cursor:pointer;font-weight:500;outline:none;">Ver todas →</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+              <sc-for list="{{ dashTareaStats }}" as="ds" hint-placeholder-count="4">
+                <div style="background:#fff;border:1px solid #E5E0D8;border-radius:8px;padding:10px 14px;min-width:90px;">
+                  <div style="font-size:19px;font-weight:600;color:#1A1918;line-height:1;">{{ ds.count }}</div>
+                  <div style="font-size:11px;color:#7A7066;margin-top:3px;">{{ ds.etapa }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px;">
+              <sc-for list="{{ dashRecepStats }}" as="dr" hint-placeholder-count="3">
+                <div style="background:#fff;border:1px solid #E5E0D8;border-radius:9px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+                  <div style="width:32px;height:32px;border-radius:16px;background:{{ dr.avatarBg }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0;">{{ dr.initials }}</div>
+                  <div>
+                    <div style="font-size:13px;font-weight:500;color:#1A1918;">{{ dr.nombre }}</div>
+                    <div style="font-size:11.5px;color:#7A7066;margin-top:1px;">{{ dr.count }} tarea{{ dr.countPlural }}</div>
+                    <sc-if value="{{ dr.hasUrgentes }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:11px;color:#C97B4B;font-weight:500;">{{ dr.urgente }} urgente{{ dr.urgentePlural }}</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── TAREAS ─── -->
+      <sc-if value="{{ v_tareas }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <sc-for list="{{ recepTabs }}" as="rt" hint-placeholder-count="4">
+                <button onClick="{{ rt.onClick }}" style="padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:500;border:1px solid {{ rt.border }};background:{{ rt.bg }};color:{{ rt.color }};cursor:pointer;outline:none;transition:all .15s;">{{ rt.label }}</button>
+              </sc-for>
+            </div>
+            <button onClick="{{ toggleNewTarea }}" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:#7C6247;color:#fff;border-radius:7px;font-size:12.5px;font-weight:500;border:none;cursor:pointer;outline:none;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nueva tarea
+            </button>
+          </div>
+          <sc-if value="{{ showNewTarea }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:18px;margin-bottom:16px;">
+              <div style="font-size:13px;font-weight:600;color:#1A1918;margin-bottom:14px;">Nueva tarea</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+                <div>
+                  <label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Tipo</label>
+                  <select value="{{ newTareaTipo }}" onChange="{{ setNewTareaTipo }}" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;background:#fff;color:#1A1918;" style-focus="border-color:#7C6247;">
+                    <option value="">Seleccionar...</option>
+                    <sc-for list="{{ tiposTarea }}" as="tt" hint-placeholder-count="5">
+                      <option value="{{ tt }}">{{ tt }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div>
+                  <label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Asignada a</label>
+                  <select value="{{ newTareaAsignada }}" onChange="{{ setNewTareaAsignada }}" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;background:#fff;color:#1A1918;" style-focus="border-color:#7C6247;">
+                    <option value="">Seleccionar...</option>
+                    <sc-for list="{{ recepNames }}" as="rn" hint-placeholder-count="3">
+                      <option value="{{ rn }}">{{ rn }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div style="grid-column:1/-1;">
+                  <label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Descripción</label>
+                  <input value="{{ newTareaDesc }}" onChange="{{ setNewTareaDesc }}" placeholder="Describe la tarea..." style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;">
+                </div>
+                <div>
+                  <label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Paciente (opcional)</label>
+                  <input value="{{ newTareaPaciente }}" onChange="{{ setNewTareaPaciente }}" placeholder="Nombre del paciente" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;">
+                </div>
+                <div>
+                  <label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Prioridad</label>
+                  <select value="{{ newTareaPrio }}" onChange="{{ setNewTareaPrio }}" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;background:#fff;color:#1A1918;" style-focus="border-color:#7C6247;">
+                    <option value="normal">Normal</option>
+                    <option value="urgente">Urgente</option>
+                    <option value="baja">Baja</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button onClick="{{ guardarTarea }}" style="padding:8px 16px;background:#7C6247;color:#fff;border-radius:7px;font-size:13px;font-weight:500;border:none;cursor:pointer;outline:none;">Guardar tarea</button>
+                <button onClick="{{ toggleNewTarea }}" style="padding:8px 16px;background:#F5F0E8;color:#7C6247;border-radius:7px;font-size:13px;font-weight:500;border:1px solid #E8DED3;cursor:pointer;outline:none;">Cancelar</button>
+              </div>
+            </div>
+          </sc-if>
+          <!-- Kanban -->
+          <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:16px;">
+            <sc-for list="{{ kanbanCols }}" as="col" hint-placeholder-count="5">
+              <div style="min-width:225px;flex-shrink:0;">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;padding:0 2px;">
+                  <span style="font-size:13px;font-weight:600;color:#1A1918;">{{ col.etapa }}</span>
+                  <span style="font-size:11px;font-weight:600;background:#F0EBE4;color:#7A7066;padding:2px 7px;border-radius:10px;">{{ col.count }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;min-height:60px;">
+                  <sc-for list="{{ col.cards }}" as="card" hint-placeholder-count="1">
+                    <div style="background:#fff;border:1px solid #E5E0D8;border-radius:9px;padding:13px;">
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px;">
+                        <span style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:#F5F0E8;color:#7C6247;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;">{{ card.tipo }}</span>
+                        <span style="flex-shrink:0;font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;background:{{ card.priorityBg }};color:{{ card.priorityColor }};">{{ card.prioridad }}</span>
+                      </div>
+                      <p style="font-size:12.5px;color:#1A1918;line-height:1.45;margin-bottom:8px;">{{ card.desc }}</p>
+                      <sc-if value="{{ card.hasPaciente }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:11px;color:#9A8F84;margin-bottom:8px;display:flex;align-items:center;gap:4px;">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                          {{ card.paciente }}
+                        </div>
+                      </sc-if>
+                      <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #F5F0E8;padding-top:8px;">
+                        <div style="display:flex;align-items:center;gap:5px;">
+                          <div style="width:20px;height:20px;border-radius:10px;background:{{ card.avatarBg }};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">{{ card.initials }}</div>
+                          <span style="font-size:11px;color:#7A7066;">{{ card.asignada }}</span>
+                        </div>
+                        <div style="display:flex;gap:4px;">
+                          <sc-if value="{{ card.canMover }}" hint-placeholder-val="{{ true }}">
+                            <button onClick="{{ card.mover }}" style="font-size:11.5px;padding:3px 8px;background:#F5F0E8;color:#7C6247;border-radius:4px;border:none;cursor:pointer;font-weight:600;outline:none;" title="Avanzar">→</button>
+                          </sc-if>
+                          <button onClick="{{ card.rm }}" style="font-size:11px;padding:3px 7px;background:#FBF5F5;color:#C97B4B;border-radius:4px;border:none;cursor:pointer;outline:none;" title="Eliminar">✕</button>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── PROTOCOLOS BASE ─── -->
+      <sc-if value="{{ v_protocolos }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <p style="font-size:13px;color:#7A7066;margin-bottom:18px;">13 protocolos operativos para el equipo de recepción.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <sc-for list="{{ protocolosBase }}" as="pb" hint-placeholder-count="8">
+              <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;overflow:hidden;">
+                <div onClick="{{ pb.toggle }}" style="padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .12s;" style-hover="background:#FBFAF8;">
+                  <div style="width:30px;height:30px;background:#F5F0E8;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11.5px;font-weight:700;color:#7C6247;">{{ pb.num }}</div>
+                  <div style="flex:1;font-size:13.5px;font-weight:500;color:#1A1918;">{{ pb.titulo }}</div>
+                  <div onClick="{{ pb.onCopy }}" style="padding:5px 10px;border-radius:5px;font-size:11.5px;font-weight:500;color:#7C6247;background:#F5F0E8;cursor:pointer;flex-shrink:0;transition:background .12s;" style-hover="background:#EDE4D8;">Copiar</div>
+                  <div style="flex-shrink:0;color:#B0A89E;transition:transform .2s;transform:{{ pb.rot }};" innerHTML="{{ chevronSvg }}"></div>
+                </div>
+                <sc-if value="{{ pb.open }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:0 18px 16px 60px;border-top:1px solid #F5F0E8;">
+                    <p style="font-size:13px;color:#4A4540;line-height:1.65;padding-top:14px;">{{ pb.contenido }}</p>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── GUIONES ─── -->
+      <sc-if value="{{ v_guiones }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;">
+            <sc-for list="{{ guionCats }}" as="gc" hint-placeholder-count="6">
+              <button onClick="{{ gc.onClick }}" style="padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:500;border:1px solid {{ gc.border }};background:{{ gc.bg }};color:{{ gc.color }};cursor:pointer;transition:all .15s;outline:none;">{{ gc.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <sc-for list="{{ guiones }}" as="g" hint-placeholder-count="5">
+              <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:16px 18px;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;">
+                  <div>
+                    <span style="display:inline-block;padding:2px 8px;background:#F5F0E8;color:#7C6247;border-radius:4px;font-size:11px;font-weight:600;margin-bottom:6px;">{{ g.cat }}</span>
+                    <div style="font-size:13.5px;font-weight:500;color:#1A1918;">{{ g.titulo }}</div>
+                  </div>
+                  <button onClick="{{ g.copy }}" style="flex-shrink:0;padding:6px 12px;background:#F5F0E8;color:#7C6247;border-radius:6px;font-size:12px;font-weight:500;border:none;cursor:pointer;transition:background .12s;outline:none;" style-hover="background:#EDE4D8;">Copiar</button>
+                </div>
+                <p style="font-size:13px;color:#4A4540;line-height:1.6;border-top:1px solid #F5F0E8;padding-top:10px;">{{ g.texto }}</p>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── PAGOS ─── -->
+      <sc-if value="{{ v_pagos }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{ politicasPago }}" as="pol" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:20px 22px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <h3 style="font-size:14px;font-weight:600;color:#1A1918;">{{ pol.titulo }}</h3>
+                <button onClick="{{ pol.copy }}" style="padding:5px 10px;background:#F5F0E8;color:#7C6247;border-radius:5px;font-size:12px;font-weight:500;border:none;cursor:pointer;outline:none;" style-hover="background:#EDE4D8;">Copiar</button>
+              </div>
+              <p style="font-size:13.5px;color:#4A4540;line-height:1.65;">{{ pol.contenido }}</p>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ─── SUSPENSIONES ─── -->
+      <sc-if value="{{ v_suspensiones }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;display:flex;flex-direction:column;gap:12px;">
+          <sc-for list="{{ suspensiones }}" as="sus" hint-placeholder-count="3">
+            <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:20px 22px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <div style="width:7px;height:7px;background:#C97B4B;border-radius:50%;flex-shrink:0;"></div>
+                <h3 style="font-size:14px;font-weight:600;color:#1A1918;">{{ sus.titulo }}</h3>
+              </div>
+              <p style="font-size:13.5px;color:#4A4540;line-height:1.65;">{{ sus.contenido }}</p>
+              <sc-if value="{{ sus.hasMensaje }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:14px;background:#FBF7F2;border:1px solid #E8DED3;border-radius:8px;padding:14px;">
+                  <div style="font-size:10.5px;font-weight:700;color:#7C6247;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Mensaje sugerido</div>
+                  <p style="font-size:13px;color:#4A4540;line-height:1.6;">{{ sus.mensaje }}</p>
+                  <button onClick="{{ sus.copy }}" style="margin-top:10px;padding:6px 12px;background:#7C6247;color:#fff;border-radius:6px;font-size:12px;font-weight:500;border:none;cursor:pointer;outline:none;">Copiar mensaje</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ─── TRATAMIENTOS ─── -->
+      <sc-if value="{{ v_tratamientos }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;">
+            <sc-for list="{{ tratCats }}" as="tc" hint-placeholder-count="5">
+              <button onClick="{{ tc.onClick }}" style="padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:500;border:1px solid {{ tc.border }};background:{{ tc.bg }};color:{{ tc.color }};cursor:pointer;transition:all .15s;outline:none;">{{ tc.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px;">
+            <sc-for list="{{ tratamientos }}" as="t" hint-placeholder-count="6">
+              <div onClick="{{ t.onClick }}" style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:10px;transition:all .15s;" style-hover="box-shadow:0 2px 10px rgba(0,0,0,.07);border-color:#C8BDB3;transform:translateY(-1px);">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                  <div>
+                    <span style="display:inline-block;padding:2px 7px;background:#F5F0E8;color:#7C6247;border-radius:4px;font-size:10.5px;font-weight:600;margin-bottom:6px;">{{ t.cat }}</span>
+                    <h3 style="font-size:13.5px;font-weight:500;color:#1A1918;line-height:1.4;">{{ t.nombre }}</h3>
+                  </div>
+                  <sc-if value="{{ t.evalGratis }}" hint-placeholder-val="{{ false }}">
+                    <span style="flex-shrink:0;font-size:10px;font-weight:600;padding:2px 6px;background:#EDF5EF;color:#4A7A5A;border-radius:4px;white-space:nowrap;">Eval. Gratis</span>
+                  </sc-if>
+                </div>
+                <p style="font-size:12px;color:#7A7066;line-height:1.5;flex:1;">{{ t.desc }}</p>
+                <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #F0EBE4;padding-top:10px;">
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:#1A1918;">{{ t.precioStr }}</div>
+                    <div style="font-size:11px;color:#9A8F84;margin-top:1px;">{{ t.durSes }}</div>
+                  </div>
+                  <span style="font-size:11.5px;color:#7A7066;background:#F5F0E8;padding:3px 9px;border-radius:20px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ t.prof }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── PROFESIONALES ─── -->
+      <sc-if value="{{ v_profesionales }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px;">
+            <sc-for list="{{ profesionales }}" as="pf" hint-placeholder-count="4">
+              <div onClick="{{ pf.onClick }}" style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:18px;cursor:pointer;transition:all .15s;" style-hover="box-shadow:0 2px 8px rgba(0,0,0,.07);border-color:#C8BDB3;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                  <div style="width:42px;height:42px;border-radius:21px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;color:#fff;flex-shrink:0;background:{{ pf.avatarBg }};">{{ pf.initials }}</div>
+                  <div>
+                    <div style="font-size:13.5px;font-weight:500;color:#1A1918;">{{ pf.nombre }}</div>
+                    <div style="font-size:12px;color:#7A7066;margin-top:2px;">{{ pf.especialidad }}</div>
+                  </div>
+                </div>
+                <div style="border-top:1px solid #F0EBE4;padding-top:12px;display:flex;flex-direction:column;gap:5px;">
+                  <div style="display:flex;gap:7px;align-items:center;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9A8F84" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span style="font-size:12px;color:#4A4540;">{{ pf.disponibilidad }}</span>
+                  </div>
+                  <div style="display:flex;gap:7px;align-items:center;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9A8F84" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span style="font-size:12px;color:#4A4540;">{{ pf.horario }}</span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── CONSULTAS ─── -->
+      <sc-if value="{{ v_consultas }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px;">
+            <sc-for list="{{ consultas }}" as="c" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:18px;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">
+                  <h3 style="font-size:13.5px;font-weight:500;color:#1A1918;line-height:1.4;">{{ c.nombre }}</h3>
+                  <sc-if value="{{ c.gratis }}" hint-placeholder-val="{{ false }}">
+                    <span style="flex-shrink:0;font-size:10px;font-weight:600;padding:2px 7px;background:#EDF5EF;color:#4A7A5A;border-radius:4px;">Gratuita</span>
+                  </sc-if>
+                </div>
+                <p style="font-size:12.5px;color:#7A7066;line-height:1.55;margin-bottom:14px;">{{ c.desc }}</p>
+                <div style="border-top:1px solid #F0EBE4;padding-top:12px;display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#9A8F84;">Valor</span><span style="font-size:13px;font-weight:600;color:#1A1918;">{{ c.valorStr }}</span></div>
+                  <div style="display:flex;justify-content:space-between;"><span style="font-size:12px;color:#9A8F84;">Duración</span><span style="font-size:12.5px;color:#4A4540;">{{ c.dur }}</span></div>
+                  <div style="display:flex;justify-content:space-between;gap:8px;"><span style="font-size:12px;color:#9A8F84;flex-shrink:0;">Profesional</span><span style="font-size:12.5px;color:#4A4540;text-align:right;">{{ c.prof }}</span></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── BOXES ─── -->
+      <sc-if value="{{ v_boxes }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px;">
+            <sc-for list="{{ boxes }}" as="bx" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:18px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                  <div style="width:38px;height:38px;background:#F5F0E8;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" innerHTML="{{ boxIcon }}"></div>
+                  <div><div style="font-size:14.5px;font-weight:600;color:#1A1918;">{{ bx.nombre }}</div><div style="font-size:12px;color:#7A7066;margin-top:1px;">{{ bx.tipo }}</div></div>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <div style="font-size:10px;font-weight:700;color:#B0A89E;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px;">Usos</div>
+                  <sc-for list="{{ bx.usos }}" as="uso" hint-placeholder-count="2">
+                    <div style="font-size:12px;color:#4A4540;display:flex;gap:6px;align-items:flex-start;margin-bottom:3px;"><span style="width:4px;height:4px;background:#7C6247;border-radius:50%;flex-shrink:0;margin-top:5px;display:inline-block;"></span>{{ uso }}</div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                  <sc-for list="{{ bx.tecnologias }}" as="tec" hint-placeholder-count="2">
+                    <span style="font-size:11px;background:#F5F0E8;color:#7C6247;padding:3px 8px;border-radius:4px;font-weight:500;">{{ tec }}</span>
+                  </sc-for>
+                  <sc-if value="{{ bx.noTec }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:11px;color:#C0B8B0;font-style:italic;">Sin tecnologías asignadas</span>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── PRODUCTOS ─── -->
+      <sc-if value="{{ v_productos }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;">
+            <sc-for list="{{ marcas }}" as="m" hint-placeholder-count="5">
+              <button onClick="{{ m.onClick }}" style="padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:500;border:1px solid {{ m.border }};background:{{ m.bg }};color:{{ m.color }};cursor:pointer;transition:all .15s;outline:none;">{{ m.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;">
+            <sc-for list="{{ productos }}" as="pr" hint-placeholder-count="6">
+              <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:16px;transition:all .15s;" style-hover="box-shadow:0 2px 8px rgba(0,0,0,.06);border-color:#C8BDB3;">
+                <div style="font-size:9.5px;font-weight:700;color:#7C6247;letter-spacing:0.8px;text-transform:uppercase;background:#F5F0E8;display:inline-block;padding:2px 6px;border-radius:3px;margin-bottom:7px;">{{ pr.marca }}</div>
+                <div style="font-size:13px;font-weight:500;color:#1A1918;line-height:1.35;margin-bottom:5px;">{{ pr.nombre }}</div>
+                <div style="font-size:12px;color:#7A7066;line-height:1.5;margin-bottom:10px;">{{ pr.desc }}</div>
+                <div style="font-size:14px;font-weight:600;color:#1A1918;">${{ pr.precioStr }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── CONSENTIMIENTOS ─── -->
+      <sc-if value="{{ v_consentimientos }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:12px;">
+            <sc-for list="{{ consentimientos }}" as="con" hint-placeholder-count="3">
+              <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:20px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                  <div style="width:36px;height:36px;background:#FBF7F2;border:1px solid #E8DED3;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" innerHTML="{{ docIcon }}"></div>
+                  <div style="font-size:13.5px;font-weight:500;color:#1A1918;line-height:1.35;">{{ con.nombre }}</div>
+                </div>
+                <p style="font-size:12.5px;color:#7A7066;line-height:1.55;margin-bottom:12px;">{{ con.desc }}</p>
+                <div style="margin-bottom:14px;">
+                  <div style="font-size:10px;font-weight:700;color:#B0A89E;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">Riesgos informados</div>
+                  <sc-for list="{{ con.riesgos }}" as="r" hint-placeholder-count="3">
+                    <div style="font-size:12px;color:#4A4540;display:flex;gap:6px;align-items:flex-start;margin-bottom:3px;"><span style="color:#C97B4B;flex-shrink:0;">•</span>{{ r }}</div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button style="flex:1;padding:8px;background:#7C6247;color:#fff;border-radius:7px;font-size:12.5px;font-weight:500;border:none;cursor:pointer;outline:none;">Imprimir</button>
+                  <button style="flex:1;padding:8px;background:#F5F0E8;color:#7C6247;border-radius:7px;font-size:12.5px;font-weight:500;border:1px solid #E8DED3;cursor:pointer;outline:none;">Vista previa</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── PRESUPUESTOS ─── -->
+      <sc-if value="{{ v_presupuestos }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;">
+          <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px;">
+            <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:20px;">
+              <div style="font-size:13px;font-weight:600;color:#1A1918;margin-bottom:14px;">Datos del paciente</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Nombre</label><input value="{{ presNombre }}" onChange="{{ presSetNombre }}" placeholder="Nombre completo" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;color:#1A1918;outline:none;" style-focus="border-color:#7C6247;"></div>
+                <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">RUT</label><input value="{{ presRut }}" onChange="{{ presSetRut }}" placeholder="12.345.678-9" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+                <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Teléfono</label><input value="{{ presTel }}" onChange="{{ presSetTel }}" placeholder="+56 9 XXXX XXXX" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+                <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Correo</label><input value="{{ presEmail }}" onChange="{{ presSetEmail }}" placeholder="correo@ejemplo.com" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:20px;">
+              <div style="font-size:13px;font-weight:600;color:#1A1918;margin-bottom:12px;">Agregar tratamiento</div>
+              <input value="{{ presSearch }}" onChange="{{ presSetSearch }}" placeholder="Buscar tratamiento..." style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;margin-bottom:10px;" style-focus="border-color:#7C6247;">
+              <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;">
+                <sc-for list="{{ presTrats }}" as="pt" hint-placeholder-count="4">
+                  <button onClick="{{ pt.add }}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid #E5E0D8;border-radius:7px;text-align:left;cursor:pointer;background:#fff;transition:all .12s;outline:none;" style-hover="background:#F5F0E8;border-color:#C8BDB3;">
+                    <div><div style="font-size:13px;font-weight:500;color:#1A1918;">{{ pt.nombre }}</div><div style="font-size:11px;color:#9A8F84;margin-top:1px;">{{ pt.cat }} · {{ pt.precioStr }}</div></div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C6247" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <div style="width:320px;background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:20px;position:sticky;top:80px;">
+            <div style="font-size:13px;font-weight:600;color:#1A1918;margin-bottom:14px;">Resumen</div>
+            <sc-if value="{{ presVacio }}" hint-placeholder-val="{{ true }}">
+              <div style="text-align:center;padding:28px 0;color:#B0A89E;">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto 10px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <div style="font-size:12.5px;">Agrega tratamientos<br>para comenzar</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ !presVacio }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:14px;">
+                <sc-for list="{{ presItems }}" as="pi" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F5F0E8;">
+                    <div style="flex:1;min-width:0;margin-right:10px;"><div style="font-size:12.5px;font-weight:500;color:#1A1918;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ pi.nombre }}</div><div style="font-size:11px;color:#9A8F84;">{{ pi.cantidad }}× · ${{ pi.unitStr }}</div></div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><span style="font-size:13px;font-weight:500;color:#1A1918;">${{ pi.totalStr }}</span><button onClick="{{ pi.rm }}" style="color:#C97B4B;border:none;background:none;cursor:pointer;padding:2px;outline:none;display:flex;" style-hover="color:#A85A30;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><label style="font-size:12px;color:#7A7066;white-space:nowrap;">Descuento %</label><input type="number" min="0" max="100" value="{{ presDesc }}" onChange="{{ presSetDesc }}" style="width:60px;padding:6px 8px;border:1px solid #E5E0D8;border-radius:6px;font-size:13px;text-align:center;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div style="border-top:1px solid #E5E0D8;padding-top:12px;margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:12.5px;color:#7A7066;">Subtotal</span><span style="font-size:12.5px;color:#1A1918;">${{ presTotalStr }}</span></div>
+                <sc-if value="{{ hasDesc }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:12.5px;color:#5A8A6A;">Descuento {{ presDesc }}%</span><span style="font-size:12.5px;color:#5A8A6A;">−${{ presDescStr }}</span></div>
+                </sc-if>
+                <div style="display:flex;justify-content:space-between;border-top:1px solid #E5E0D8;padding-top:8px;margin-top:4px;"><span style="font-size:14px;font-weight:600;color:#1A1918;">Total</span><span style="font-size:14px;font-weight:700;color:#7C6247;">${{ presFinalStr }}</span></div>
+              </div>
+              <div style="display:flex;gap:7px;">
+                <button onClick="{{ presCopy }}" style="flex:1;padding:9px;background:#7C6247;color:#fff;border-radius:7px;font-size:12.5px;font-weight:500;border:none;cursor:pointer;outline:none;">Copiar</button>
+                <button onClick="{{ presPrint }}" style="flex:1;padding:9px;background:#F5F0E8;color:#7C6247;border-radius:7px;font-size:12.5px;font-weight:500;border:1px solid #E8DED3;cursor:pointer;outline:none;">Imprimir</button>
+                <button onClick="{{ presClear }}" style="padding:9px 10px;background:#FBF5F5;color:#C97B4B;border-radius:7px;font-size:12.5px;border:1px solid #F0E0D8;cursor:pointer;outline:none;">Limpiar</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── GIFT CARDS ─── -->
+      <sc-if value="{{ v_giftcards }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;">
+          <div style="flex:1;min-width:260px;background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:22px;">
+            <div style="font-size:13px;font-weight:600;color:#1A1918;margin-bottom:16px;">Datos de la Gift Card</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:5px;">Para (destinatario)</label><input value="{{ gcPara }}" onChange="{{ gcSetPara }}" placeholder="Nombre del destinatario" style="width:100%;padding:9px 12px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:5px;">De (remitente)</label><input value="{{ gcDe }}" onChange="{{ gcSetDe }}" placeholder="Con cariño de..." style="width:100%;padding:9px 12px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:5px;">Monto (CLP)</label><input value="{{ gcMonto }}" onChange="{{ gcSetMonto }}" placeholder="50000" style="width:100%;padding:9px 12px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:5px;">Mensaje</label><textarea onChange="{{ gcSetMsg }}" placeholder="Mensaje personalizado..." rows="3" style="width:100%;padding:9px 12px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;resize:none;" style-focus="border-color:#7C6247;">{{ gcMsg }}</textarea></div>
+              <button onClick="{{ gcGenerar }}" style="padding:10px;background:#7C6247;color:#fff;border-radius:8px;font-size:13px;font-weight:500;border:none;cursor:pointer;outline:none;" style-hover="background:#6A5238;">Generar Gift Card</button>
+            </div>
+          </div>
+          <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:14px;">
+            <div style="background:linear-gradient(135deg,#7C6247 0%,#A88560 55%,#7C6247 100%);border-radius:14px;padding:30px;color:#fff;min-height:190px;position:relative;overflow:hidden;">
+              <div style="position:absolute;top:-20px;right:-20px;width:130px;height:130px;background:rgba(255,255,255,0.06);border-radius:50%;pointer-events:none;"></div>
+              <div style="position:absolute;bottom:-30px;left:-30px;width:110px;height:110px;background:rgba(255,255,255,0.04);border-radius:50%;pointer-events:none;"></div>
+              <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;opacity:0.65;margin-bottom:18px;">Clínica Cialo · Gift Card</div>
+              <div style="font-size:12px;opacity:0.75;margin-bottom:4px;">Para</div>
+              <div style="font-size:19px;font-weight:600;margin-bottom:12px;">{{ gcParaDisplay }}</div>
+              <div style="font-size:25px;font-weight:700;">{{ gcMontoDisplay }}</div>
+              <div style="margin-top:10px;font-size:12px;opacity:0.7;line-height:1.5;">{{ gcMsgDisplay }}</div>
+              <div style="position:absolute;bottom:18px;right:20px;font-size:10px;opacity:0.45;letter-spacing:1px;">{{ gcCodigo }}</div>
+            </div>
+            <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:16px;">
+              <div style="font-size:11.5px;color:#7A7066;margin-bottom:4px;">Con cariño de:</div>
+              <div style="font-size:14px;color:#1A1918;font-weight:500;margin-bottom:8px;">{{ gcDeDisplay }}</div>
+              <div style="font-size:11.5px;color:#9A8F84;">Vigencia: 6 meses desde la emisión · No canjeable por dinero en efectivo</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── FAQ ─── -->
+      <sc-if value="{{ v_faq }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;">
+            <sc-for list="{{ faqCats }}" as="fc" hint-placeholder-count="4">
+              <button onClick="{{ fc.onClick }}" style="padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:500;border:1px solid {{ fc.border }};background:{{ fc.bg }};color:{{ fc.color }};cursor:pointer;transition:all .15s;outline:none;">{{ fc.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;max-width:780px;">
+            <sc-for list="{{ faqs }}" as="fq" hint-placeholder-count="5">
+              <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;overflow:hidden;">
+                <div onClick="{{ fq.toggle }}" style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;" style-hover="background:#FBFAF8;">
+                  <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;">
+                    <span style="display:inline-block;background:#F5F0E8;color:#7C6247;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0;margin-top:1px;">{{ fq.cat }}</span>
+                    <span style="font-size:13.5px;font-weight:500;color:#1A1918;line-height:1.4;">{{ fq.pregunta }}</span>
+                  </div>
+                  <div style="flex-shrink:0;color:#B0A89E;transition:transform .2s;transform:{{ fq.rot }};" innerHTML="{{ chevronSvg }}"></div>
+                </div>
+                <sc-if value="{{ fq.open }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:0 18px 16px;border-top:1px solid #F5F0E8;">
+                    <p style="font-size:13px;color:#4A4540;line-height:1.65;padding-top:14px;">{{ fq.respuesta }}</p>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ─── REEMBOLSO ─── -->
+      <sc-if value="{{ v_reembolso }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:fadeUp .3s ease both;max-width:680px;">
+          <div style="background:#fff;border:1px solid #E5E0D8;border-radius:10px;padding:26px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #F0EBE4;">
+              <div style="width:40px;height:40px;background:#FBF7F2;border:1px solid #E8DED3;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;" innerHTML="{{ reembolsoIcon }}"></div>
+              <div><div style="font-size:14.5px;font-weight:600;color:#1A1918;">Solicitud de Reembolso</div><div style="font-size:12.5px;color:#7A7066;margin-top:2px;">Envío a contacto@cialo.cl</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Nombre del paciente</label><input placeholder="Nombre completo" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">RUT</label><input placeholder="12.345.678-9" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Teléfono</label><input placeholder="+56 9 XXXX XXXX" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Fecha del pago original</label><input type="date" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;color:#1A1918;" style-focus="border-color:#7C6247;"></div>
+              <div style="grid-column:1/-1;"><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Monto a reembolsar</label><input placeholder="$ 0" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div style="grid-column:1/-1;"><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Motivo</label><textarea placeholder="Describe el motivo del reembolso..." rows="3" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;resize:none;" style-focus="border-color:#7C6247;"></textarea></div>
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Banco</label><input placeholder="Banco" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div><label style="display:block;font-size:11.5px;color:#7A7066;margin-bottom:4px;">Número de cuenta</label><input placeholder="Número de cuenta" style="width:100%;padding:8px 10px;border:1px solid #E5E0D8;border-radius:7px;font-size:13px;outline:none;" style-focus="border-color:#7C6247;"></div>
+              <div style="grid-column:1/-1;"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" style="accent-color:#7C6247;width:14px;height:14px;"><span style="font-size:13px;color:#1A1918;">Marcar como urgente</span></label></div>
+            </div>
+            <button onClick="{{ doReembolso }}" style="margin-top:20px;width:100%;padding:11px;background:#7C6247;color:#fff;border-radius:8px;font-size:13.5px;font-weight:500;border:none;cursor:pointer;outline:none;" style-hover="background:#6A5238;">Enviar por Gmail</button>
+          </div>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+
+  <!-- ══════════ MODAL ══════════ -->
+  <sc-if value="{{ hasModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;animation:overlayIn .2s ease;">
+      <div onClick="{{ stopProp }}" style="background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:82vh;overflow-y:auto;animation:fadeUp .25s ease;">
+        <div style="padding:22px;border-bottom:1px solid #F0EBE4;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;position:sticky;top:0;background:#fff;border-radius:12px 12px 0 0;">
+          <div>
+            <div style="display:inline-block;padding:2px 8px;background:#F5F0E8;color:#7C6247;border-radius:4px;font-size:11px;font-weight:600;margin-bottom:8px;">{{ modalCat }}</div>
+            <h2 style="font-size:17px;font-weight:600;color:#1A1918;line-height:1.35;">{{ modalNombre }}</h2>
+          </div>
+          <button onClick="{{ closeModal }}" style="flex-shrink:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;background:none;cursor:pointer;color:#9A8F84;outline:none;" style-hover="background:#F5F0E8;" innerHTML="{{ closeSvg }}"></button>
+        </div>
+        <div style="padding:22px;display:flex;flex-direction:column;gap:16px;">
+          <p style="font-size:13.5px;color:#4A4540;line-height:1.65;">{{ modalDesc }}</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div style="background:#F8F7F5;border-radius:8px;padding:12px;"><div style="font-size:10px;font-weight:700;color:#9A8F84;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Precio</div><div style="font-size:13.5px;font-weight:600;color:#1A1918;">{{ modalPrecio }}</div></div>
+            <div style="background:#F8F7F5;border-radius:8px;padding:12px;"><div style="font-size:10px;font-weight:700;color:#9A8F84;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Duración</div><div style="font-size:13.5px;font-weight:600;color:#1A1918;">{{ modalDur }}</div></div>
+            <div style="background:#F8F7F5;border-radius:8px;padding:12px;"><div style="font-size:10px;font-weight:700;color:#9A8F84;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Sesiones</div><div style="font-size:13.5px;font-weight:600;color:#1A1918;">{{ modalSes }}</div></div>
+          </div>
+          <div style="background:#F5F0E8;border-radius:8px;padding:14px;"><div style="font-size:10px;font-weight:700;color:#7C6247;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;">Profesional</div><div style="font-size:13.5px;color:#1A1918;">{{ modalProf }}</div></div>
+          <sc-if value="{{ modalReq }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;background:#FBF7F2;border:1px solid #E8DED3;border-radius:8px;padding:12px 14px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C6247" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span style="font-size:13px;color:#5A4535;">{{ modalReqText }}</span>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ══════════ TOAST ══════════ -->
+  <sc-if value="{{ showToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:22px;right:22px;background:#1A1918;color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;z-index:100;animation:fadeUp .25s ease;display:flex;align-items:center;gap:8px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6FBA85" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ toastMsg }}
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    view: 'dashboard',
+    sidebarCollapsed: false,
+    mobileMenuOpen: false,
+    isMobile: false,
+    expandedId: null,
+    modal: null,
+    guionFiltro: 'Todos',
+    tratFiltro: 'Todos',
+    prodBrand: 'Todos',
+    faqCat: 'Todos',
+    presNombre: '', presRut: '', presTel: '', presEmail: '',
+    presItems: [], presDesc: 0, presSearch: '',
+    gcPara: '', gcDe: '', gcMonto: '', gcMsg: '',
+    gcCodigo: 'GC-' + (Math.floor(Math.random() * 90000) + 10000),
+    showToast: false, toastMsg: '',
+    tareas: [], tareasRecep: 'Todas', showNewTarea: false,
+    ntTipo: '', ntDesc: '', ntAsignada: '', ntPrio: 'normal', ntPaciente: '',
+  };
+
+  NAV = [
+    { section: 'Principal', items: [{ id:'dashboard', label:'Dashboard', icon:'home' },{ id:'tareas', label:'Tareas', icon:'tasks' }] },
+    { section: 'Protocolos', items: [
+      { id:'protocolos', label:'Protocolos Base', icon:'book' },
+      { id:'guiones', label:'Guiones Técnicos', icon:'msg' },
+      { id:'pagos', label:'Pagos & Citas', icon:'credit' },
+      { id:'suspensiones', label:'Suspensiones', icon:'xc' },
+    ]},
+    { section: 'Clínica', items: [
+      { id:'tratamientos', label:'Tratamientos', icon:'act' },
+      { id:'profesionales', label:'Profesionales', icon:'users' },
+      { id:'consultas', label:'Consultas', icon:'clip' },
+      { id:'boxes', label:'Boxes & Pabellón', icon:'grid' },
+    ]},
+    { section: 'Comercial', items: [
+      { id:'productos', label:'Productos', icon:'pkg' },
+      { id:'presupuestos', label:'Presupuestos', icon:'file' },
+      { id:'giftcards', label:'Gift Cards', icon:'gift' },
+      { id:'consentimientos', label:'Consentimientos', icon:'pen' },
+    ]},
+    { section: 'Soporte', items: [
+      { id:'faq', label:'Preguntas Frecuentes', icon:'help' },
+      { id:'reembolso', label:'Solicitud de Reembolso', icon:'ref' },
+    ]},
+  ];
+
+  ICON = {
+    home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+    book: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+    msg: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    credit: '<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+    xc: '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>',
+    act: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+    users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    clip: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>',
+    grid: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+    pkg: '<line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/>',
+    file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+    gift: '<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+    pen: '<path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><circle cx="11" cy="11" r="2"/>',
+    help: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    ref: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+    logo: '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
+    chev: '<path d="m6 9 6 6 6-6"/>',
+    close: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    menu: '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>',
+    colL: '<polyline points="15 18 9 12 15 6"/>',
+    colR: '<polyline points="9 18 15 12 9 6"/>',
+    doc: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+    box: '<path d="M21 10V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><rect x="1" y="10" width="22" height="12" rx="2"/><line x1="12" y1="10" x2="12" y2="22"/>',
+    reemb: '<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>',
+    tasks: '<rect x="9" y="11" width="13" height="2" rx="1"/><rect x="9" y="16" width="10" height="2" rx="1"/><polyline points="4 11 5.5 12.5 8 10"/><polyline points="4 16 5.5 17.5 8 15"/>',
+  };
+
+  ETAPAS = ['Pendiente','Asignado','En proceso','Revisión','Cerrado'];
+  RECEPS = ['Valentina','Camila','Daniela'];
+  TIPOS_TAREA = ['Confirmación de cita','Mensaje sin responder','Reagendamiento','Solicitud de reembolso','Suspensión','Seguimiento post-tratamiento','Pago / cobro pendiente'];
+  RECEP_COLORS = {'Valentina':'#7C6247','Camila':'#4A6A8C','Daniela':'#5A7A6A'};
+  NEXT_ETAPA = {'Pendiente':'Asignado','Asignado':'En proceso','En proceso':'Revisión','Revisión':'Cerrado','Cerrado':'Cerrado'};
+
+  _defaultTareas() {
+    return [
+      {id:'t1',tipo:'Confirmación de cita',desc:'Confirmar cita para mañana 10:00 con Médico Estético',asignada:'Valentina',etapa:'Pendiente',prioridad:'urgente',paciente:'Ana González'},
+      {id:'t2',tipo:'Mensaje sin responder',desc:'Responder consulta sobre precios de botox (WhatsApp)',asignada:'Camila',etapa:'En proceso',prioridad:'normal',paciente:''},
+      {id:'t3',tipo:'Reagendamiento',desc:'Reagendar sesión de Scizer cancelada por paciente',asignada:'Daniela',etapa:'Asignado',prioridad:'normal',paciente:'María Pérez'},
+      {id:'t4',tipo:'Solicitud de reembolso',desc:'Procesar reembolso por cancelación paquete láser',asignada:'Valentina',etapa:'Revisión',prioridad:'urgente',paciente:'Carlos Rojas'},
+      {id:'t5',tipo:'Pago / cobro pendiente',desc:'Cobrar 2da cuota paquete criolipólisis',asignada:'Camila',etapa:'Pendiente',prioridad:'normal',paciente:'Sofía Muñoz'},
+      {id:'t6',tipo:'Seguimiento post-tratamiento',desc:'Llamar paciente 3 días post-Soprano Titanium',asignada:'Daniela',etapa:'En proceso',prioridad:'normal',paciente:'Laura Soto'},
+    ];
+  }
+
+  saveTareas(t) { try{localStorage.setItem('cialo_tareas',JSON.stringify(t));}catch(e){} }
+
+  moverTarea(id) {
+    const t = this.state.tareas.map(ta => ta.id===id ? {...ta,etapa:this.NEXT_ETAPA[ta.etapa]||ta.etapa} : ta);
+    this.setState({tareas:t}); this.saveTareas(t);
+  }
+
+  eliminarTarea(id) {
+    const t = this.state.tareas.filter(ta => ta.id!==id);
+    this.setState({tareas:t}); this.saveTareas(t);
+  }
+
+  crearTarea() {
+    const s = this.state;
+    if(!s.ntTipo||!s.ntAsignada||!s.ntDesc){this.toast('Completa tipo, descripción y asignada');return;}
+    const nueva = {id:'t'+Date.now(),tipo:s.ntTipo,desc:s.ntDesc,asignada:s.ntAsignada,etapa:'Pendiente',prioridad:s.ntPrio,paciente:s.ntPaciente};
+    const t = [...s.tareas,nueva];
+    this.setState({tareas:t,showNewTarea:false,ntTipo:'',ntDesc:'',ntAsignada:'',ntPrio:'normal',ntPaciente:''});
+    this.saveTareas(t); this.toast('Tarea creada');
+  }
+
+  svg(key, color='currentColor', size=16) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${this.ICON[key]||''}</svg>`;
+  }
+
+  PROTOS = [
+    { id:1, titulo:'Presentación inicial', contenido:'Saludar con nombre de la clínica: "Buenas tardes, Clínica Cialo, le habla [nombre], ¿en qué le puedo ayudar?" Mantener tono cálido y profesional en todo momento. La primera impresión define la experiencia del paciente.' },
+    { id:2, titulo:'Gestión de mensajes pendientes', contenido:'Revisar WhatsApp Business y correo al inicio de cada turno. Responder todos los mensajes pendientes dentro de los primeros 30 minutos. Registrar en planilla los mensajes que requieren seguimiento o derivación.' },
+    { id:3, titulo:'Tiempos de respuesta', contenido:'WhatsApp: máximo 30 minutos en horario de atención. Llamadas perdidas: devolución en 15 minutos. Correo: respuesta en 4 horas hábiles. Fuera de horario: activar respuesta automática con horario de atención.' },
+    { id:4, titulo:'Escalamiento', contenido:'Derivar al profesional a cargo cuando el paciente presenta síntomas inesperados post-tratamiento, solicita información clínica específica, o manifiesta disconformidad grave. Nunca dar indicaciones médicas sin autorización del profesional.' },
+    { id:5, titulo:'Manejo de precios', contenido:'No entregar precios exactos por WhatsApp sin confirmación del profesional. Indicar valores referenciales y ofrecer evaluación para precio exacto. Nunca prometer descuentos sin autorización de coordinación o administración.' },
+    { id:6, titulo:'Estilo de comunicación', contenido:'Lenguaje formal pero cercano. Evitar términos técnicos con pacientes. Tutear al paciente salvo que prefiera formalidad. No usar emojis excesivos en comunicaciones escritas. Responder siempre con positividad y disposición.' },
+    { id:7, titulo:'Orden de sala de espera y mesón', contenido:'Mesón despejado al inicio y fin de cada turno. Sala con música ambiental y material informativo actualizado. Ofrecer agua o té a pacientes con espera superior a 10 minutos.' },
+    { id:8, titulo:'Uso de computador', contenido:'Uso exclusivo para labores administrativas. Prohibido el uso personal de redes sociales durante el turno. Sesión cerrada al abandonar el mesón. Contraseña no compartida con terceros.' },
+    { id:9, titulo:'Atención de pacientes de láser', contenido:'Confirmar ausencia de exposición solar reciente (mínimo 7 días). Verificar contraindicaciones antes de la sesión. Entregar indicaciones post-tratamiento por escrito. Verificar que el consentimiento esté firmado.' },
+    { id:10, titulo:'Suspensiones', contenido:'Registrar toda suspensión con motivo, fecha y nombre del paciente. Reagendar dentro de las 48 horas. Notificar al profesional inmediatamente. Si el paciente suspende por segunda vez sin aviso, informar a coordinación.' },
+    { id:11, titulo:'Oferta de horarios', contenido:'Ofrecer siempre mínimo dos alternativas de horario. Priorizar horarios del día siguiente o la semana en curso. Confirmar cita por WhatsApp con recordatorio 24 horas antes.' },
+    { id:12, titulo:'Evaluaciones', contenido:'Toda evaluación médica debe agendarse con el profesional correspondiente. Informar duración estimada (30-45 min) y qué traer. Evaluar disponibilidad de evaluaciones gratuitas según el tratamiento de interés.' },
+    { id:13, titulo:'Pago de consultas médicas', contenido:'Pago al momento de la atención. Aceptar transferencia, débito, crédito y efectivo. Emitir boleta o factura según preferencia. No agendar sin pago confirmado en casos de historial de no-show documentado.' },
+  ];
+
+  GUIONES = [
+    {id:1,cat:'Gestión',titulo:'Saludo inicial WhatsApp',texto:'¡Hola! Bienvenido/a a Clínica Cialo. Mi nombre es [nombre] y con gusto te atenderé. ¿En qué puedo ayudarte hoy?'},
+    {id:2,cat:'Gestión',titulo:'Solicitud de hora',texto:'Con gusto te ayudo a coordinar tu cita. ¿Para qué tratamiento o consulta te gustaría agendar? ¿Tienes alguna preferencia de día y horario?'},
+    {id:3,cat:'Gestión',titulo:'Confirmación de cita',texto:'Confirmamos tu cita para el [día] a las [hora] con [profesional] para [tratamiento]. Te esperamos en nuestra clínica. Recuerda llegar 5–10 minutos antes. ¡Cualquier duda, escríbenos!'},
+    {id:4,cat:'Gestión',titulo:'Recordatorio 24 horas',texto:'Hola [nombre], te recordamos que mañana [día] tienes tu cita a las [hora] en Clínica Cialo para [tratamiento]. Si necesitas reagendar, escríbenos con al menos 4 horas de anticipación. ¡Te esperamos!'},
+    {id:5,cat:'Gestión',titulo:'No-show seguimiento',texto:'Hola [nombre], notamos que no pudiste asistir a tu cita de hoy. Esperamos que todo esté bien. Cuando quieras reagendar, con gusto te coordinamos un nuevo horario. Quedamos a tu disposición.'},
+    {id:6,cat:'Gestión',titulo:'Reagendamiento',texto:'Claro, sin problema. Revisamos disponibilidad y te ofrecemos opciones. ¿Tienes alguna preferencia de día o franja horaria?'},
+    {id:7,cat:'Estética',titulo:'Toxina Botulínica',texto:'La toxina botulínica suaviza líneas de expresión dinámicas. Sus efectos duran entre 4 y 6 meses. Para definir la cantidad y zonas a tratar, recomendamos una evaluación con nuestro médico estético.'},
+    {id:8,cat:'Estética',titulo:'Ácido Hialurónico',texto:'El ácido hialurónico rellena surcos, hidrata profundamente y define contornos del rostro. Los resultados son inmediatos y naturales. El procedimiento es ambulatorio. Te invitamos a una evaluación sin costo.'},
+    {id:9,cat:'Estética',titulo:'Bioestimuladores',texto:'Los bioestimuladores activan la producción natural de colágeno de tu piel, logrando un rejuvenecimiento progresivo y duradero. Requieren evaluación previa para determinar el producto y la dosis adecuada.'},
+    {id:10,cat:'Estética',titulo:'Precios faciales',texto:'Los valores de nuestros tratamientos faciales varían según el tipo y área. Para entregarte un precio exacto acorde a tus objetivos, lo ideal es pasar por una evaluación médica. ¿Te gustaría coordinar una?'},
+    {id:11,cat:'Corporal',titulo:'Reducción de medidas',texto:'Para reducción de grasa localizada contamos con Clatuu Alpha (criolipólisis), Scizer (HIFU corporal) y Exilis Ultra 360 (radiofrecuencia). Lo ideal es comenzar con una evaluación corporal con InBody para recomendarte la mejor opción.'},
+    {id:12,cat:'Corporal',titulo:'Depilación láser Soprano',texto:'La depilación láser con Soprano Titanium es apta para todo tipo de piel y vello. Se recomiendan entre 6 y 8 sesiones, con intervalos de 4 a 8 semanas según la zona.'},
+    {id:13,cat:'Nutrición',titulo:'Programa nutricional',texto:'Nuestro programa incluye evaluación inicial con composición corporal InBody, plan alimentario personalizado y seguimiento mensual. Trabajamos objetivos de pérdida de peso, ganancia muscular y bienestar general.'},
+    {id:14,cat:'Nutrición',titulo:'Calorimetría indirecta',texto:'La calorimetría indirecta mide tu metabolismo basal real con alta precisión, permitiendo optimizar el plan nutricional y hacer más eficiente cualquier proceso de cambio corporal.'},
+    {id:15,cat:'Médica',titulo:'Consulta médica estética',texto:'La consulta con nuestro médico estético dura aproximadamente 30 minutos. Evaluaremos tus objetivos, historial de salud y diseñaremos un plan de tratamiento personalizado.'},
+    {id:16,cat:'Médica',titulo:'Reacción post-tratamiento',texto:'Ante cualquier reacción inesperada post-tratamiento, comunícate de inmediato con nosotros. Nuestro equipo médico evaluará tu situación y te indicará los pasos a seguir.'},
+    {id:17,cat:'Médica',titulo:'Consulta de flebología',texto:'La consulta de flebología evalúa el estado de tus venas y permite diagnosticar varices, arañas vasculares y otras condiciones venosas. Nuestro flebólogo propondrá las opciones de tratamiento más adecuadas.'},
+    {id:18,cat:'Indicaciones',titulo:'Cuidados post-láser',texto:'Post sesión de láser: aplicar bloqueador solar SPF 50+ cada 2 horas. Evitar exposición solar directa por 7 días. No realizar actividad física intensa las primeras 24 horas. Mantener la zona limpia e hidratada.'},
+    {id:19,cat:'Indicaciones',titulo:'Post toxina botulínica',texto:'Después de la aplicación: no acostarse durante las primeras 4 horas. Evitar calor excesivo y actividad física intensa por 24 horas. No masajear la zona tratada. El efecto completo se aprecia a los 7–14 días.'},
+  ];
+
+  TRATAS = [
+    // FACIAL
+    {id:'cool-peel',cat:'Facial',nombre:'Cool Peel (Láser CO₂)',desc:'Láser de CO₂ fraccionado del sistema TetraPro DEKA. Estimula regeneración rápida de la piel con mínima carga térmica, sin dolor ni inactividad. Potenciado con exosomas Purasome.',dur:'45 min',ses:'Variable',prof:'Médico Estético',req:true,evalGratis:false,desde:200000,hasta:200000,evalCosto:30000},
+    {id:'botox-sup',cat:'Facial',nombre:'Toxina Botulínica Tercio Superior',desc:'Relaja temporalmente la musculatura facial para suavizar arrugas dinámicas en frente, entrecejo y patas de gallo.',dur:'20 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:210000,hasta:210000,evalCosto:30000},
+    {id:'botox-maset',cat:'Facial',nombre:'Toxina Bruxismo (Maseteros)',desc:'Relaja el músculo masetero para aliviar bruxismo y dolor mandibular. Como efecto secundario produce afinamiento del tercio inferior del rostro.',dur:'20 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:200000,hasta:200000,evalCosto:30000},
+    {id:'botox-full',cat:'Facial',nombre:'Toxina Botulínica Full Face',desc:'Tratamiento integral para relajar arrugas en todo el rostro: frente, entrecejo, ojos, nariz, mentón y cuello.',dur:'30 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:329000,hasta:329000,evalCosto:30000},
+    {id:'hiperhidrosis',cat:'Facial',nombre:'Hiperhidrosis (Toxina Botulínica)',desc:'Tratamiento para sudoración excesiva en axilas, palmas o plantas. Bloquea temporalmente las glándulas sudoríparas.',dur:'30 min',ses:'1 sesión',prof:'Médico Estético',req:false,evalGratis:false,desde:330000,hasta:450000},
+    {id:'rinomodel',cat:'Facial',nombre:'Rinomodelación',desc:'Corrección de imperfecciones nasales (caballete, punta caída) con Ácido Hialurónico de alta densidad y alto G-Prime para soporte estructural.',dur:'45 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:240000,hasta:240000,evalCosto:30000},
+    {id:'relleno-lab',cat:'Facial',nombre:'Relleno de Labios',desc:'Definición, volumen e hidratación profunda con Ácido Hialurónico de reología dinámica, diseñado para acompañar el movimiento natural al hablar y sonreír.',dur:'30 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:180000,hasta:240000,evalCosto:30000},
+    {id:'sculptra-f',cat:'Facial',nombre:'Sculptra®',desc:'Bioestimulador de colágeno PLLA. Mejora firmeza y calidad de piel a largo plazo.',dur:'40 min',ses:'2–3 sesiones',prof:'Médico Estético',req:true,evalGratis:false,desde:480000,hasta:500000,evalCosto:30000},
+    {id:'radiesse-f',cat:'Facial',nombre:'Radiesse®',desc:'Hidroxiapatita de calcio. Efecto lifting inmediato y producción de colágeno.',dur:'30 min',ses:'1–2 sesiones',prof:'Médico Estético',req:true,evalGratis:false,desde:400000,hasta:400000,evalCosto:30000},
+    {id:'ellanse',cat:'Facial',nombre:'Ellansé™',desc:'Bioestimulador de doble acción (Relleno + Estimulación) con microesferas de policaprolactona. Restaura volumen inmediatamente y regenera colágeno para resultados de larga duración.',dur:'45 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:450000,hasta:450000,evalCosto:30000},
+    {id:'hydrafacial',cat:'Facial',nombre:'HydraFacial MD',desc:'Limpieza, exfoliación, extracción e hidratación simultánea con tecnología Vortex patentada. Resultados inmediatos sin tiempo de inactividad.',dur:'60 min',ses:'1 sesión',prof:'TENS / Cosmetólogo',req:false,evalGratis:false,desde:80000,hasta:80000},
+    {id:'limp-manual',cat:'Facial',nombre:'Limpieza Facial Manual',desc:'Limpieza de cutis tradicional y personalizada. Incluye vaporización, exfoliación, extracción de comedones e impurezas, y mascarilla hidroplástica calmante.',dur:'60 min',ses:'1 sesión',prof:'TENS / Cosmetólogo',req:false,evalGratis:false,desde:40000,hasta:40000},
+    {id:'hollywood',cat:'Facial',nombre:'Hollywood Peel',desc:'Láser carbón activado para poros, luminosidad y efecto porcelana inmediato.',dur:'45 min',ses:'1–4 sesiones',prof:'TENS / Tecnólogo',req:false,evalGratis:false,desde:80000,hasta:80000},
+    {id:'morpheus8-f',cat:'Facial',nombre:'Morpheus8 Facial',desc:'Radiofrecuencia fraccionada profunda para tensado de piel y remodelación grasa.',dur:'60 min',ses:'1–3 sesiones',prof:'Médico Estético',req:true,evalGratis:false,desde:300000,hasta:600000,evalCosto:30000},
+    {id:'peeling',cat:'Facial',nombre:'Peeling Químico',desc:'Renovación celular mediante ácidos específicos para mejorar textura y manchas.',dur:'45 min',ses:'3–6 sesiones',prof:'Médico / TENS',req:false,evalGratis:false,desde:165000,hasta:165000},
+    {id:'laser-q',cat:'Facial',nombre:'Láser Q-Switched',desc:'Tratamiento láser específico para manchas y despigmentación.',dur:'45 min',ses:'2–5 sesiones',prof:'Médico / TENS',req:true,evalGratis:false,desde:80000,hasta:80000},
+    {id:'lunares',cat:'Facial',nombre:'Resección de Lunares',desc:'Eliminación de nevus por salud o estética mediante Plexr o cirugía.',dur:'30–45 min',ses:'1 sesión',prof:'Médico',req:true,evalGratis:false,desde:120000,hasta:120000},
+    {id:'verrugas',cat:'Facial',nombre:'Eliminación de Verrugas',desc:'Remoción de verrugas o acrocordones con tecnología Plexr.',dur:'20–30 min',ses:'1 sesión',prof:'Médico',req:true,evalGratis:false,desde:120000,hasta:120000},
+    {id:'juvelook',cat:'Facial',nombre:'Juvelook',desc:'Bioestimulador híbrido diseñado para la redensificación de la delicada área de ojeras.',dur:'30 min',ses:'2–3 sesiones',prof:'Médico Estético',req:true,evalGratis:false,desde:0,hasta:0,soloEval:true},
+    {id:'nefertiti',cat:'Facial',nombre:'Toxina Botulínica: Diseño Facial / Nefertiti',desc:'Armonización facial y tratamiento avanzado de bandas platismales (cuello de Nefertiti).',dur:'30 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:0,hasta:0,soloEval:true},
+    {id:'relleno-ah',cat:'Facial',nombre:'Relleno con Ácido Hialurónico',desc:'Volumetría para labios, mentón, pómulos y rejuvenecimiento de manos.',dur:'45 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:0,hasta:0,soloEval:true},
+    {id:'meso-facial',cat:'Facial',nombre:'Vitaminas / Mesoterapia',desc:'Nutrición e hidratación profunda facial o corporal con cócteles de vitaminas y activos.',dur:'30 min',ses:'4–6 sesiones',prof:'Médico / TENS',req:false,evalGratis:false,desde:0,hasta:0,soloEval:true},
+    {id:'rosacea',cat:'Facial',nombre:'Tratamiento para Rosácea',desc:'Controla el enrojecimiento, venitas visibles y lesiones inflamatorias con protocolos médicos personalizados.',dur:'45 min',ses:'3–5 sesiones',prof:'Médico',req:true,evalGratis:false,desde:120000,hasta:120000},
+    {id:'melasma',cat:'Facial',nombre:'Tratamiento para Melasma',desc:'Aborda manchas hormonales y solares con protocolos que unifican el tono de la piel de forma segura.',dur:'45–60 min',ses:'3–6 sesiones',prof:'Médico',req:true,evalGratis:false,desde:150000,hasta:150000},
+    {id:'cicatrices-acne',cat:'Facial',nombre:'Tratamiento para Cicatrices de Acné',desc:'Mejora la textura de la piel, reduce hoyos y marcas con tecnología láser, bioestimulación y peelings médicos.',dur:'45–60 min',ses:'3–5 sesiones',prof:'Médico',req:true,evalGratis:false,desde:180000,hasta:180000},
+    // CORPORAL
+    {id:'clatuu',cat:'Corporal',nombre:'Criolipólisis Clatuu Alpha',desc:'Enfriamiento envolvente 360° que elimina grasa localizada resistente mediante apoptosis, sin cirugía ni recuperación.',dur:'60–90 min',ses:'1–2 sesiones',prof:'TENS / Tecnólogo',req:true,evalGratis:true,desde:180000,hasta:1800000},
+    {id:'embody',cat:'Corporal',nombre:'Embody (HIFEM)',desc:'20.000 contracciones en 30 min. Tonifica músculo y quema grasa simultáneamente.',dur:'30 min',ses:'4–8 sesiones',prof:'TENS / Kinesiólogo',req:false,evalGratis:false,desde:80000,hasta:500000},
+    {id:'exilis',cat:'Corporal',nombre:'Exilis Ultra 360',desc:'Radiofrecuencia monopolar que estimula colágeno y elastina, mejora calidad de piel y reduce flacidez y grasa localizada de forma no invasiva.',dur:'45 min',ses:'4–8 sesiones',prof:'TENS / Tecnólogo',req:false,evalGratis:false,desde:150000,hasta:480000},
+    {id:'scizer',cat:'Corporal',nombre:'Scizer HIFU',desc:'Ultrasonido macrofocalizado de alta intensidad para reducir grasa subcutánea sin dañar piel ni tejidos circundantes.',dur:'45 min',ses:'1–3 sesiones',prof:'TENS / Tecnólogo',req:true,evalGratis:true,desde:200000,hasta:200000},
+    {id:'gluteo-ah',cat:'Corporal',nombre:'Aumento Glúteo con Ácido Hialurónico',desc:'Proyección y modelado de glúteos sin cirugía. De 60 a 240 ml según evaluación médica.',dur:'90 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:600000,hasta:1900000},
+    {id:'sculptra-c',cat:'Corporal',nombre:'Sculptra Corporal',desc:'Bioestimulador de colágeno para restaurar volumen y mejorar calidad de piel en zonas corporales. Resultados progresivos hasta 2 años.',dur:'60 min',ses:'2–3 sesiones',prof:'Médico Estético',req:true,evalGratis:false,desde:500000,hasta:500000},
+    {id:'radiesse-m',cat:'Corporal',nombre:'Radiesse Manos',desc:'Rejuvenecimiento de manos con Radiesse. Restaura volumen perdido, disimula venas y tendones prominentes.',dur:'45 min',ses:'1 sesión',prof:'Médico Estético',req:true,evalGratis:false,desde:400000,hasta:400000},
+    {id:'manos-laser',cat:'Corporal',nombre:'Rejuvenecimiento de Manos (AH + Láser CO2)',desc:'Combina Ácido Hialurónico para volumen y Láser CO2 para mejorar textura y eliminar manchas de las manos.',dur:'60 min',ses:'1–2 sesiones',prof:'Médico Estético',req:true,evalGratis:false,desde:380000,hasta:560000},
+    {id:'depi-laser',cat:'Corporal',nombre:'Depilación Láser Soprano Titanium',desc:'Depilación definitiva indolora, segura y efectiva para todo tipo de piel. Precio por zona individual o packs.',dur:'15–60 min',ses:'6–8 sesiones',prof:'TENS / Tecnólogo',req:false,evalGratis:false,desde:14400,hasta:35000},
+    {id:'onicomicosis',cat:'Corporal',nombre:'Onicomicosis con Láser CO2',desc:'Eliminación efectiva y segura de hongos en las uñas. El láser CO2 penetra la placa ungueal destruyendo el patógeno por efecto térmico.',dur:'30 min',ses:'Variable',prof:'Médico / TENS',req:true,evalGratis:false,desde:70000,hasta:70000},
+    {id:'tatuajes',cat:'Corporal',nombre:'Borrado de Tatuajes',desc:'Eliminación de tinta mediante láser Q-Switched que fragmenta el pigmento para eliminación natural.',dur:'30 min',ses:'Variable',prof:'Médico / TENS',req:true,evalGratis:false,desde:60000,hasta:60000},
+    {id:'axilas',cat:'Corporal',nombre:'Blanqueamiento de Axilas',desc:'Aclara y unifica el tono de la piel en las axilas mediante Peeling Químico. Estimula renovación celular para una piel más clara.',dur:'30 min',ses:'3–5 sesiones',prof:'TENS / Cosmetólogo',req:false,evalGratis:false,desde:120000,hasta:120000},
+    {id:'xwave',cat:'Corporal',nombre:'XWave',desc:'Ondas acústicas para tratamiento de celulitis y modelado corporal.',dur:'30 min',ses:'6–10 sesiones',prof:'TENS / Tecnólogo',req:false,evalGratis:false,desde:50000,hasta:50000},
+    {id:'drenaje-aparat',cat:'Corporal',nombre:'Drenaje Linfático (Aparatología Avanzada)',desc:'Combina técnicas manuales con tecnología Exilis Ultra 360 y XWave para eliminar toxinas, reducir retención de líquidos y mejorar circulación.',dur:'45–60 min',ses:'4–8 sesiones',prof:'TENS / Kinesiólogo',req:false,evalGratis:false,desde:60000,hasta:60000},
+    {id:'enzimas-lip',cat:'Corporal',nombre:'Enzimas Lipolíticas',desc:'Microinyecciones de enzimas para reducción de grasa localizada.',dur:'45 min',ses:'3–6 sesiones',prof:'Médico',req:true,evalGratis:false,desde:200000,hasta:200000},
+    {id:'lipomas',cat:'Corporal',nombre:'Exéresis de Lipomas',desc:'Extracción quirúrgica de depósitos de grasa encapsulada.',dur:'60 min',ses:'1 sesión',prof:'Médico',req:true,evalGratis:false,desde:300000,hasta:300000},
+    {id:'lanluma',cat:'Corporal',nombre:'Lanluma',desc:'Bioestimulación de gran volumen ideal para remodelación de glúteos y corrección de depresiones.',dur:'60 min',ses:'1–3 sesiones',prof:'Médico Estético',req:true,evalGratis:false,desde:0,hasta:0,soloEval:true},
+    {id:'enzimas-rec',cat:'Corporal',nombre:'Enzimas Recombinantes',desc:'Disolución de grasa localizada y fibrosis post-quirúrgica mediante microinyecciones.',dur:'40 min',ses:'3–5 sesiones',prof:'Médico',req:true,evalGratis:false,desde:0,hasta:0,soloEval:true},
+    {id:'drenaje-man',cat:'Corporal',nombre:'Drenaje Linfático Manual y Postoperatorio',desc:'Técnica especializada que mejora la circulación linfática, reduce edemas y acelera la recuperación post-cirugía.',dur:'60 min',ses:'6–10 sesiones',prof:'Kinesiólogo / TENS',req:false,evalGratis:false,desde:35000,hasta:35000},
+    // CAPILAR
+    {id:'trico-consul',cat:'Capilar',nombre:'Consulta Tricológica',desc:'Evaluación con tricoscopia digital para diagnosticar causas de alopecia.',dur:'40 min',ses:'1 sesión',prof:'Médico Tricólogo',req:false,evalGratis:false,desde:40000,hasta:40000},
+    {id:'meso-dutast',cat:'Capilar',nombre:'Mesoterapia Dutasteride',desc:'Microinyecciones directas al folículo para frenar la caída androgenética.',dur:'30 min',ses:'6–8 sesiones',prof:'Médico',req:true,evalGratis:false,desde:110000,hasta:110000},
+    {id:'fue-zafiro',cat:'Capilar',nombre:'Injerto Capilar FUE Zafiro',desc:'Trasplante pelo a pelo. Técnica Zafiro para mayor densidad y naturalidad.',dur:'6–10 hrs',ses:'1 sesión',prof:'Médico Cirujano',req:true,evalGratis:false,desde:1900000,hasta:5460000},
+    {id:'regenera',cat:'Capilar',nombre:'Regenera Activa',desc:'Microinjertos autólogos de células progenitoras para densidad capilar.',dur:'90 min',ses:'1–2 sesiones',prof:'Médico',req:true,evalGratis:false,desde:1250000,hasta:1250000},
+    {id:'tricopat',cat:'Capilar',nombre:'Tricopat',desc:'Restauración capilar que combina microdermoabrasión, ondas de presión, iontoforesis y fotostimulación.',dur:'45 min',ses:'6–8 sesiones',prof:'TENS / Tecnólogo',req:false,evalGratis:false,desde:250000,hasta:250000},
+    {id:'prp-cap',cat:'Capilar',nombre:'Plasma Rico en Plaquetas (PRP)',desc:'Factores de crecimiento autólogos para estimular el folículo piloso.',dur:'45 min',ses:'4–6 sesiones',prof:'Médico',req:true,evalGratis:false,desde:120000,hasta:120000},
+    // GINECOESTÉTICA
+    {id:'laser-vaginal',cat:'Ginecoestética',nombre:'Láser CO2 Vaginal',desc:'Trata sequedad, laxitud e incontinencia leve. Rejuvenecimiento funcional.',dur:'60 min',ses:'3 sesiones',prof:'Matrona / Médico',req:true,evalGratis:false,desde:250000,hasta:350000},
+    {id:'blanq-intimo',cat:'Ginecoestética',nombre:'Blanqueamiento Íntimo',desc:'Aclara y unifica el tono de la piel genital y anal mediante peelings químicos específicos y tecnología láser.',dur:'30 min',ses:'3–5 sesiones',prof:'Matrona',req:true,evalGratis:false,desde:130000,hasta:150000},
+    // UROLOGÍA
+    {id:'engros-pen',cat:'Urología',nombre:'Engrosamiento Peneano',desc:'Aumento de circunferencia con ácido hialurónico. Ambulatorio y seguro.',dur:'60 min',ses:'1 sesión',prof:'Médico Urólogo',req:true,evalGratis:false,desde:500000,hasta:800000},
+    {id:'vasectomia',cat:'Urología',nombre:'Vasectomía sin Bisturí',desc:'Método definitivo de planificación familiar. Procedimiento rápido, seguro y con recuperación inmediata. Aceptamos BONO PAD FONASA.',dur:'20–30 min',ses:'1 sesión',prof:'Médico Urólogo',req:true,evalGratis:false,desde:490000,hasta:890000},
+    {id:'cistoscopia',cat:'Urología',nombre:'Cistoscopia Diagnóstica',desc:'Procedimiento endoscópico para visualizar la vejiga y uretra. Diagnostica infecciones recurrentes, sangrado o alteraciones de la micción.',dur:'15–30 min',ses:'1 sesión',prof:'Médico Urólogo',req:true,evalGratis:false,desde:250000,hasta:250000},
+    // VASCULAR
+    {id:'esclerot',cat:'Vascular',nombre:'Escleroterapia (Arañitas)',desc:'Microinyecciones de sustancia esclerosante que cierra las venas afectadas para várices y telangiectasias.',dur:'30 min',ses:'Variable',prof:'Flebólogo',req:true,evalGratis:false,desde:80000,hasta:500000},
+    {id:'laser-vasc-gen',cat:'Vascular',nombre:'Láser Vascular',desc:'Tratamiento láser para telangiectasias y lesiones vasculares.',dur:'45 min',ses:'2–4 sesiones',prof:'Médico / TENS',req:true,evalGratis:false,desde:150000,hasta:150000},
+    {id:'laser-varices',cat:'Vascular',nombre:'Láser Vascular para Várices',desc:'Cierra venas dilatadas sin cirugía, sin cicatrices y con recuperación inmediata.',dur:'45–60 min',ses:'Variable',prof:'Flebólogo',req:true,evalGratis:false,desde:150000,hasta:150000},
+    // NUTRICIÓN
+    {id:'nutri-inbody',cat:'Nutrición',nombre:'Consulta Nutricional + InBody 970',desc:'Evaluación completa con escáner de composición corporal InBody. Primera sesión establece diagnóstico y plan; siguientes monitorean progreso.',dur:'45 min',ses:'1 sesión + seguimiento',prof:'Nutricionista',req:false,evalGratis:false,desde:40000,hasta:50000},
+    {id:'calorimetria',cat:'Nutrición',nombre:'Examen de Calorimetría',desc:'Medición precisa del metabolismo basal. Clave para pautas nutricionales personalizadas.',dur:'30 min',ses:'1 sesión',prof:'Nutricionista',req:false,evalGratis:false,desde:50000,hasta:50000},
+    {id:'inbody',cat:'Nutrición',nombre:'Examen InBody 970',desc:'Análisis de masa muscular, porcentaje de grasa, agua corporal y grasa visceral mediante bioimpedancia de grado médico.',dur:'15 min',ses:'1 sesión',prof:'Nutricionista / TENS',req:false,evalGratis:false,desde:15000,hasta:15000},
+    {id:'sobrepeso',cat:'Nutrición',nombre:'Manejo de Sobrepeso',desc:'Tratamiento médico metabólico integral con uso de fármacos inyectables.',dur:'30 min',ses:'Variable',prof:'Médico / Nutricionista',req:true,evalGratis:false,desde:0,hasta:0,soloEval:true},
+  ];
+
+  PROFS = [
+    {id:'med',nombre:'Médico Estético',especialidad:'Medicina Estética',disponibilidad:'Lunes a Viernes',horario:'09:00 – 18:00'},
+    {id:'nut',nombre:'Nutricionista',especialidad:'Nutrición Clínica',disponibilidad:'Lun, Mié y Vie',horario:'09:00 – 17:00'},
+    {id:'tri',nombre:'Médico Tricólogo',especialidad:'Tricología',disponibilidad:'Martes y Jueves',horario:'10:00 – 16:00'},
+    {id:'mat',nombre:'Matrona Estética',especialidad:'Ginecoestética',disponibilidad:'Lunes a Viernes',horario:'09:00 – 17:00'},
+    {id:'kin',nombre:'Kinesiólogo Estético',especialidad:'Kinesiología Estética',disponibilidad:'Lunes a Sábado',horario:'08:00 – 20:00'},
+    {id:'cir',nombre:'Cirujano Maxilofacial',especialidad:'Cirugía Maxilofacial',disponibilidad:'Mié y Vie',horario:'09:00 – 14:00'},
+    {id:'fle',nombre:'Flebólogo',especialidad:'Flebología Vascular',disponibilidad:'Martes y Jueves',horario:'09:00 – 15:00'},
+  ];
+
+  CONSULTAS = [
+    {id:1,nombre:'Consulta Médica Estética',valor:45000,dur:'30 min',prof:'Médico Estético',desc:'Evaluación integral y diseño de plan de tratamiento personalizado.',gratis:false},
+    {id:2,nombre:'Consulta Nutricional',valor:50000,dur:'45 min',prof:'Nutricionista',desc:'Evaluación nutricional con composición corporal InBody y plan alimentario.',gratis:false},
+    {id:3,nombre:'Consulta Tricológica',valor:55000,dur:'45 min',prof:'Médico Tricólogo',desc:'Diagnóstico integral del cuero cabelludo y cabello con propuesta de tratamiento.',gratis:false},
+    {id:4,nombre:'Consulta Ginecoestética',valor:55000,dur:'30 min',prof:'Matrona',desc:'Evaluación de tratamientos íntimos y bienestar femenino integral.',gratis:false},
+    {id:5,nombre:'Consulta Urológica',valor:60000,dur:'30 min',prof:'Urólogo',desc:'Consulta especializada en urología funcional y estética masculina.',gratis:false},
+    {id:6,nombre:'Evaluación Corporal',valor:0,dur:'45 min',prof:'Kinesiólogo / TENS',desc:'Evaluación gratuita con InBody para diseño de plan de tratamiento corporal personalizado.',gratis:true},
+    {id:7,nombre:'Consulta Maxilofacial',valor:70000,dur:'30 min',prof:'Cirujano Maxilofacial',desc:'Evaluación de procedimientos quirúrgicos de cara y mandíbula.',gratis:false},
+    {id:8,nombre:'Consulta de Flebología',valor:55000,dur:'30 min',prof:'Flebólogo',desc:'Diagnóstico y tratamiento de varices, arañas vasculares y patología venosa.',gratis:false},
+    {id:9,nombre:'Consulta Cirugía Bariátrica',valor:65000,dur:'45 min',prof:'Cirujano Bariátrico',desc:'Evaluación para procedimientos de cirugía bariátrica y metabólica.',gratis:false},
+    {id:10,nombre:'Consulta de Matronería',valor:45000,dur:'30 min',prof:'Matrona',desc:'Atención integral de salud femenina, bienestar y salud sexual.',gratis:false},
+    {id:11,nombre:'Evaluación con Calorimetría',valor:80000,dur:'60 min',prof:'Nutricionista',desc:'Evaluación avanzada con calorimetría indirecta y análisis de composición corporal.',gratis:false},
+  ];
+
+  BOXES = [
+    {id:'b1',nombre:'Box 1',tipo:'Facial',usos:['Tratamientos faciales','Consultas estéticas'],tecnologias:['Exilis Ultra 360']},
+    {id:'b2',nombre:'Box 2',tipo:'Inyectología',usos:['Toxina botulínica','Rellenos faciales','Bioestimuladores'],tecnologias:[]},
+    {id:'b3',nombre:'Box 3',tipo:'Corporal',usos:['Criolipólisis','HIFU corporal','Radiofrecuencia'],tecnologias:['Clatuu Alpha','Scizer']},
+    {id:'b4',nombre:'Box 4',tipo:'Láser y Depilación',usos:['Depilación láser','Electroestimulación'],tecnologias:['Soprano Titanium','Embody']},
+    {id:'b5',nombre:'Box 5',tipo:'Láser / Vascular',usos:['Láser vascular','Tratamientos dérmicos'],tecnologias:['Láser vascular']},
+    {id:'b6',nombre:'Box 6',tipo:'Tricología',usos:['Evaluaciones capilares','PRP capilar','Mesoterapia capilar'],tecnologias:[]},
+    {id:'b7',nombre:'Box 7',tipo:'Nutrición',usos:['Consultas nutricionales','Composición corporal InBody'],tecnologias:['InBody','Calorimetría indirecta']},
+    {id:'b8',nombre:'Box 8',tipo:'Ginecoestética',usos:['Tratamientos íntimos','Consultas de matronería'],tecnologias:['Láser íntimo']},
+    {id:'b9',nombre:'Box 9',tipo:'Multiusos',usos:['Tratamientos varios','Evaluaciones','Contingencia'],tecnologias:[]},
+    {id:'pab',nombre:'Pabellón',tipo:'Quirúrgico',usos:['Procedimientos quirúrgicos','Peelings profundos'],tecnologias:[]},
+  ];
+
+  PRODS = [
+    {id:'av1',marca:'Avene',nombre:'Agua Termal 150 ml',desc:'Calmante e hidratante',precio:8990},
+    {id:'av2',marca:'Avene',nombre:'Crema Hydrance Optimale',desc:'Hidratación intensa piel seca',precio:18990},
+    {id:'av3',marca:'Avene',nombre:'Fluido Hydrance UV SPF20',desc:'Hidratación con protección solar',precio:19990},
+    {id:'av4',marca:'Avene',nombre:'Gel-Crema Cleanance',desc:'Cuidado piel acneica',precio:15990},
+    {id:'av5',marca:'Avene',nombre:'Sérum XeraCalm A.D',desc:'Piel con tendencia atópica',precio:24990},
+    {id:'eu1',marca:'Eucerin',nombre:'Sun Fluid SPF50+',desc:'Protección solar textura fluida',precio:16990},
+    {id:'eu2',marca:'Eucerin',nombre:'Sérum Hyaluron-Filler',desc:'Rellena arrugas visibles',precio:32990},
+    {id:'eu3',marca:'Eucerin',nombre:'Crema Urea Repair 10%',desc:'Para pieles muy secas',precio:14990},
+    {id:'is1',marca:'ISDIN',nombre:'Eryfotona AK-NMSC SPF100',desc:'Máxima protección y reparación',precio:28990},
+    {id:'is2',marca:'ISDIN',nombre:'Fusion Fluid SPF50+',desc:'Textura ultraligera alta protección',precio:22990},
+    {id:'is3',marca:'ISDIN',nombre:'Hyaluronic Booster',desc:'Sérum de ácido hialurónico',precio:35990},
+    {id:'ob1',marca:'Obagi',nombre:'Vitamin C Serum 10%',desc:'Luminosidad con vitamina C',precio:42990},
+    {id:'ob2',marca:'Obagi',nombre:'Hydrate Luxe Moisturizer',desc:'Hidratación profunda duradera',precio:38990},
+    {id:'gl1',marca:'Glisodin',nombre:'Glisodin Skin Nutrients',desc:'Antioxidante para protección solar interna',precio:45990},
+  ];
+
+  CONSEN = [
+    {id:'ex',nombre:'Exilis Ultra 360',desc:'Consentimiento para radiofrecuencia y ultrasonido combinado.',riesgos:['Enrojecimiento y calor temporal en la zona','Raramente: ampollas superficiales','Sensibilidad transitoria post-tratamiento']},
+    {id:'so',nombre:'Soprano Titanium',desc:'Consentimiento informado para depilación láser.',riesgos:['Enrojecimiento y foliculitis transitoria','Cambios pigmentarios reversibles','Raramente: cicatrices o quemaduras']},
+    {id:'sc',nombre:'Scizer (HIFU Corporal)',desc:'Consentimiento para tratamiento HIFU de reducción corporal.',riesgos:['Dolor o molestia durante el procedimiento','Hematomas y edema temporal','Entumecimiento transitorio en la zona']},
+    {id:'cl',nombre:'Clatuu Alpha (Criolipólisis)',desc:'Consentimiento para criolipólisis con equipo Clatuu Alpha.',riesgos:['Dolor e hipersensibilidad post-tratamiento','Hematomas y eritema temporal','Raramente: hiperplasia adiposa paradójica']},
+    {id:'em',nombre:'Embody (Electroestimulación)',desc:'Consentimiento para electroestimulación muscular con equipo Embody.',riesgos:['Contracción muscular y sensación de vibración','Fatiga muscular transitoria','Raramente: irritación cutánea en zona de electrodos']},
+    {id:'ac',nombre:'Aclarado Íntimo y/o Axilar',desc:'Consentimiento para aclarado en zona íntima y/o axilar.',riesgos:['Irritación y sensibilidad temporal','Cambios de pigmentación transitorios','Raramente: hiperpigmentación post-inflamatoria']},
+  ];
+
+  POLPAGO = [
+    {id:1,titulo:'Formas de pago aceptadas',contenido:'Transferencia bancaria, tarjeta de débito, tarjeta de crédito (Visa, Mastercard, American Express) y efectivo. No aceptamos cheques. Para montos superiores a $500.000, se recomienda coordinar el pago con anticipación.'},
+    {id:2,titulo:'Pago anticipado y paquetes',contenido:'Los paquetes de sesiones requieren pago del 100% o del 50% al momento de la compra. El saldo restante debe cancelarse antes de la segunda sesión. Los paquetes no son reembolsables una vez iniciados.'},
+    {id:3,titulo:'Política de descuentos',contenido:'Los descuentos no son acumulables con otras promociones. Descuentos especiales deben ser autorizados por coordinación o administración. Nunca comprometer descuentos sin esta autorización previa.'},
+    {id:4,titulo:'Confirmación de citas',contenido:'La cita queda confirmada al recibir el mensaje de confirmación. Sin confirmación, el horario puede liberarse 24 horas antes. Procedimientos de más de 60 min requieren confirmación con 48 horas de anticipación.'},
+    {id:5,titulo:'Cancelación y no-show',contenido:'Cancelaciones con menos de 4 horas: puede cobrarse el valor de la sesión. Más de 3 ausencias sin aviso en 6 meses: se requiere prepago para futuras citas. El profesional puede optar por no atender a pacientes con historial de no-show.'},
+    {id:6,titulo:'Pago de consultas médicas',contenido:'El valor de la consulta se paga al momento de la atención, antes de ingresar al box. Se emite boleta o factura según preferencia. Las evaluaciones gratuitas están condicionadas al tratamiento de interés y disponibilidad del profesional.'},
+  ];
+
+  SUSPENS = [
+    {id:1,titulo:'Criterios de suspensión',contenido:'Se suspende una cita cuando el paciente presenta: exposición solar reciente (< 7 días para láser), quemaduras activas, enfermedades febriles, herpes activo en zona de tratamiento, embarazo no comunicado, o falta de firma del consentimiento.',hasMensaje:false,mensaje:''},
+    {id:2,titulo:'Protocolo de gestión',contenido:'1) Informar al paciente con claridad y empatía. 2) Registrar en el sistema con motivo, fecha y nombre. 3) Notificar al profesional. 4) Ofrecer reagendamiento inmediato. 5) Si es incumplimiento reiterado, informar a coordinación.',hasMensaje:false,mensaje:''},
+    {id:3,titulo:'Suspensión por parte de la clínica',contenido:'Cuando la clínica debe suspender por inconvenientes internos, contactar al paciente con la mayor anticipación posible, ofrecer disculpas, reagendar con prioridad y considerar un gesto de compensación.',hasMensaje:true,mensaje:'Hola [nombre], lamentamos informarte que debemos reagendar tu cita del [fecha] a las [hora] por [motivo]. Sentimos los inconvenientes y nos comprometemos a priorizar tu atención. ¿Puedes confirmar tu disponibilidad para [nueva fecha]? Gracias por tu comprensión.'},
+    {id:4,titulo:'Suspensión de paquetes prepagados',contenido:'Si el paciente suspende 3 o más veces en el mismo paquete, informar a coordinación. El paquete puede congelarse por acuerdo escrito. No se realizan reembolsos por sesiones no utilizadas salvo causa de fuerza mayor documentada.',hasMensaje:true,mensaje:'Hola [nombre], hemos notado que has tenido que reagendar varias sesiones de tu paquete. Queremos asegurarnos de que puedas completar tu tratamiento. ¿Podrías contarnos cómo prefieres organizar las sesiones restantes? Estamos aquí para ayudarte.'},
+  ];
+
+  FAQS = [
+    {id:1,cat:'General',pregunta:'¿Se necesita evaluación previa para todos los tratamientos?',respuesta:'La mayoría de los tratamientos médicos y de alta tecnología requieren evaluación previa. Algunos tratamientos de bienestar y cosméticos pueden realizarse sin evaluación. Consulta con recepción para cada caso específico.'},
+    {id:2,cat:'General',pregunta:'¿Qué métodos de pago aceptan?',respuesta:'Aceptamos transferencia bancaria, tarjeta de débito y crédito, y efectivo. Para paquetes, ofrecemos facilidades de pago según el monto.'},
+    {id:3,cat:'General',pregunta:'¿Qué pasa si necesito cancelar mi cita?',respuesta:'Pedimos que las cancelaciones se realicen con al menos 4 horas de anticipación. Cancelaciones tardías recurrentes pueden requerir prepago para futuras citas.'},
+    {id:4,cat:'General',pregunta:'¿Tienen opciones de financiamiento?',respuesta:'Sí, ofrecemos paquetes de tratamientos con precio preferencial y posibilidad de facilidades de pago. Consulta a recepción por las opciones disponibles.'},
+    {id:5,cat:'General',pregunta:'¿Cómo puedo solicitar un presupuesto?',respuesta:'Puedes solicitar tu presupuesto directamente en recepción, por WhatsApp o a través del módulo de presupuestos del sistema interno.'},
+    {id:6,cat:'Facial',pregunta:'¿Cuánto dura el efecto del botox?',respuesta:'El efecto de la toxina botulínica dura entre 4 y 6 meses dependiendo del área tratada y la respuesta individual de cada paciente.'},
+    {id:7,cat:'Facial',pregunta:'¿El ácido hialurónico se ve natural?',respuesta:'Cuando se aplica correctamente, los resultados son naturales y armónicos. En la evaluación inicial diseñaremos juntos el resultado que buscas.'},
+    {id:8,cat:'Facial',pregunta:'¿El HydraFacial es apto para todo tipo de piel?',respuesta:'Sí, el HydraFacial está indicado para prácticamente todos los tipos de piel. Especialmente beneficioso para pieles opacas, congestionadas o con poros dilatados.'},
+    {id:9,cat:'Corporal',pregunta:'¿La criolipólisis es para bajar de peso?',respuesta:'No. La criolipólisis es para reducción de grasa localizada específica, no para bajar de peso en general. Es más efectiva en pacientes con peso estable.'},
+    {id:10,cat:'Corporal',pregunta:'¿Cuántas sesiones necesito de depilación láser?',respuesta:'Se recomiendan entre 6 y 8 sesiones para resultados óptimos, separadas por 4 a 8 semanas según la zona del cuerpo.'},
+    {id:11,cat:'Corporal',pregunta:'¿Cuándo veo resultados con HIFU (Scizer)?',respuesta:'Los resultados se aprecian entre 4 y 8 semanas post-tratamiento, con mejora progresiva durante los siguientes 3 a 6 meses.'},
+    {id:12,cat:'Corporal',pregunta:'¿Qué es el InBody y para qué sirve?',respuesta:'El InBody mide con precisión el porcentaje de grasa, masa muscular y agua corporal. Se usa en evaluaciones para diseñar planes de tratamiento personalizados.'},
+    {id:13,cat:'Cirugía',pregunta:'¿Qué procedimientos realiza el cirujano maxilofacial?',respuesta:'Mentoplastia, otoplastia, corrección de orejas prominentes y cirugías de estructura ósea y tejidos blandos de la cara.'},
+    {id:14,cat:'General',pregunta:'¿Qué es una Gift Card y cómo funciona?',respuesta:'Las Gift Cards son vouchers de regalo canjeables por tratamientos o por monto. Tienen vigencia de 6 meses y no son canjeables por dinero en efectivo.'},
+  ];
+
+  go(view) { this.setState({ view, expandedId: null, modal: null }); }
+
+  toast(msg) {
+    this.setState({ showToast: true, toastMsg: msg });
+    setTimeout(() => this.setState({ showToast: false }), 2000);
+  }
+
+  copy(text) {
+    navigator.clipboard.writeText(text).catch(() => {});
+    this.toast('¡Copiado al portapapeles!');
+  }
+
+  clp(n) { return n.toLocaleString('es-CL'); }
+
+  chip(lbl, active) {
+    const P='#7C6247', BD='#E5E0D8', MUT='#7A7066';
+    return { label:lbl, bg:active?P:'#fff', color:active?'#fff':MUT, border:active?P:BD };
+  }
+
+  componentDidMount() {
+    const check = () => {
+      const m = window.innerWidth < 768;
+      if (m !== this.state.isMobile) this.setState({ isMobile:m });
+    };
+    check();
+    window.addEventListener('resize', check);
+    try {
+      const stored = localStorage.getItem('cialo_tareas');
+      this.setState({ tareas: stored ? JSON.parse(stored) : this._defaultTareas() });
+    } catch(e) { this.setState({ tareas: this._defaultTareas() }); }
+    this._renderNav();
+  }
+
+  componentDidUpdate() { this._renderNav(); }
+
+  _renderNav() {
+    const el = document.getElementById('cialo-nav-items');
+    if (!el) return;
+    const { view, sidebarCollapsed } = this.state;
+    const P='#7C6247', PL='#F5F0E8';
+    let html = '';
+    this.NAV.forEach((sec, si) => {
+      if (!sidebarCollapsed) html += `<div style="font-size:9.5px;font-weight:700;color:#C0B5AA;letter-spacing:1px;text-transform:uppercase;padding:0 8px;margin-bottom:3px;margin-top:${si>0?'14px':'6px'};">${sec.section}</div>`;
+      sec.items.forEach(it => {
+        const active = view === it.id;
+        html += `<button data-navid="${it.id}" style="display:flex;width:100%;align-items:center;gap:9px;padding:8px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:${active?'500':'400'};text-align:left;margin-bottom:2px;outline:none;overflow:hidden;white-space:nowrap;background:${active?PL:'transparent'};color:${active?P:'#4A4540'};">
+          <span style="flex-shrink:0;width:17px;height:17px;display:flex;align-items:center;justify-content:center;">${this.svg(it.icon,active?P:'#4A4540',16)}</span>
+          ${!sidebarCollapsed?`<span style="overflow:hidden;text-overflow:ellipsis;">${it.label}</span>`:''}
+        </button>`;
+      });
+    });
+    el.innerHTML = html;
+    el.querySelectorAll('[data-navid]').forEach(btn => {
+      btn.onclick = () => this.go(btn.getAttribute('data-navid'));
+    });
+  }
+
+
+
+  renderVals() {
+    const s = this.state;
+    const P='#7C6247', PL='#F5F0E8';
+    const collapsed = s.sidebarCollapsed;
+    const mobile = s.isMobile;
+
+    const sidebarWidth = collapsed ? '64px' : '252px';
+    const sidebarTransform = 'translateX(0)';
+    const mainMargin = collapsed ? '64px' : '252px';
+    const showLabels = !collapsed;
+
+    const logoSvg = this.svg('logo','white',18);
+    const chevronSvg = this.svg('chev','#B0A89E',14);
+    const collapseIcon = this.svg(collapsed?'colR':'colL','#B0A89E',14);
+    const menuSvg = this.svg('menu','#7A7066',17);
+    const closeSvg = this.svg('close','#9A8F84',15);
+    const boxIcon = this.svg('box',P,17);
+    const docIcon = this.svg('doc',P,16);
+    const reembolsoIcon = this.svg('reemb',P,18);
+
+    const nav = [];
+    this.NAV.forEach((sec, si) => {
+      nav.push({ id:'', secLabel:sec.section, secDisplay:showLabels?'block':'none', btnDisplay:'none', lblDisplay:'none', mt:si>0?'14px':'6px', label:'', icon:'', bg:'transparent', color:'transparent', weight:'400', onClick:()=>{} });
+      sec.items.forEach(it => {
+        const active = s.view === it.id;
+        nav.push({ id:it.id, secLabel:'', secDisplay:'none', btnDisplay:'flex', lblDisplay:showLabels?'inline':'none', mt:'0', label:it.label, icon:this.svg(it.icon,active?P:'#4A4540',16), bg:active?PL:'transparent', color:active?P:'#4A4540', weight:active?'500':'400', onClick:()=>this.go(it.id) });
+      });
+    });
+
+    const VIEW_LABELS = { dashboard:'Dashboard', tareas:'Tareas', protocolos:'Protocolos Base', guiones:'Guiones Técnicos', pagos:'Pagos & Citas', suspensiones:'Políticas de Suspensión', tratamientos:'Tratamientos', profesionales:'Profesionales', consultas:'Consultas & Evaluaciones', boxes:'Boxes & Pabellón', productos:'Productos', presupuestos:'Presupuestos', giftcards:'Gift Cards', consentimientos:'Consentimientos Informados', faq:'Preguntas Frecuentes', reembolso:'Solicitud de Reembolso' };
+    const viewLabel = VIEW_LABELS[s.view] || 'Vista';
+    const v = (id) => s.view === id;
+
+    const dashStats = [
+      {n:String(this.TRATAS.length),label:'Tratamientos',go:()=>this.go('tratamientos')},
+      {n:'17',label:'Profesionales',go:()=>this.go('profesionales')},
+      {n:'71',label:'Guiones Técnicos',go:()=>this.go('guiones')},
+      {n:'17',label:'Protocolos Base',go:()=>this.go('protocolos')},
+      {n:'45',label:'Productos',go:()=>this.go('productos')},
+      {n:'6',label:'Consentimientos',go:()=>this.go('consentimientos')},
+    ];
+    const dashQuick = [
+      {label:'Guiones de Atención',sub:'71 guiones por categoría',iconBg:'#F5F0E8',iconEl:this.svg('msg',P,18),go:()=>this.go('guiones')},
+      {label:'Catálogo Tratamientos',sub:'127 prestaciones',iconBg:'#EDF5EF',iconEl:this.svg('act','#4A7A5A',18),go:()=>this.go('tratamientos')},
+      {label:'Directorio Profesionales',sub:'17 fichas completas',iconBg:'#EEF2F7',iconEl:this.svg('users','#4A6A8C',18),go:()=>this.go('profesionales')},
+      {label:'Generar Presupuesto',sub:'Con descuentos y paciente',iconBg:'#F9F4EE',iconEl:this.svg('file','#8C6A4A',18),go:()=>this.go('presupuestos')},
+      {label:'Consentimientos',sub:'6 formularios imprimibles',iconBg:'#F4EEF9',iconEl:this.svg('pen','#6A4A8C',18),go:()=>this.go('consentimientos')},
+      {label:'Gift Cards',sub:'Generador gráfico',iconBg:'#EFF9F4',iconEl:this.svg('gift','#4A8C6A',18),go:()=>this.go('giftcards')},
+    ];
+
+    const protocolosBase = this.PROTOS.map(pb => ({
+      ...pb,
+      num: String(pb.id).padStart(2,'0'),
+      open: s.expandedId===`pb${pb.id}`,
+      rot: s.expandedId===`pb${pb.id}`?'rotate(180deg)':'rotate(0deg)',
+      toggle: ()=>this.setState(st=>({expandedId:st.expandedId===`pb${pb.id}`?null:`pb${pb.id}`})),
+      onCopy: (e)=>{e.stopPropagation();this.copy(`${pb.titulo}\n\n${pb.contenido}`);},
+    }));
+
+    const guionCatNames = ['Todos','Gestión','Estética','Corporal','Nutrición','Médica','Indicaciones'];
+    const guionCats = guionCatNames.map(cat=>({...this.chip(cat,s.guionFiltro===cat),onClick:()=>this.setState({guionFiltro:cat})}));
+    const guiones = (s.guionFiltro==='Todos'?this.GUIONES:this.GUIONES.filter(g=>g.cat===s.guionFiltro)).map(g=>({...g,copy:()=>this.copy(`${g.titulo}\n\n${g.texto}`)}));
+
+    const politicasPago = this.POLPAGO.map(p=>({...p,copy:()=>this.copy(`${p.titulo}\n\n${p.contenido}`)}));
+    const suspensiones = this.SUSPENS.map(sus=>({...sus,copy:sus.hasMensaje?()=>this.copy(sus.mensaje):null}));
+
+    const tratCatNames = ['Todos','Facial','Corporal','Capilar','Ginecoestética','Urología','Vascular','Nutrición'];
+    const tratCats = tratCatNames.map(cat=>({...this.chip(cat,s.tratFiltro===cat),onClick:()=>this.setState({tratFiltro:cat})}));
+    const tratamientos = (s.tratFiltro==='Todos'?this.TRATAS:this.TRATAS.filter(t=>t.cat===s.tratFiltro)).map(t=>{
+      const precioStr = t.soloEval ? 'Evaluación' : t.desde===t.hasta ? `$${this.clp(t.desde)}` : `$${this.clp(t.desde)} – $${this.clp(t.hasta)}`;
+      return {...t,precioStr,durSes:`${t.dur} · ${t.ses}`,onClick:()=>this.setState({modal:{...t,precioStr}})};
+    });
+
+    const avColors = ['#7C6247','#5A7A6A','#6A5A8C','#7A6A5A','#4A6A8C','#8C5A5A','#5A8C5A'];
+    const profesionales = this.PROFS.map((p,i)=>({...p,initials:p.nombre.split(' ').slice(0,2).map(n=>n[0]).join(''),avatarBg:avColors[i%avColors.length],onClick:()=>this.setState({modal:{...p,cat:p.especialidad,desc:`Disponibilidad: ${p.disponibilidad}\nHorario: ${p.horario}`,precioStr:'',dur:p.horario,ses:p.disponibilidad,req:false,evalGratis:false}})}));
+
+    const consultas = this.CONSULTAS.map(c=>({...c,valorStr:c.gratis?'Gratuita':`$${this.clp(c.valor)}`}));
+    const boxes = this.BOXES.map(bx=>({...bx,noTec:bx.tecnologias.length===0}));
+
+    const marcaNames = ['Todos','Avene','Eucerin','ISDIN','Obagi','Glisodin'];
+    const marcas = marcaNames.map(m=>({...this.chip(m,s.prodBrand===m),onClick:()=>this.setState({prodBrand:m})}));
+    const productos = (s.prodBrand==='Todos'?this.PRODS:this.PRODS.filter(p=>p.marca===s.prodBrand)).map(p=>({...p,precioStr:this.clp(p.precio)}));
+
+    const consentimientos = this.CONSEN;
+
+    const faqCatNames = ['Todos','General','Facial','Corporal','Cirugía'];
+    const faqCats = faqCatNames.map(cat=>({...this.chip(cat,s.faqCat===cat),onClick:()=>this.setState({faqCat:cat})}));
+    const faqs = (s.faqCat==='Todos'?this.FAQS:this.FAQS.filter(f=>f.cat===s.faqCat)).map(f=>({...f,open:s.expandedId===`fq${f.id}`,rot:s.expandedId===`fq${f.id}`?'rotate(180deg)':'rotate(0deg)',toggle:()=>this.setState(st=>({expandedId:st.expandedId===`fq${f.id}`?null:`fq${f.id}`}))}));
+
+    const presItems = s.presItems.map((it,i)=>({...it,unitStr:this.clp(it.precio),totalStr:this.clp(it.precio*it.cantidad),rm:()=>this.setState(st=>({presItems:st.presItems.filter((_,idx)=>idx!==i)}))}));
+    const presTotal = s.presItems.reduce((acc,it)=>acc+it.precio*it.cantidad,0);
+    const presDescAmt = presTotal*(s.presDesc/100);
+    const presFinal = presTotal-presDescAmt;
+    const presTrats = (s.presSearch?this.TRATAS.filter(t=>t.nombre.toLowerCase().includes(s.presSearch.toLowerCase())):this.TRATAS.slice(0,8)).map(t=>({...t,precioStr:t.soloEval?'Evaluación':`$${this.clp(t.desde)}`,add:()=>!t.soloEval&&this.setState(st=>({presItems:[...st.presItems,{nombre:t.nombre,cat:t.cat,precio:t.desde,cantidad:1}]}))}));
+
+    // ── Tareas ──
+    const tareasAbiertas = s.tareas.filter(t=>t.etapa!=='Cerrado');
+    const tareasFiltered = s.tareasRecep==='Todas' ? s.tareas : s.tareas.filter(t=>t.asignada===s.tareasRecep);
+    const buildCard = (t) => ({
+      ...t,
+      hasPaciente: !!t.paciente,
+      canMover: t.etapa!=='Cerrado',
+      initials: t.asignada.charAt(0),
+      avatarBg: this.RECEP_COLORS[t.asignada]||P,
+      priorityBg: t.prioridad==='urgente'?'#FBF0EB':t.prioridad==='baja'?'#EDF5EF':'#F5F5F5',
+      priorityColor: t.prioridad==='urgente'?'#C97B4B':t.prioridad==='baja'?'#4A7A5A':'#7A7066',
+      mover: ()=>this.moverTarea(t.id),
+      rm: ()=>this.eliminarTarea(t.id),
+    });
+    const kanbanCols = this.ETAPAS.map(etapa=>({
+      etapa, count: tareasFiltered.filter(t=>t.etapa===etapa).length,
+      cards: tareasFiltered.filter(t=>t.etapa===etapa).map(buildCard),
+    }));
+    const recepTabs = ['Todas',...this.RECEPS].map(r=>({...this.chip(r,s.tareasRecep===r),onClick:()=>this.setState({tareasRecep:r})}));
+    const dashTareaStats = this.ETAPAS.filter(e=>e!=='Cerrado').map(e=>({etapa:e,count:tareasAbiertas.filter(t=>t.etapa===e).length}));
+    const dashRecepStats = this.RECEPS.map(r=>({
+      nombre:r, initials:r.charAt(0), avatarBg:this.RECEP_COLORS[r]||P,
+      count: tareasAbiertas.filter(t=>t.asignada===r).length,
+      urgente: tareasAbiertas.filter(t=>t.asignada===r&&t.prioridad==='urgente').length,
+      hasUrgentes: tareasAbiertas.filter(t=>t.asignada===r&&t.prioridad==='urgente').length>0,
+      countPlural: tareasAbiertas.filter(t=>t.asignada===r).length===1?'':'s',
+      urgentePlural: tareasAbiertas.filter(t=>t.asignada===r&&t.prioridad==='urgente').length===1?'':'s',
+    }));
+
+    const modal = s.modal;
+    const hasModal = !!modal;
+    const modalReqText = hasModal&&modal.evalGratis?'Requiere evaluación previa — evaluación gratuita disponible.':'Requiere evaluación previa.';
+
+    const gcParaDisplay = s.gcPara||'Destinatario';
+    const gcDeDisplay = s.gcDe||'Remitente';
+    const gcRawMonto = parseFloat((s.gcMonto||'').replace(/\./g,''))||50000;
+    const gcMontoDisplay = '$'+this.clp(gcRawMonto);
+    const gcMsgDisplay = s.gcMsg||'Disfruta este regalo especial';
+
+    return {
+      view: s.view, nav, sidebarWidth, sidebarTransform, mainMargin, showLabels,
+      mobileMenuOpen: s.mobileMenuOpen,
+      toggleSidebar: ()=>this.setState(st=>({sidebarCollapsed:!st.sidebarCollapsed})),
+      toggleMobile: ()=>this.setState(st=>({mobileMenuOpen:!st.mobileMenuOpen})),
+      viewLabel,
+      logoSvg, chevronSvg, collapseIcon, menuSvg, closeSvg, boxIcon, docIcon, reembolsoIcon,
+
+      v_dashboard:v('dashboard'), v_tareas:v('tareas'), v_protocolos:v('protocolos'), v_guiones:v('guiones'),
+      v_pagos:v('pagos'), v_suspensiones:v('suspensiones'), v_tratamientos:v('tratamientos'),
+      v_profesionales:v('profesionales'), v_consultas:v('consultas'), v_boxes:v('boxes'),
+      v_productos:v('productos'), v_presupuestos:v('presupuestos'), v_giftcards:v('giftcards'),
+      v_consentimientos:v('consentimientos'), v_faq:v('faq'), v_reembolso:v('reembolso'),
+
+      dashStats, dashQuick,
+      protocolosBase, guionCats, guiones,
+      politicasPago, suspensiones,
+      tratCats, tratamientos,
+      profesionales, consultas,
+      boxes, marcas, productos,
+      consentimientos, faqCats, faqs,
+
+      presNombre:s.presNombre, presRut:s.presRut, presTel:s.presTel, presEmail:s.presEmail,
+      presItems, presVacio:s.presItems.length===0, presSearch:s.presSearch, presTrats,
+      presDesc:s.presDesc, presTotalStr:this.clp(presTotal), presDescStr:this.clp(presDescAmt),
+      presFinalStr:this.clp(presFinal), hasDesc:s.presDesc>0,
+      presSetNombre:(e)=>this.setState({presNombre:e.target.value}),
+      presSetRut:(e)=>this.setState({presRut:e.target.value}),
+      presSetTel:(e)=>this.setState({presTel:e.target.value}),
+      presSetEmail:(e)=>this.setState({presEmail:e.target.value}),
+      presSetSearch:(e)=>this.setState({presSearch:e.target.value}),
+      presSetDesc:(e)=>this.setState({presDesc:Number(e.target.value)}),
+      presCopy:()=>{
+        let txt=`PRESUPUESTO CLÍNICA CIALO\n${new Date().toLocaleDateString('es-CL')}\n`;
+        if(s.presNombre)txt+=`\nPaciente: ${s.presNombre}`;
+        if(s.presRut)txt+=`\nRUT: ${s.presRut}`;
+        txt+='\n\nTRATAMIENTOS:\n';
+        s.presItems.forEach(it=>txt+=`• ${it.nombre}: $${this.clp(it.precio)}\n`);
+        txt+=`\nTOTAL: $${this.clp(presFinal)}`;
+        this.copy(txt);
+      },
+      presPrint:()=>window.print(),
+      presClear:()=>this.setState({presNombre:'',presRut:'',presTel:'',presEmail:'',presItems:[],presDesc:0,presSearch:''}),
+
+      gcPara:s.gcPara, gcDe:s.gcDe, gcMonto:s.gcMonto, gcMsg:s.gcMsg,
+      gcCodigo:s.gcCodigo, gcParaDisplay, gcDeDisplay, gcMontoDisplay, gcMsgDisplay,
+      gcSetPara:(e)=>this.setState({gcPara:e.target.value}),
+      gcSetDe:(e)=>this.setState({gcDe:e.target.value}),
+      gcSetMonto:(e)=>this.setState({gcMonto:e.target.value}),
+      gcSetMsg:(e)=>this.setState({gcMsg:e.target.value}),
+      gcGenerar:()=>this.setState({gcCodigo:'GC-'+(Math.floor(Math.random()*90000)+10000)}),
+
+      hasModal,
+      modalCat: hasModal?(modal.cat||modal.especialidad||''):'',
+      modalNombre: hasModal?modal.nombre:'',
+      modalDesc: hasModal?modal.desc:'',
+      modalPrecio: hasModal?(modal.precioStr||'–'):'',
+      modalDur: hasModal?(modal.dur||'–'):'',
+      modalSes: hasModal?(modal.ses||modal.sesiones||'–'):'',
+      modalProf: hasModal?(modal.prof||modal.especialidad||'–'):'',
+      modalReq: hasModal?(modal.req||false):false,
+      modalReqText,
+      closeModal:()=>this.setState({modal:null}),
+      stopProp:(e)=>e.stopPropagation(),
+
+      showToast:s.showToast, toastMsg:s.toastMsg,
+      kanbanCols, recepTabs, dashTareaStats, dashRecepStats,
+      tiposTarea: this.TIPOS_TAREA, recepNames: this.RECEPS,
+      showNewTarea: s.showNewTarea,
+      newTareaTipo:s.ntTipo, newTareaDesc:s.ntDesc, newTareaAsignada:s.ntAsignada, newTareaPrio:s.ntPrio, newTareaPaciente:s.ntPaciente,
+      toggleNewTarea: ()=>this.setState(st=>({showNewTarea:!st.showNewTarea})),
+      setNewTareaTipo: (e)=>this.setState({ntTipo:e.target.value}),
+      setNewTareaDesc: (e)=>this.setState({ntDesc:e.target.value}),
+      setNewTareaAsignada: (e)=>this.setState({ntAsignada:e.target.value}),
+      setNewTareaPrio: (e)=>this.setState({ntPrio:e.target.value}),
+      setNewTareaPaciente: (e)=>this.setState({ntPaciente:e.target.value}),
+      guardarTarea: ()=>this.crearTarea(),
+      goTareas: ()=>this.go('tareas'),
+      doReembolso:()=>{
+        const sub=encodeURIComponent('Solicitud de Reembolso – Clínica Cialo');
+        const body=encodeURIComponent('Estimado equipo,\n\nAdjunto los datos de la solicitud de reembolso.\n\n');
+        window.open(`mailto:contacto@cialo.cl?subject=${sub}&body=${body}`,'_blank');
+        this.toast('Abriendo Gmail...');
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

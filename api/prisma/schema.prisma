@@ -1,0 +1,281 @@
+// Cialo Hub — esquema de base de datos
+// Convención: la data de la clínica conserva sus ids originales (slugs/números)
+// para preservar las relaciones que ya existían en los archivos estáticos.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Auth & usuarios ─────────────────────────────
+
+enum Role {
+  ADMIN
+  RECEPCION
+  PROFESIONAL
+  LECTURA
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  nombre       String
+  role         Role     @default(RECEPCION)
+  activo       Boolean  @default(true)
+  // Si el usuario es un profesional, enlaza a su ficha clínica.
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+  professionalId String?
+
+  refreshTokens     RefreshToken[]
+  notifications     Notification[]
+  pushSubscriptions PushSubscription[]
+  tareasAsignadas   Task[]             @relation("TareaAsignada")
+  tareasCreadas     Task[]             @relation("TareaCreador")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+}
+
+// Refresh tokens con rotación: se guarda solo el hash del token.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// ───────────────────────────── Notificaciones ─────────────────────────────
+
+enum NotificationType {
+  TAREA_ASIGNADA
+  TAREA_ACTUALIZADA
+  REEMBOLSO
+  SISTEMA
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  type      NotificationType @default(SISTEMA)
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ───────────────────────────── Tareas (Kanban) ─────────────────────────────
+
+enum Etapa {
+  PENDIENTE
+  ASIGNADO
+  EN_PROCESO
+  REVISION
+  CERRADO
+}
+
+enum Prioridad {
+  BAJA
+  NORMAL
+  URGENTE
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  tipo        String
+  descripcion String
+  paciente    String?
+  etapa       Etapa     @default(PENDIENTE)
+  prioridad   Prioridad @default(NORMAL)
+
+  asignada     User?   @relation("TareaAsignada", fields: [asignadaId], references: [id])
+  asignadaId   String?
+  creadoPor    User?   @relation("TareaCreador", fields: [creadoPorId], references: [id])
+  creadoPorId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([etapa])
+  @@index([asignadaId])
+}
+
+// ───────────────────────────── Data clínica ─────────────────────────────
+
+model Treatment {
+  id                String   @id // slug original (ej. 'toxina-tercio-superior')
+  categoria         String
+  subcategoria      String?
+  nombre            String
+  descripcion       String
+  profesional       String?
+  especialidad      String?
+  valorDesde        Int?
+  valorHasta        Int?
+  duracion          String?
+  sesiones          String?
+  protocolo         String?
+  requiereEvaluacion Boolean @default(false)
+  indicaciones      String[]
+  contraindicaciones String[]
+  preTratamiento    String[]
+  postTratamiento   String[]
+  extra             Json?
+
+  profesionales TreatmentProfessional[]
+
+  @@index([categoria])
+}
+
+model Professional {
+  id             String   @id // slug original (ej. 'nicolas-laucirica')
+  nombreCompleto String
+  especialidad   String
+  rut            String?
+  telefono       String?
+  email          String?
+  disponibilidad Json?
+  prestaciones   Json?
+  extra          Json?
+
+  tratamientos TreatmentProfessional[]
+  usuarios     User[]
+
+  @@index([especialidad])
+}
+
+// Tabla relacional muchos-a-muchos tratamiento ↔ profesional.
+model TreatmentProfessional {
+  treatment      Treatment    @relation(fields: [treatmentId], references: [id], onDelete: Cascade)
+  treatmentId    String
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  professionalId String
+
+  @@id([treatmentId, professionalId])
+  @@index([professionalId])
+}
+
+model Product {
+  id          Int    @id // id numérico original
+  brand       String
+  name        String
+  price       Int
+  category    String?
+  description String?
+
+  @@index([brand])
+}
+
+model Consultation {
+  id            String  @id // slug original
+  categoria     String?
+  emoji         String?
+  nombre        String
+  descripcion   String
+  valor         String
+  duracion      String?
+  reembolsable  Boolean @default(false)
+  profesionales Json?
+}
+
+model Box {
+  id              Int      @id // id numérico original
+  nombre          String
+  alias           String?
+  tipo            String?
+  descripcion     String?
+  usosPrincipales String[]
+  equipamiento    Json?
+}
+
+model Consent {
+  id                String   @id // slug original
+  title             String
+  treatment         String
+  introduction      String
+  beneficios        String[]
+  efectosSecundarios String[]
+  contraindicaciones String[]
+  cuidados          String[]
+  extra             Json?
+}
+
+model FaqItem {
+  id        String   @id // slug original
+  categoria String
+  pregunta  String
+  respuesta String
+  tags      String[]
+
+  @@index([categoria])
+}
+
+// Protocolos base de recepción (protocolRules).
+model Protocol {
+  id      String @id // número como string ('1'..'17')
+  numero  Int
+  titulo  String
+  contenido String
+
+  @@index([numero])
+}
+
+// Guiones técnicos (scriptsData), aplanados por categoría.
+model Script {
+  id        String  @id @default(cuid())
+  categoria String
+  titulo    String
+  contenido String  @db.Text
+  nota      String?
+  orden     Int     @default(0)
+
+  @@index([categoria])
+}
+
+// Políticas de pago y de paquetes (paymentPolicies).
+model PaymentPolicy {
+  id       String @id @default(cuid())
+  titulo   String
+  contenido String @db.Text
+  tipo     String
+  orden    Int    @default(0)
+
+  @@index([tipo])
+}
+
+// Protocolos internos por área (protocolsData).
+model InternalProtocol {
+  id       String @id // clave original (ej. 'recepcion')
+  titulo   String
+  icon     String?
+  color    String?
+  sections Json
+  orden    Int    @default(0)
+}

@@ -1,0 +1,59 @@
+import type { IconName } from './icons';
+
+export type ViewId =
+  | 'dashboard' | 'tareas'
+  | 'protocolos' | 'guiones' | 'pagos' | 'suspensiones'
+  | 'tratamientos' | 'profesionales' | 'consultas' | 'boxes'
+  | 'productos' | 'presupuestos' | 'giftcards' | 'consentimientos'
+  | 'faq' | 'reembolso';
+
+export interface NavItem { id: ViewId; label: string; icon: IconName; }
+export interface NavSection { section: string; items: NavItem[]; }
+
+export const NAV: NavSection[] = [
+  { section: 'Principal', items: [
+    { id: 'dashboard', label: 'Dashboard', icon: 'home' },
+    { id: 'tareas', label: 'Tareas', icon: 'tasks' },
+  ]},
+  { section: 'Protocolos', items: [
+    { id: 'protocolos', label: 'Protocolos Base', icon: 'book' },
+    { id: 'guiones', label: 'Guiones Técnicos', icon: 'msg' },
+    { id: 'pagos', label: 'Pagos & Citas', icon: 'credit' },
+    { id: 'suspensiones', label: 'Suspensiones', icon: 'xc' },
+  ]},
+  { section: 'Clínica', items: [
+    { id: 'tratamientos', label: 'Tratamientos', icon: 'act' },
+    { id: 'profesionales', label: 'Profesionales', icon: 'users' },
+    { id: 'consultas', label: 'Consultas', icon: 'clip' },
+    { id: 'boxes', label: 'Boxes & Pabellón', icon: 'grid' },
+  ]},
+  { section: 'Comercial', items: [
+    { id: 'productos', label: 'Productos', icon: 'pkg' },
+    { id: 'presupuestos', label: 'Presupuestos', icon: 'file' },
+    { id: 'giftcards', label: 'Gift Cards', icon: 'gift' },
+    { id: 'consentimientos', label: 'Consentimientos', icon: 'pen' },
+  ]},
+  { section: 'Soporte', items: [
+    { id: 'faq', label: 'Preguntas Frecuentes', icon: 'help' },
+    { id: 'reembolso', label: 'Solicitud de Reembolso', icon: 'ref' },
+  ]},
+];
+
+export const VIEW_LABELS: Record<ViewId, string> = {
+  dashboard: 'Dashboard',
+  tareas: 'Tareas',
+  protocolos: 'Protocolos Base',
+  guiones: 'Guiones Técnicos',
+  pagos: 'Pagos & Citas',
+  suspensiones: 'Políticas de Suspensión',
+  tratamientos: 'Tratamientos',
+  profesionales: 'Profesionales',
+  consultas: 'Consultas & Evaluaciones',
+  boxes: 'Boxes & Pabellón',
+  productos: 'Productos',
+  presupuestos: 'Presupuestos',
+  giftcards: 'Gift Cards',
+  consentimientos: 'Consentimientos Informados',
+  faq: 'Preguntas Frecuentes',
+  reembolso: 'Solicitud de Reembolso',
+};

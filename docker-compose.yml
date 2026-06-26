@@ -1,0 +1,18 @@
+# Postgres para desarrollo local del backend (api/).
+# En producción (VPS) se usa el Postgres ya instalado en el servidor.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cialo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cialo
+      POSTGRES_PASSWORD: cialo
+      POSTGRES_DB: cialo_hub
+    ports:
+      - '5433:5432'
+    volumes:
+      - cialo_pgdata:/var/lib/postgresql/data
+
+volumes:
+  cialo_pgdata:
