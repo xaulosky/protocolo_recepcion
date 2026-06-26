@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
 import { hashPassword } from '../../lib/password.ts';
+import { syncUserChannels } from '../../lib/channels.ts';
 
 const createSchema = z.object({
   email: z.string().email(),
@@ -10,6 +11,7 @@ const createSchema = z.object({
   nombre: z.string().min(1),
   role: z.nativeEnum(Role),
   professionalId: z.string().optional(),
+  permisos: z.array(z.string()).optional(),
 });
 
 const updateSchema = z.object({
@@ -18,9 +20,10 @@ const updateSchema = z.object({
   activo: z.boolean().optional(),
   password: z.string().min(6).optional(),
   professionalId: z.string().nullable().optional(),
+  permisos: z.array(z.string()).optional(),
 });
 
-const select = { id: true, email: true, nombre: true, role: true, activo: true, professionalId: true, createdAt: true } as const;
+const select = { id: true, email: true, nombre: true, role: true, activo: true, permisos: true, professionalId: true, createdAt: true } as const;
 
 export async function usersRoutes(app: FastifyInstance) {
   const adminOnly = { preHandler: app.authorize([Role.ADMIN]) };
@@ -54,6 +57,7 @@ export async function usersRoutes(app: FastifyInstance) {
       data: { ...rest, passwordHash: await hashPassword(password) },
       select,
     });
+    await syncUserChannels(user.id); // entra a los canales de su rol
     return reply.code(201).send({ user });
   });
 
@@ -68,6 +72,10 @@ export async function usersRoutes(app: FastifyInstance) {
     if (password) data.passwordHash = await hashPassword(password);
 
     const user = await prisma.user.update({ where: { id }, data, select });
+    // Si cambió el rol (o se reactivó), re-sincroniza su pertenencia a canales.
+    if (parsed.data.role !== undefined || parsed.data.activo !== undefined) {
+      await syncUserChannels(id);
+    }
     return { user };
   });
 

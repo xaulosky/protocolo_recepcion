@@ -26,7 +26,9 @@ import { GiftCards } from './features/GiftCards';
 import { Consentimientos } from './features/Consentimientos';
 import { Faq } from './features/Faq';
 import { Reembolso } from './features/Reembolso';
+import { Usuarios } from './features/usuarios/Usuarios';
 import type { ViewId } from './lib/nav';
+import { canView } from './lib/permissions';
 
 const VIEWS: Record<ViewId, ComponentType> = {
   dashboard: Dashboard,
@@ -46,13 +48,16 @@ const VIEWS: Record<ViewId, ComponentType> = {
   consentimientos: Consentimientos,
   faq: Faq,
   reembolso: Reembolso,
+  usuarios: Usuarios,
 };
 
 function Shell() {
   const { view } = useApp();
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const allowed = canView(user, view);
   const ViewComponent = VIEWS[view];
   const marginLeft = collapsed ? 'var(--sidebar-w-collapsed)' : 'var(--sidebar-w)';
 
@@ -70,7 +75,9 @@ function Shell() {
       >
         <Header onOpenMobile={() => setMobileOpen(true)} />
         <main style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
-          <ViewComponent />
+          {allowed
+            ? <ViewComponent />
+            : <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted-2)', fontSize: 14 }}>No tienes acceso a esta sección.</div>}
         </main>
       </div>
       <Toast />

@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { useApp } from '../store/app-context';
 import { useAuth } from '../store/auth-context';
 import { NAV } from '../lib/nav';
+import { allowedViews } from '../lib/permissions';
 import { Icon } from '../lib/icons';
 import { initials } from '../lib/format';
 
@@ -19,6 +21,14 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
   const { view, go } = useApp();
   const { user, logout } = useAuth();
   const width = collapsed ? 'var(--sidebar-w-collapsed)' : 'var(--sidebar-w)';
+
+  // Filtra el menú según los permisos del usuario; oculta secciones vacías.
+  const nav = useMemo(() => {
+    const allowed = allowedViews(user);
+    return NAV
+      .map((sec) => ({ ...sec, items: sec.items.filter((it) => allowed.has(it.id)) }))
+      .filter((sec) => sec.items.length > 0);
+  }, [user]);
 
   return (
     <>
@@ -59,7 +69,7 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
         </div>
 
         <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: 8 }}>
-          {NAV.map((sec, si) => (
+          {nav.map((sec, si) => (
             <div key={sec.section}>
               {!collapsed && (
                 <div style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--muted-4)', letterSpacing: '1px', textTransform: 'uppercase', padding: '0 8px', marginBottom: 3, marginTop: si > 0 ? 14 : 6 }}>

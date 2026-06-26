@@ -8,8 +8,8 @@ import type { AccessPayload } from '../../lib/auth.ts';
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 const refreshSchema = z.object({ refreshToken: z.string().min(1) });
 
-function publicUser(u: { id: string; email: string; nombre: string; role: AccessPayload['role']; professionalId: string | null }) {
-  return { id: u.id, email: u.email, nombre: u.nombre, role: u.role, professionalId: u.professionalId };
+function publicUser(u: { id: string; email: string; nombre: string; role: AccessPayload['role']; permisos: string[]; professionalId: string | null }) {
+  return { id: u.id, email: u.email, nombre: u.nombre, role: u.role, permisos: u.permisos, professionalId: u.professionalId };
 }
 
 export async function authRoutes(app: FastifyInstance) {

@@ -21,6 +21,7 @@ interface ChatContextValue {
   send: (texto: string) => Promise<void>;
   startDm: (userId: string) => Promise<void>;
   createGroup: (nombre: string, memberIds: string[]) => Promise<void>;
+  createChannel: (nombre: string, roles: string[]) => Promise<void>;
   setFloatingOpen: (open: boolean) => void;
   refresh: () => void;
 }
@@ -140,6 +141,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     openConversation(conversationId);
   }, [refreshConversations, openConversation]);
 
+  const createChannel = useCallback(async (nombre: string, roles: string[]) => {
+    const { conversationId } = await api.post<{ conversationId: string }>('/chat/conversations/channel', { nombre, roles });
+    await refreshConversations();
+    openConversation(conversationId);
+  }, [refreshConversations, openConversation]);
+
   // Carga inicial + polling de la lista (solo autenticado).
   useEffect(() => {
     if (status !== 'authenticated') return;
@@ -158,10 +165,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<ChatContextValue>(() => ({
     conversations, unread, users, activeId, messages, loadingMessages, floatingOpen, myId,
-    openConversation, closeConversation, send, startDm, createGroup, setFloatingOpen,
+    openConversation, closeConversation, send, startDm, createGroup, createChannel, setFloatingOpen,
     refresh: refreshConversations,
   }), [conversations, unread, users, activeId, messages, loadingMessages, floatingOpen, myId,
-    openConversation, closeConversation, send, startDm, createGroup, refreshConversations]);
+    openConversation, closeConversation, send, startDm, createGroup, createChannel, refreshConversations]);
 
   return <ChatContext value={value}>{children}</ChatContext>;
 }

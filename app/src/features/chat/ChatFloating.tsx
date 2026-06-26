@@ -2,6 +2,8 @@ import { createPortal } from 'react-dom';
 import { useChat } from './ChatProvider';
 import { ChatView } from './ChatView';
 import { useApp } from '../../store/app-context';
+import { useAuth } from '../../store/auth-context';
+import { canView } from '../../lib/permissions';
 import { Icon } from '../../lib/icons';
 
 /**
@@ -11,8 +13,10 @@ import { Icon } from '../../lib/icons';
 export function ChatFloating() {
   const { unread, floatingOpen, setFloatingOpen, activeId, closeConversation } = useChat();
   const { view } = useApp();
+  const { user } = useAuth();
 
   if (view === 'chat') return null;
+  if (!canView(user, 'chat')) return null;
 
   return createPortal(
     <div className="no-print" style={{ position: 'fixed', right: 20, bottom: 20, zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>

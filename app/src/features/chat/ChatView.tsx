@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { useChat } from './ChatProvider';
+import { useAuth } from '../../store/auth-context';
 import { Icon } from '../../lib/icons';
 import { colorFromString, initials } from '../../lib/format';
 import type { ChatMessage, ChatUser, Conversation } from '../../lib/types';
@@ -21,21 +22,24 @@ function diaLabel(iso: string) {
   return d.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
 }
 
-function Avatar({ name, size = 36, grupo = false }: { name: string; size?: number; grupo?: boolean }) {
+function Avatar({ name, size = 36, grupo = false, canal = false }: { name: string; size?: number; grupo?: boolean; canal?: boolean }) {
+  const especial = grupo || canal;
   return (
     <div
       style={{
-        width: size, height: size, borderRadius: '50%', flexShrink: 0,
-        background: grupo ? 'var(--primary-soft-2)' : colorFromString(name),
-        color: grupo ? 'var(--primary)' : '#fff',
+        width: size, height: size, borderRadius: canal ? 9 : '50%', flexShrink: 0,
+        background: especial ? 'var(--primary-soft-2)' : colorFromString(name),
+        color: especial ? 'var(--primary)' : '#fff',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: size * 0.36, fontWeight: 600, letterSpacing: 0.2,
       }}
     >
-      {grupo ? <Icon name="users" size={size * 0.5} /> : initials(name)}
+      {canal ? <Icon name="hash" size={size * 0.5} /> : grupo ? <Icon name="users" size={size * 0.5} /> : initials(name)}
     </div>
   );
 }
+
+const esCanal = (c: { roles: string[] }) => c.roles.length > 0;
 
 // ───────────────────────── Lista de conversaciones ─────────────────────────
 
@@ -102,7 +106,7 @@ function ConversationRow({ c, active, onClick, compact }: {
         borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
       }}
     >
-      <Avatar name={c.titulo} size={compact ? 34 : 38} grupo={c.esGrupo} />
+      <Avatar name={c.titulo} size={compact ? 34 : 38} grupo={c.esGrupo && !esCanal(c)} canal={esCanal(c)} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
           <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -135,12 +139,24 @@ function ConversationRow({ c, active, onClick, compact }: {
 
 // ───────────────────────── Panel "nuevo chat" ─────────────────────────
 
+type Modo = 'dm' | 'grupo' | 'canal';
+const ROLES_CANAL: { value: string; label: string }[] = [
+  { value: 'ADMIN', label: 'Administradores' },
+  { value: 'RECEPCION', label: 'Recepción' },
+  { value: 'PROFESIONAL', label: 'Profesionales' },
+  { value: 'LECTURA', label: 'Solo lectura' },
+];
+
 function NewChatPanel({ onDone }: { onDone: () => void }) {
-  const { users, startDm, createGroup } = useChat();
+  const { users, startDm, createGroup, createChannel } = useChat();
+  const { hasRole } = useAuth();
+  const esAdmin = hasRole('ADMIN');
+
+  const [modo, setModo] = useState<Modo>('dm');
   const [q, setQ] = useState('');
-  const [grupo, setGrupo] = useState(false);
   const [sel, setSel] = useState<string[]>([]);
   const [nombre, setNombre] = useState('');
+  const [roles, setRoles] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   const filtrados = useMemo(
@@ -150,88 +166,109 @@ function NewChatPanel({ onDone }: { onDone: () => void }) {
 
   const toggle = (id: string) =>
     setSel((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  const toggleRole = (r: string) =>
+    setRoles((s) => (s.includes(r) ? s.filter((x) => x !== r) : [...s, r]));
+  const todoElEquipo = roles.length === ROLES_CANAL.length;
 
   const onDm = async (u: ChatUser) => {
     setBusy(true);
     try { await startDm(u.id); onDone(); } finally { setBusy(false); }
   };
-
   const onCrearGrupo = async () => {
     if (!nombre.trim() || sel.length === 0) return;
     setBusy(true);
     try { await createGroup(nombre.trim(), sel); onDone(); } finally { setBusy(false); }
   };
+  const onCrearCanal = async () => {
+    if (!nombre.trim() || roles.length === 0) return;
+    setBusy(true);
+    try { await createChannel(nombre.trim(), roles); onDone(); } finally { setBusy(false); }
+  };
 
   return (
     <div style={{ borderBottom: '1px solid var(--border-soft)', background: 'var(--surface-soft)', padding: 12 }}>
       <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-        <button
-          onClick={() => setGrupo(false)}
-          style={tabStyle(!grupo)}
-        >Directo</button>
-        <button
-          onClick={() => setGrupo(true)}
-          style={tabStyle(grupo)}
-        >Grupo</button>
+        <button onClick={() => setModo('dm')} style={tabStyle(modo === 'dm')}>Directo</button>
+        <button onClick={() => setModo('grupo')} style={tabStyle(modo === 'grupo')}>Grupo</button>
+        {esAdmin && <button onClick={() => setModo('canal')} style={tabStyle(modo === 'canal')}>Canal</button>}
       </div>
 
-      {grupo && (
-        <input
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          placeholder="Nombre del grupo"
-          style={inputStyle}
-        />
-      )}
+      {/* ── Canal por rol ── */}
+      {modo === 'canal' ? (
+        <>
+          <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del canal (ej. Recepción)" style={inputStyle} />
+          <div style={{ fontSize: 11.5, color: 'var(--muted-2)', margin: '8px 2px 6px' }}>
+            ¿Quiénes pertenecen al canal? Todos los usuarios de los roles elegidos podrán escribir y recibir.
+          </div>
+          {ROLES_CANAL.map((r) => (
+            <label key={r.value} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 8px', cursor: 'pointer', fontSize: 13, color: 'var(--text-2)' }}>
+              <input type="checkbox" checked={roles.includes(r.value)} onChange={() => toggleRole(r.value)} />
+              {r.label}
+            </label>
+          ))}
+          <label style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 8px', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--primary)', borderTop: '1px solid var(--border-soft)', marginTop: 4 }}>
+            <input type="checkbox" checked={todoElEquipo} onChange={(e) => setRoles(e.target.checked ? ROLES_CANAL.map((r) => r.value) : [])} />
+            Todo el equipo
+          </label>
+          <button
+            onClick={onCrearCanal}
+            disabled={busy || !nombre.trim() || roles.length === 0}
+            className="btn-primary"
+            style={{ width: '100%', marginTop: 8, padding: '8px', borderRadius: 7, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: (!nombre.trim() || roles.length === 0) ? 0.5 : 1 }}
+          >
+            Crear canal
+          </button>
+        </>
+      ) : (
+        <>
+          {modo === 'grupo' && (
+            <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del grupo" style={inputStyle} />
+          )}
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Buscar persona…"
+            style={{ ...inputStyle, marginTop: modo === 'grupo' ? 6 : 0 }}
+          />
+          <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: 6 }}>
+            {filtrados.map((u) => {
+              const checked = sel.includes(u.id);
+              return (
+                <button
+                  key={u.id}
+                  disabled={busy}
+                  onClick={() => (modo === 'grupo' ? toggle(u.id) : onDm(u))}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px',
+                    border: 'none', background: checked ? 'var(--primary-soft)' : 'transparent',
+                    borderRadius: 7, cursor: 'pointer', textAlign: 'left',
+                  }}
+                >
+                  <Avatar name={u.nombre} size={30} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{u.nombre}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted-2)' }}>{u.role}</div>
+                  </div>
+                  {modo === 'grupo' && checked && <Icon name="check" size={15} style={{ color: 'var(--primary)' }} />}
+                </button>
+              );
+            })}
+            {filtrados.length === 0 && (
+              <div style={{ padding: 12, textAlign: 'center', fontSize: 12, color: 'var(--muted-2)' }}>Sin resultados</div>
+            )}
+          </div>
 
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar persona…"
-        style={{ ...inputStyle, marginTop: grupo ? 6 : 0 }}
-      />
-
-      <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: 6 }}>
-        {filtrados.map((u) => {
-          const checked = sel.includes(u.id);
-          return (
+          {modo === 'grupo' && (
             <button
-              key={u.id}
-              disabled={busy}
-              onClick={() => (grupo ? toggle(u.id) : onDm(u))}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px',
-                border: 'none', background: checked ? 'var(--primary-soft)' : 'transparent',
-                borderRadius: 7, cursor: 'pointer', textAlign: 'left',
-              }}
+              onClick={onCrearGrupo}
+              disabled={busy || !nombre.trim() || sel.length === 0}
+              className="btn-primary"
+              style={{ width: '100%', marginTop: 8, padding: '8px', borderRadius: 7, border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: (!nombre.trim() || sel.length === 0) ? 0.5 : 1 }}
             >
-              <Avatar name={u.nombre} size={30} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{u.nombre}</div>
-                <div style={{ fontSize: 11, color: 'var(--muted-2)' }}>{u.role}</div>
-              </div>
-              {grupo && checked && <Icon name="check" size={15} style={{ color: 'var(--primary)' }} />}
+              Crear grupo ({sel.length})
             </button>
-          );
-        })}
-        {filtrados.length === 0 && (
-          <div style={{ padding: 12, textAlign: 'center', fontSize: 12, color: 'var(--muted-2)' }}>Sin resultados</div>
-        )}
-      </div>
-
-      {grupo && (
-        <button
-          onClick={onCrearGrupo}
-          disabled={busy || !nombre.trim() || sel.length === 0}
-          className="btn-primary"
-          style={{
-            width: '100%', marginTop: 8, padding: '8px', borderRadius: 7, border: 'none',
-            fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            opacity: (!nombre.trim() || sel.length === 0) ? 0.5 : 1,
-          }}
-        >
-          Crear grupo ({sel.length})
-        </button>
+          )}
+        </>
       )}
     </div>
   );
@@ -281,7 +318,10 @@ function MessageThread({ variant, onBack }: { variant: Variant; onBack?: () => v
     );
   }
 
-  const subtitulo = conv.esGrupo
+  const canal = esCanal(conv);
+  const subtitulo = canal
+    ? `Canal · ${conv.members.length} integrantes`
+    : conv.esGrupo
     ? `${conv.members.length} integrantes`
     : conv.members.find((m) => m.id !== myId)?.role ?? '';
 
@@ -297,7 +337,7 @@ function MessageThread({ variant, onBack }: { variant: Variant; onBack?: () => v
             <Icon name="colL" size={18} />
           </button>
         )}
-        <Avatar name={conv.titulo} size={34} grupo={conv.esGrupo} />
+        <Avatar name={conv.titulo} size={34} grupo={conv.esGrupo && !canal} canal={canal} />
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.titulo}</div>
           <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>{subtitulo}</div>

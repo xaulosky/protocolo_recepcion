@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
 
 const memberSelect = { id: true, nombre: true, role: true } as const;
@@ -9,6 +10,10 @@ const dmSchema = z.object({ userId: z.string().min(1) });
 const groupSchema = z.object({
   nombre: z.string().trim().min(1).max(80),
   memberIds: z.array(z.string()).min(1),
+});
+const channelSchema = z.object({
+  nombre: z.string().trim().min(1).max(80),
+  roles: z.array(z.nativeEnum(Role)).min(1),
 });
 
 /** Clave canónica de un DM: ids ordenados → garantiza una sola conversación por par. */
@@ -76,6 +81,7 @@ export async function chatRoutes(app: FastifyInstance) {
         return {
           id: c.id,
           esGrupo: c.esGrupo,
+          roles: c.roles,
           titulo,
           members: c.members.map((cm) => cm.user),
           ultimoMensaje: last
@@ -142,6 +148,27 @@ export async function chatRoutes(app: FastifyInstance) {
         esGrupo: true,
         nombre: parsed.data.nombre,
         members: { create: ids.map((userId) => ({ userId })) },
+      },
+    });
+    return reply.code(201).send({ conversationId: conv.id });
+  });
+
+  // POST /chat/conversations/channel — crear canal por rol (solo admin)
+  // Miembros = todos los usuarios activos con esos roles. Ej: "Recepción".
+  app.post('/conversations/channel', { preHandler: app.authorize([Role.ADMIN]) }, async (req, reply) => {
+    const parsed = channelSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos' });
+    const roles = Array.from(new Set(parsed.data.roles));
+    const miembros = await prisma.user.findMany({
+      where: { activo: true, role: { in: roles } },
+      select: { id: true },
+    });
+    const conv = await prisma.conversation.create({
+      data: {
+        esGrupo: true,
+        roles,
+        nombre: parsed.data.nombre,
+        members: { create: miembros.map((u) => ({ userId: u.id })) },
       },
     });
     return reply.code(201).send({ conversationId: conv.id });

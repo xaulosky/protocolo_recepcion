@@ -27,6 +27,8 @@ model User {
   nombre       String
   role         Role     @default(RECEPCION)
   activo       Boolean  @default(true)
+  // Secciones (ViewIds) que el usuario puede ver. Vacío = usar defaults del rol.
+  permisos     String[] @default([])
   // Si el usuario es un profesional, enlaza a su ficha clínica.
   professional   Professional? @relation(fields: [professionalId], references: [id])
   professionalId String?
@@ -152,7 +154,10 @@ model TaskActivity {
 model Conversation {
   id        String   @id @default(cuid())
   esGrupo   Boolean  @default(false)
-  nombre    String?  // nombre del grupo (null en DMs)
+  // Canal por rol: si `roles` no está vacío, es un canal cuyos miembros son
+  // todos los usuarios activos con esos roles (ej. "Recepción").
+  roles     Role[]   @default([])
+  nombre    String?  // nombre del grupo/canal (null en DMs)
   // Para DMs: clave canónica "menorId:mayorId" → unicidad garantizada por la BD.
   dmKey     String?  @unique
   createdAt DateTime @default(now())

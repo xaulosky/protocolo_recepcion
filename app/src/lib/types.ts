@@ -7,7 +7,20 @@ export interface AuthUser {
   email: string;
   nombre: string;
   role: Role;
+  permisos: string[];
   professionalId: string | null;
+}
+
+/** Usuario completo para la gestión de admin. */
+export interface ManagedUser {
+  id: string;
+  email: string;
+  nombre: string;
+  role: Role;
+  activo: boolean;
+  permisos: string[];
+  professionalId: string | null;
+  createdAt: string;
 }
 
 export interface Treatment {
@@ -166,6 +179,7 @@ export interface ChatMessage {
 export interface Conversation {
   id: string;
   esGrupo: boolean;
+  roles: Role[];
   titulo: string;
   members: ChatUser[];
   ultimoMensaje: { contenido: string; createdAt: string; autorNombre: string } | null;
