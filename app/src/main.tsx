@@ -3,9 +3,12 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import Mensajeria from './Mensajeria.tsx'
+import { ResetPassword } from './features/auth/ResetPassword.tsx'
 
-// La PWA de mensajería vive en /mensajeria; el resto es el sistema completo.
-const isMensajeria = window.location.pathname.startsWith('/mensajeria')
+// Rutas especiales: /mensajeria (PWA kiosko) y /reset (restablecer contraseña).
+const path = window.location.pathname
+const isMensajeria = path.startsWith('/mensajeria')
+const isReset = path.startsWith('/reset')
 
 if (isMensajeria) {
   const link = document.createElement('link')
@@ -24,6 +27,6 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {isMensajeria ? <Mensajeria /> : <App />}
+    {isReset ? <ResetPassword /> : isMensajeria ? <Mensajeria /> : <App />}
   </StrictMode>,
 )

@@ -12,6 +12,8 @@ const schema = z.object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  // URL pública del frontend (para armar enlaces en los correos).
+  APP_URL: z.string().default('http://localhost:5173'),
 
   JWT_ACCESS_SECRET: z.string().min(8),
   JWT_REFRESH_SECRET: z.string().min(8),

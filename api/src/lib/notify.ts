@@ -36,6 +36,21 @@ interface NotifyInput {
   push?: boolean;
 }
 
+/** Envía un correo directo (recuperación de clave, bienvenida, etc.). Devuelve false si SMTP no está configurado. */
+export async function sendMail(opts: { to: string; subject: string; html?: string; text?: string }): Promise<boolean> {
+  if (!emailEnabled || !mailer) {
+    console.warn('[mail] SMTP no configurado; correo omitido:', opts.subject);
+    return false;
+  }
+  try {
+    await mailer.sendMail({ from: env.MAIL_FROM, to: opts.to, subject: opts.subject, html: opts.html, text: opts.text });
+    return true;
+  } catch (e) {
+    console.error('[mail] error enviando correo:', (e as Error)?.message);
+    return false;
+  }
+}
+
 /** Envía solo Web Push a todas las suscripciones de un usuario (sin crear Notification en BD). */
 export async function sendPush(userId: string, payload: { title: string; body: string; data?: Record<string, unknown> }) {
   if (!pushEnabled) return;

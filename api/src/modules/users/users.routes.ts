@@ -2,8 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
+import { env } from '../../env.ts';
 import { hashPassword } from '../../lib/password.ts';
 import { syncUserChannels } from '../../lib/channels.ts';
+import { sendMail } from '../../lib/notify.ts';
+import { welcomeEmail } from '../../lib/emails.ts';
 
 const createSchema = z.object({
   email: z.string().email(),
@@ -58,6 +61,11 @@ export async function usersRoutes(app: FastifyInstance) {
       select,
     });
     await syncUserChannels(user.id); // entra a los canales de su rol
+
+    // Correo de bienvenida (no bloquea la respuesta si falla/no hay SMTP).
+    const mail = welcomeEmail(user.nombre, user.email, env.APP_URL);
+    sendMail({ to: user.email, subject: mail.subject, html: mail.html, text: mail.text }).catch(() => {});
+
     return reply.code(201).send({ user });
   });
 
