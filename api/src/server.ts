@@ -24,7 +24,9 @@ await app.register(tasksRoutes, { prefix: '/tasks' });
 await app.register(notificationsRoutes, { prefix: '/notifications' });
 
 try {
-  await app.listen({ port: env.PORT, host: '0.0.0.0' });
+  // En producción la API vive detrás de nginx: solo localhost. En dev, accesible en la red.
+  const host = env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0';
+  await app.listen({ port: env.PORT, host });
 } catch (err) {
   app.log.error(err);
   process.exit(1);
