@@ -15,8 +15,10 @@ if (emailEnabled) {
   mailer = nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
-    secure: env.SMTP_PORT === 465,
+    secure: env.SMTP_PORT === 465, // 465=SSL, 587=STARTTLS
     auth: env.SMTP_USER ? { user: env.SMTP_USER, pass: env.SMTP_PASS } : undefined,
+    // cPanel suele tener certificados self-signed / con hostname distinto.
+    tls: { rejectUnauthorized: false },
   });
 }
 
