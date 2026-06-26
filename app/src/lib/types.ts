@@ -116,6 +116,14 @@ export type Prioridad = 'BAJA' | 'NORMAL' | 'URGENTE';
 
 export interface TaskUserRef { id: string; nombre: string }
 
+export interface TaskActivity {
+  id: string;
+  tipo: string;
+  detalle: string | null;
+  user: TaskUserRef;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   tipo: string;
@@ -123,9 +131,11 @@ export interface Task {
   paciente: string | null;
   etapa: Etapa;
   prioridad: Prioridad;
+  dueAt: string | null;
   asignada: TaskUserRef | null;
   creadoPor: TaskUserRef | null;
   createdAt: string;
+  activities?: TaskActivity[];
 }
 
 export interface Notification {

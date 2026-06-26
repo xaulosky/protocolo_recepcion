@@ -14,7 +14,7 @@ export const ETAPA_LABEL: Record<Etapa, string> = {
 
 export const PRIORIDAD_LABEL: Record<Prioridad, string> = { BAJA: 'baja', NORMAL: 'normal', URGENTE: 'urgente' };
 
-const NEXT: Record<Etapa, Etapa> = {
+export const NEXT: Record<Etapa, Etapa> = {
   PENDIENTE: 'ASIGNADO',
   ASIGNADO: 'EN_PROCESO',
   EN_PROCESO: 'REVISION',
@@ -30,6 +30,16 @@ export interface NewTarea {
   paciente?: string;
   prioridad: Prioridad;
   asignadaId?: string;
+}
+
+export interface UpdateTarea {
+  tipo?: string;
+  descripcion?: string;
+  paciente?: string | null;
+  prioridad?: Prioridad;
+  etapa?: Etapa;
+  asignadaId?: string | null;
+  dueAt?: string | null;
 }
 
 export function useTareas() {
@@ -55,18 +65,27 @@ export function useTareas() {
     }
   }, []);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
   const crear = useCallback(async (input: NewTarea) => {
     const { task } = await api.post<{ task: Task }>('/tasks', input);
     setTasks((cur) => [...cur, task]);
   }, []);
 
-  const mover = useCallback(async (id: string, etapa: Etapa) => {
-    const { task } = await api.patch<{ task: Task }>(`/tasks/${id}`, { etapa: NEXT[etapa] });
+  const mover = useCallback(async (id: string, etapaDestino: Etapa) => {
+    const { task } = await api.patch<{ task: Task }>(`/tasks/${id}`, { etapa: etapaDestino });
     setTasks((cur) => cur.map((t) => (t.id === id ? task : t)));
+  }, []);
+
+  const actualizar = useCallback(async (id: string, data: UpdateTarea): Promise<Task> => {
+    const { task } = await api.patch<{ task: Task }>(`/tasks/${id}`, data);
+    setTasks((cur) => cur.map((t) => (t.id === id ? task : t)));
+    return task;
+  }, []);
+
+  const getTask = useCallback(async (id: string): Promise<Task> => {
+    const { task } = await api.get<{ task: Task }>(`/tasks/${id}`);
+    return task;
   }, []);
 
   const eliminar = useCallback(async (id: string) => {
@@ -74,5 +93,5 @@ export function useTareas() {
     setTasks((cur) => cur.filter((t) => t.id !== id));
   }, []);
 
-  return { tasks, users, loading, error, crear, mover, eliminar, reload: load };
+  return { tasks, users, loading, error, crear, mover, actualizar, getTask, eliminar, reload: load };
 }

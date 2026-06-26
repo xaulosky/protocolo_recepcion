@@ -25,6 +25,26 @@ export function initials(name: string): string {
     .join('');
 }
 
+/** Formatea fecha corta: "26 jun 2026" */
+export function fmtDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/** Formatea fecha+hora: "26 jun · 14:30" */
+export function fmtDateTime(iso: string): string {
+  const d = new Date(iso);
+  const fecha = d.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
+  const hora  = d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+  return `${fecha} · ${hora}`;
+}
+
+/** Convierte una ISO string a valor para input[type=datetime-local]: "2026-06-26T14:30" */
+export function toDateTimeLocal(iso: string): string {
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
 /** Paleta determinística de avatares según un índice. */
 const AVATAR_COLORS = ['#7C6247', '#5A7A6A', '#6A5A8C', '#7A6A5A', '#4A6A8C', '#8C5A5A', '#5A8C5A'];
 export function avatarColor(i: number): string {

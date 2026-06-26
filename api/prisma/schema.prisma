@@ -36,6 +36,7 @@ model User {
   pushSubscriptions PushSubscription[]
   tareasAsignadas   Task[]             @relation("TareaAsignada")
   tareasCreadas     Task[]             @relation("TareaCreador")
+  taskActivities    TaskActivity[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -114,17 +115,34 @@ model Task {
   paciente    String?
   etapa       Etapa     @default(PENDIENTE)
   prioridad   Prioridad @default(NORMAL)
+  dueAt       DateTime?
 
   asignada     User?   @relation("TareaAsignada", fields: [asignadaId], references: [id])
   asignadaId   String?
   creadoPor    User?   @relation("TareaCreador", fields: [creadoPorId], references: [id])
   creadoPorId  String?
 
+  activities TaskActivity[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([etapa])
   @@index([asignadaId])
+  @@index([dueAt])
+}
+
+model TaskActivity {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  tipo      String
+  detalle   String?
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
 }
 
 // ───────────────────────────── Data clínica ─────────────────────────────
