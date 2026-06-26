@@ -9,6 +9,9 @@ import { Toast } from './components/Toast';
 
 import { Dashboard } from './features/Dashboard';
 import { Tareas } from './features/tareas/Tareas';
+import { Chat } from './features/chat/Chat';
+import { ChatProvider } from './features/chat/ChatProvider';
+import { ChatFloating } from './features/chat/ChatFloating';
 import { Protocolos } from './features/Protocolos';
 import { Guiones } from './features/Guiones';
 import { Pagos } from './features/Pagos';
@@ -28,6 +31,7 @@ import type { ViewId } from './lib/nav';
 const VIEWS: Record<ViewId, ComponentType> = {
   dashboard: Dashboard,
   tareas: Tareas,
+  chat: Chat,
   protocolos: Protocolos,
   guiones: Guiones,
   pagos: Pagos,
@@ -88,7 +92,10 @@ function Gate() {
 
   return (
     <AppProvider>
-      <Shell />
+      <ChatProvider>
+        <Shell />
+        <ChatFloating />
+      </ChatProvider>
     </AppProvider>
   );
 }

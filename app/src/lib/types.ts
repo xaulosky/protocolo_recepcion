@@ -147,3 +147,28 @@ export interface Notification {
   readAt: string | null;
   createdAt: string;
 }
+
+// ── Chat interno ──
+
+export interface ChatUser {
+  id: string;
+  nombre: string;
+  role: Role;
+}
+
+export interface ChatMessage {
+  id: string;
+  contenido: string;
+  createdAt: string;
+  autor: ChatUser;
+}
+
+export interface Conversation {
+  id: string;
+  esGrupo: boolean;
+  titulo: string;
+  members: ChatUser[];
+  ultimoMensaje: { contenido: string; createdAt: string; autorNombre: string } | null;
+  unread: number;
+  updatedAt: string;
+}
