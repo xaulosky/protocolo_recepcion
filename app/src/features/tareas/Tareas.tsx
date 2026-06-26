@@ -13,11 +13,6 @@ import { TareasCalendario } from './TareasCalendario';
 
 type ViewMode = 'kanban' | 'tabla' | 'calendario';
 
-const TIPOS = [
-  'Confirmación de cita', 'Mensaje sin responder', 'Reagendamiento',
-  'Solicitud de reembolso', 'Suspensión', 'Seguimiento post-tratamiento', 'Pago / cobro pendiente',
-];
-
 export function Tareas() {
   const { toast } = useApp();
   const { hasRole } = useAuth();
