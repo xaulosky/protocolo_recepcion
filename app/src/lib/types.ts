@@ -191,6 +191,15 @@ export interface ComunicacionLog {
   createdAt: string;
 }
 
+export interface CirugiaActividad {
+  id: string;
+  tipo: string;
+  descripcion: string;
+  datos?: Record<string, unknown> | null;
+  usuario: { nombre: string };
+  createdAt: string;
+}
+
 export interface CirugiaListItem {
   id: string;
   paciente: string;
@@ -212,6 +221,7 @@ export interface Cirugia extends Omit<CirugiaListItem, 'presupuesto' | '_count'>
   presupuesto: CirugiaPresupuesto | null;
   insumos: CirugiaInsumo[];
   comunicaciones: ComunicacionLog[];
+  actividad: CirugiaActividad[];
   tareas: Task[];
 }
 

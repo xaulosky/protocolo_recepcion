@@ -117,6 +117,18 @@ export async function tasksRoutes(app: FastifyInstance) {
     if (parsed.data.etapa && parsed.data.etapa !== before.etapa) {
       await recordActivity(id, req.user.sub, 'MOVIDA',
         `${ETAPA_ES[before.etapa]} → ${ETAPA_ES[parsed.data.etapa]}`);
+
+      // Si la tarea está vinculada a una cirugía, registrar en actividad de cirugía
+      if (before.cirugiaId) {
+        await prisma.cirugiaActividad.create({
+          data: {
+            cirugiaId:   before.cirugiaId,
+            usuarioId:   req.user.sub,
+            tipo:        'TAREA',
+            descripcion: `Tarea "${before.tipo}": ${ETAPA_ES[before.etapa]} → ${ETAPA_ES[parsed.data.etapa]}`,
+          },
+        });
+      }
     }
     if (parsed.data.asignadaId !== undefined && parsed.data.asignadaId !== before.asignadaId) {
       const nombre = task.asignada?.nombre ?? 'nadie';

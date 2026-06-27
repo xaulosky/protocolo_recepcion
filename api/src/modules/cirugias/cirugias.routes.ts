@@ -68,6 +68,10 @@ const incluyeDetalle = {
     orderBy: { createdAt: 'desc' as const },
     include: { usuario: { select: { id: true, nombre: true } } },
   },
+  actividad: {
+    orderBy: { createdAt: 'desc' as const },
+    include: { usuario: { select: { nombre: true } } },
+  },
   tareas: {
     include: {
       asignada:  { select: { id: true, nombre: true } },
@@ -76,6 +80,21 @@ const incluyeDetalle = {
     orderBy: { createdAt: 'asc' as const },
   },
 } as const;
+
+const ETAPA_ES: Record<string, string> = {
+  EVALUACION: 'Evaluación', PRESUPUESTO_ENVIADO: 'Presupuesto enviado',
+  CONFIRMADO: 'Confirmado', PREPARACION: 'Preparación',
+  EN_EJECUCION: 'En ejecución', POST_OPERATORIO: 'Post-operatorio',
+  CERRADO: 'Cerrado',
+};
+
+const PRES_ES: Record<string, string> = {
+  PENDIENTE: 'pendiente', APROBADO: 'aprobado', RECHAZADO: 'rechazado',
+};
+
+async function logActividad(cirugiaId: string, usuarioId: string, tipo: string, descripcion: string, datos?: object) {
+  await prisma.cirugiaActividad.create({ data: { cirugiaId, usuarioId, tipo, descripcion, datos } });
+}
 
 export async function cirugiasRoutes(app: FastifyInstance) {
   const canWrite = { preHandler: app.authorize([Role.ADMIN, Role.RECEPCION]) };
@@ -137,6 +156,8 @@ export async function cirugiasRoutes(app: FastifyInstance) {
     const parsed = updateSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos' });
 
+    const anterior = await prisma.cirugia.findUnique({ where: { id }, select: { etapa: true } });
+
     const data = {
       ...parsed.data,
       fechaCirugia: parsed.data.fechaCirugia !== undefined
@@ -145,6 +166,14 @@ export async function cirugiasRoutes(app: FastifyInstance) {
     };
 
     const cirugia = await prisma.cirugia.update({ where: { id }, data, include: incluyeListado });
+
+    if (anterior && parsed.data.etapa && parsed.data.etapa !== anterior.etapa) {
+      await logActividad(id, req.user.sub, 'ETAPA',
+        `Etapa: ${ETAPA_ES[anterior.etapa]} → ${ETAPA_ES[parsed.data.etapa]}`,
+        { de: anterior.etapa, a: parsed.data.etapa },
+      );
+    }
+
     return { cirugia };
   });
 
@@ -161,6 +190,8 @@ export async function cirugiasRoutes(app: FastifyInstance) {
     const parsed = presupuestoSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos' });
 
+    const anteriorPres = await prisma.presupuesto.findUnique({ where: { cirugiaId: id }, select: { estado: true, monto: true } });
+
     const { enviadoAt, ...rest } = parsed.data;
     const enviadoAtDate = enviadoAt ? new Date(enviadoAt) : null;
 
@@ -169,7 +200,19 @@ export async function cirugiasRoutes(app: FastifyInstance) {
       update: { ...rest, enviadoAt: enviadoAt !== undefined ? enviadoAtDate : undefined },
       create: { ...rest, cirugiaId: id, enviadoAt: enviadoAtDate },
     });
-    await prisma.cirugia.update({ where: { id }, data: {} }); // touch updatedAt
+    await prisma.cirugia.update({ where: { id }, data: {} });
+
+    const estadoCambio = !anteriorPres || anteriorPres.estado !== parsed.data.estado;
+    const montoCambio  = anteriorPres && anteriorPres.monto !== parsed.data.monto;
+    if (estadoCambio || montoCambio) {
+      const partes: string[] = [];
+      if (estadoCambio) partes.push(`Estado: ${PRES_ES[parsed.data.estado]}`);
+      if (montoCambio) partes.push(`Monto: $${parsed.data.monto.toLocaleString('es-CL')}`);
+      await logActividad(id, req.user.sub, 'PRESUPUESTO', `Presupuesto — ${partes.join(', ')}`,
+        { estado: parsed.data.estado, monto: parsed.data.monto },
+      );
+    }
+
     return { presupuesto };
   });
 
@@ -186,11 +229,20 @@ export async function cirugiasRoutes(app: FastifyInstance) {
 
   // PATCH /cirugias/:id/insumos/:insumoId
   app.patch('/:id/insumos/:insumoId', canWrite, async (req, reply) => {
-    const { insumoId } = req.params as { id: string; insumoId: string };
+    const { id, insumoId } = req.params as { id: string; insumoId: string };
     const parsed = insumoUpdateSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos' });
 
+    const anteriorIns = await prisma.cirugiaInsumo.findUnique({ where: { id: insumoId }, select: { listo: true, nombre: true } });
+
     const insumo = await prisma.cirugiaInsumo.update({ where: { id: insumoId }, data: parsed.data });
+
+    if (anteriorIns && typeof parsed.data.listo === 'boolean' && parsed.data.listo !== anteriorIns.listo) {
+      await logActividad(id, req.user.sub, 'INSUMO',
+        `${parsed.data.listo ? '✓' : '○'} "${anteriorIns.nombre}" marcado como ${parsed.data.listo ? 'listo' : 'pendiente'}`,
+      );
+    }
+
     return { insumo };
   });
 

@@ -48,6 +48,7 @@ model User {
   taskActivities    TaskActivity[]
   cirugiasCreadas   Cirugia[]          @relation("CirugiaCreador")
   comunicacionLogs  ComunicacionLog[]
+  cirugiaActividad  CirugiaActividad[] @relation("CirugiaActividadUsuario")
   chatMemberships   ConversationMember[]
   mensajes          Message[]
   // Si el usuario es una estación Box, su buzón privado con Recepción.
@@ -437,6 +438,7 @@ model Cirugia {
   presupuesto    Presupuesto?
   insumos        CirugiaInsumo[]
   comunicaciones ComunicacionLog[]
+  actividad      CirugiaActividad[]
   tareas         Task[]
 
   createdAt DateTime @default(now())
@@ -484,6 +486,20 @@ model ComunicacionLog {
   usuario     User              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   usuarioId   String
   createdAt   DateTime          @default(now())
+
+  @@index([cirugiaId])
+}
+
+model CirugiaActividad {
+  id          String   @id @default(cuid())
+  cirugia     Cirugia  @relation(fields: [cirugiaId], references: [id], onDelete: Cascade)
+  cirugiaId   String
+  tipo        String   // "ETAPA" | "PRESUPUESTO" | "INSUMO" | "TAREA"
+  descripcion String
+  datos       Json?
+  usuario     User     @relation("CirugiaActividadUsuario", fields: [usuarioId], references: [id])
+  usuarioId   String
+  createdAt   DateTime @default(now())
 
   @@index([cirugiaId])
 }

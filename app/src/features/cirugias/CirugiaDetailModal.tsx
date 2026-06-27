@@ -4,7 +4,7 @@ import { Icon } from '../../lib/icons';
 import { fmtDate, fmtDateTime, money, clp } from '../../lib/format';
 import { useResource } from '../../lib/useResource';
 import { api } from '../../lib/api';
-import type { Cirugia, Professional, Product, EtapaCirugia, InsumoTipo, CanalComunicacion, PresupuestoEstado, Task, Prioridad } from '../../lib/types';
+import type { Cirugia, Professional, Product, EtapaCirugia, InsumoTipo, CanalComunicacion, PresupuestoEstado, Task, Prioridad, CirugiaActividad } from '../../lib/types';
 import type { NuevaCirugia } from './useCirugias';
 import {
   ETAPA_LABEL, ETAPA_STYLE, ETAPAS_ORDEN,
@@ -706,13 +706,17 @@ function TabTareas({ cirugia }: TabTareasProps) {
   );
 }
 
-// ─── Tab Comunicaciones ───────────────────────────────────────────────────────
+// ─── Tab Comunicaciones + Actividad ──────────────────────────────────────────
 
 interface TabComunicacionesProps {
   cirugia: Cirugia; saving: boolean; setSaving: (v: boolean) => void;
   agregarComunicacion: (data: { canal: CanalComunicacion; descripcion: string }) => Promise<void>;
   eliminarComunicacion: (logId: string) => Promise<void>;
 }
+
+const ACTIVIDAD_ICON: Record<string, string> = {
+  ETAPA: 'arrow', PRESUPUESTO: 'tag', INSUMO: 'pkg', TAREA: 'tasks',
+};
 
 function TabComunicaciones({ cirugia, saving, setSaving, agregarComunicacion, eliminarComunicacion }: TabComunicacionesProps) {
   const [draft, setDraft] = useState({ canal: 'LLAMADA' as CanalComunicacion, descripcion: '' });
@@ -728,9 +732,19 @@ function TabComunicaciones({ cirugia, saving, setSaving, agregarComunicacion, el
     }
   };
 
+  // Timeline unificado: comunicaciones manuales + actividad automática
+  type TimelineItem =
+    | { _kind: 'com'; item: Cirugia['comunicaciones'][0] }
+    | { _kind: 'act'; item: CirugiaActividad };
+
+  const timeline: TimelineItem[] = [
+    ...cirugia.comunicaciones.map((c) => ({ _kind: 'com' as const, item: c })),
+    ...(cirugia.actividad ?? []).map((a) => ({ _kind: 'act' as const, item: a })),
+  ].sort((a, b) => new Date(b.item.createdAt).getTime() - new Date(a.item.createdAt).getTime());
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* Formulario agregar */}
+      {/* Formulario nueva comunicación */}
       <div style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)', borderRadius: 8, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 8 }}>
           <div>
@@ -751,27 +765,49 @@ function TabComunicaciones({ cirugia, saving, setSaving, agregarComunicacion, el
         </button>
       </div>
 
-      {/* Log */}
-      {cirugia.comunicaciones.length === 0
-        ? <p style={{ fontSize: 12, color: 'var(--muted)' }}>Sin comunicaciones registradas.</p>
-        : cirugia.comunicaciones.map((c) => (
-          <div key={c.id} style={{ display: 'flex', gap: 10, padding: '8px 12px', background: 'var(--bg)', borderRadius: 6, border: '1px solid var(--border-soft)', alignItems: 'flex-start' }}>
-            <div style={{ color: 'var(--muted-2)', paddingTop: 2, flexShrink: 0 }}>
-              <Icon name={CANAL_ICON[c.canal] as 'phone'} size={14} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-2)' }}>{CANAL_LABEL[c.canal]}</span>
-                <span style={{ fontSize: 11, color: 'var(--muted)' }}>· {c.usuario.nombre}</span>
+      {/* Timeline unificado */}
+      {timeline.length === 0
+        ? <p style={{ fontSize: 12, color: 'var(--muted)' }}>Sin actividad registrada.</p>
+        : timeline.map((entry) => {
+            if (entry._kind === 'com') {
+              const c = entry.item;
+              return (
+                <div key={c.id} style={{ display: 'flex', gap: 10, padding: '8px 12px', background: 'var(--bg)', borderRadius: 6, border: '1px solid var(--border-soft)', alignItems: 'flex-start' }}>
+                  <div style={{ color: 'var(--muted-2)', paddingTop: 2, flexShrink: 0 }}>
+                    <Icon name={CANAL_ICON[c.canal] as 'phone'} size={14} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 2 }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-2)' }}>{CANAL_LABEL[c.canal]}</span>
+                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>· {c.usuario.nombre}</span>
+                    </div>
+                    <div style={{ fontSize: 13 }}>{c.descripcion}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 3 }}>{fmtDateTime(c.createdAt)}</div>
+                  </div>
+                  <button onClick={() => eliminarComunicacion(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2, flexShrink: 0 }}>
+                    <Icon name="trash" size={12} />
+                  </button>
+                </div>
+              );
+            }
+
+            // Entrada automática de actividad
+            const a = entry.item;
+            const iconName = (ACTIVIDAD_ICON[a.tipo] ?? 'info') as 'info';
+            return (
+              <div key={a.id} style={{ display: 'flex', gap: 10, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-softer)', alignItems: 'flex-start' }}>
+                <div style={{ paddingTop: 3, flexShrink: 0, color: 'var(--muted-3)' }}>
+                  <Icon name={iconName} size={12} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{a.descripcion}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 2 }}>
+                    {a.usuario.nombre} · {fmtDateTime(a.createdAt)}
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: 13 }}>{c.descripcion}</div>
-              <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 3 }}>{fmtDateTime(c.createdAt)}</div>
-            </div>
-            <button onClick={() => eliminarComunicacion(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2, flexShrink: 0 }}>
-              <Icon name="trash" size={12} />
-            </button>
-          </div>
-        ))}
+            );
+          })}
     </div>
   );
 }
