@@ -238,7 +238,7 @@ function NewChatPanel({ onDone }: { onDone: () => void }) {
             placeholder="Buscar persona…"
             style={{ ...inputStyle, marginTop: modo === 'grupo' ? 6 : 0 }}
           />
-          <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: 6 }}>
+          <div style={{ marginTop: 6 }}>
             {filtrados.map((u) => {
               const checked = sel.includes(u.id);
               return (
@@ -457,11 +457,11 @@ export function ChatView({ variant }: { variant: Variant }) {
       : <ConversationList variant="floating" />;
   }
 
-  // En kiosko (PWA) ocupa todo el alto disponible del contenedor; en sección, alto fijo.
+  // En kiosko (PWA) ocupa todo el alto disponible del contenedor; en sección, rellena el main.
   const kiosk = variant === 'kiosk';
   return (
     <div style={{
-      display: 'flex', height: kiosk ? '100%' : 'calc(100vh - 132px)', background: 'var(--surface)',
+      display: 'flex', flex: 1, height: '100%', background: 'var(--surface)',
       border: kiosk ? 'none' : '1px solid var(--border)',
       borderRadius: kiosk ? 0 : 'var(--radius-card)', overflow: 'hidden', minHeight: 0,
     }}>

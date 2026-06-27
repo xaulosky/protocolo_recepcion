@@ -76,7 +76,7 @@ function Shell() {
         style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft, transition: 'margin-left .25s ease', overflow: 'hidden', minWidth: 0 }}
       >
         <Header onOpenMobile={() => setMobileOpen(true)} />
-        <main style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+        <main style={{ flex: 1, overflowY: view === 'chat' ? 'hidden' : 'auto', padding: view === 'chat' ? 0 : 24, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {allowed
             ? <ViewComponent />
             : <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted-2)', fontSize: 14 }}>No tienes acceso a esta sección.</div>}

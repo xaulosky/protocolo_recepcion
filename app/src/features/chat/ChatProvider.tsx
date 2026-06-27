@@ -257,6 +257,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(t);
   }, [status, refreshConversations, loadUsers]);
 
+  // Refresca la lista de usuarios cada vez que se abre el panel de nuevo chat,
+  // para que los usuarios creados recientemente aparezcan sin recargar la página.
+  useEffect(() => {
+    if (newChatOpen) loadUsers();
+  }, [newChatOpen, loadUsers]);
+
   // Polling de mensajes de la conversación abierta.
   useEffect(() => {
     if (!activeId) return;
