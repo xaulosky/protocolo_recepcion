@@ -24,7 +24,7 @@ function todayStr() {
 
 // ── Generación del documento imprimible ──
 
-function buildPrintHtml(c: Consent, f: FillData): string {
+function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
   const cb = (checked: boolean) =>
     `<span style="display:inline-block;width:14px;height:14px;border:2px solid #1A1918;border-radius:3px;margin-right:6px;vertical-align:middle;background:${checked ? '#1A1918' : 'transparent'};"></span>`;
 
@@ -41,7 +41,7 @@ function buildPrintHtml(c: Consent, f: FillData): string {
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Georgia',serif;color:#1A1918;max-width:780px;margin:24px auto;padding:0 28px;line-height:1.65;font-size:13px;}
     .header{text-align:center;padding-bottom:12px;margin-bottom:16px;border-bottom:2.5px solid #7C6247;}
-    .header h1{font-size:14px;letter-spacing:2px;color:#7C6247;font-family:Arial,sans-serif;text-transform:uppercase;}
+    .header img{height:52px;width:auto;display:block;margin:0 auto 8px;}
     .header h2{font-size:18px;color:#1A1918;margin-top:4px;font-weight:700;letter-spacing:.5px;}
     .header sub{font-size:11px;color:#888;letter-spacing:.5px;}
     .datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin:14px 0;padding:12px 16px;background:#FAF8F5;border:1px solid #E8E2D9;border-radius:8px;}
@@ -70,7 +70,7 @@ function buildPrintHtml(c: Consent, f: FillData): string {
   </style></head><body>
 
   <div class="header">
-    <h1>Clínica Cialo</h1>
+    <img src="${origin}/logo-cialo.png" alt="Clínica Cialo" />
     <h2>${c.title}</h2>
     <sub>${f.fecha}</sub>
   </div>
@@ -151,7 +151,7 @@ function consentIntroGenerico(c: Consent) {
 function printWithData(c: Consent, f: FillData) {
   const win = window.open('', '_blank', 'width=860,height=960');
   if (!win) return;
-  win.document.write(buildPrintHtml(c, f));
+  win.document.write(buildPrintHtml(c, f, window.location.origin));
   win.document.close();
   win.focus();
 }
