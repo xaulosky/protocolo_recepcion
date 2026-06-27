@@ -39,34 +39,34 @@ function buildPrintHtml(c: Consent, f: FillData): string {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Consentimiento — ${f.nombre}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Georgia',serif;color:#1A1918;max-width:780px;margin:36px auto;padding:0 32px;line-height:1.75;font-size:13.5px;}
-    .header{text-align:center;padding-bottom:18px;margin-bottom:24px;border-bottom:2.5px solid #7C6247;}
-    .header h1{font-size:15px;letter-spacing:2px;color:#7C6247;font-family:Arial,sans-serif;text-transform:uppercase;}
-    .header h2{font-size:20px;color:#1A1918;margin-top:6px;font-weight:700;letter-spacing:.5px;}
+    body{font-family:'Georgia',serif;color:#1A1918;max-width:780px;margin:24px auto;padding:0 28px;line-height:1.65;font-size:13px;}
+    .header{text-align:center;padding-bottom:12px;margin-bottom:16px;border-bottom:2.5px solid #7C6247;}
+    .header h1{font-size:14px;letter-spacing:2px;color:#7C6247;font-family:Arial,sans-serif;text-transform:uppercase;}
+    .header h2{font-size:18px;color:#1A1918;margin-top:4px;font-weight:700;letter-spacing:.5px;}
     .header sub{font-size:11px;color:#888;letter-spacing:.5px;}
-    .datos{display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;margin:20px 0;padding:16px 20px;background:#FAF8F5;border:1px solid #E8E2D9;border-radius:8px;}
+    .datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin:14px 0;padding:12px 16px;background:#FAF8F5;border:1px solid #E8E2D9;border-radius:8px;}
     .dato label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:2px;}
-    .dato span{font-size:14px;font-weight:600;color:#1A1918;display:block;border-bottom:1px solid #BBA97A;padding-bottom:3px;}
+    .dato span{font-size:13.5px;font-weight:600;color:#1A1918;display:block;border-bottom:1px solid #BBA97A;padding-bottom:2px;}
     .dato.full{grid-column:1/-1;}
-    .declaration{font-size:13.5px;line-height:1.85;text-align:justify;margin:18px 0;color:#1A1918;}
-    h3{font-size:12px;color:#7C6247;text-transform:uppercase;letter-spacing:.8px;margin-top:20px;margin-bottom:8px;border-bottom:1px solid #E8E2D9;padding-bottom:4px;}
-    .section{margin-top:14px;}
-    ul{margin-left:20px;font-size:13px;color:#333;}
-    li{margin-bottom:5px;}
-    .foto{margin:18px 0;padding:14px 18px;background:#FAF8F5;border:1px solid #E8E2D9;border-radius:8px;}
-    .foto h3{margin-top:0;margin-bottom:8px;}
-    .foto p{font-size:13px;margin-bottom:10px;color:#444;}
+    .declaration{font-size:13px;line-height:1.7;text-align:justify;margin:12px 0;color:#1A1918;}
+    h3{font-size:11.5px;color:#7C6247;text-transform:uppercase;letter-spacing:.8px;margin-top:14px;margin-bottom:6px;border-bottom:1px solid #E8E2D9;padding-bottom:3px;}
+    .section{margin-top:10px;}
+    ul{margin-left:18px;font-size:12.5px;color:#333;}
+    li{margin-bottom:4px;}
+    .foto{margin:12px 0;padding:10px 14px;background:#FAF8F5;border:1px solid #E8E2D9;border-radius:8px;}
+    .foto h3{margin-top:0;margin-bottom:6px;}
+    .foto p{font-size:12.5px;margin-bottom:8px;color:#444;}
     .foto-opts{display:flex;gap:32px;}
-    .foto-opts label{font-size:14px;display:flex;align-items:center;gap:4px;}
-    .sign-section{margin-top:52px;}
+    .foto-opts label{font-size:13.5px;display:flex;align-items:center;gap:4px;}
+    .sign-section{margin-top:28px;}
     .sign-grid{display:flex;gap:60px;justify-content:space-between;}
     .sign-box{flex:1;text-align:center;}
-    .sign-line{border-top:1.5px solid #1A1918;margin-top:64px;padding-top:8px;}
-    .sign-name{font-size:13px;font-weight:700;color:#1A1918;}
+    .sign-line{border-top:1.5px solid #1A1918;margin-top:44px;padding-top:6px;}
+    .sign-name{font-size:12.5px;font-weight:700;color:#1A1918;}
     .sign-role{font-size:11px;color:#888;margin-top:2px;}
     .sign-rut{font-size:11px;color:#555;margin-top:2px;}
-    .legal{margin-top:32px;padding-top:12px;border-top:1px solid #ddd;font-size:10.5px;color:#999;text-align:center;}
-    @media print{body{margin:16px;} @page{margin:16mm 18mm;}}
+    .legal{margin-top:20px;padding-top:10px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center;}
+    @media print{body{margin:0;padding:0 4mm;} @page{margin:14mm 16mm;size:letter;}}
   </style></head><body>
 
   <div class="header">
