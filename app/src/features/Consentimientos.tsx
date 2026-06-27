@@ -458,7 +458,7 @@ export function Consentimientos() {
   const { data, loading, error, reload } = useResource<{ consents: Consent[] }>('/data/consents');
   const consents = data?.consents ?? [];
 
-  const tabBtn = (id: 'plantillas' | 'enviados', label: string): React.CSSProperties => ({
+  const tabBtn = (id: 'plantillas' | 'enviados', _label: string): React.CSSProperties => ({
     padding: '8px 16px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: 'none', background: 'none',
     color: tab === id ? 'var(--text)' : 'var(--muted-2)',
     borderBottom: `2px solid ${tab === id ? 'var(--primary)' : 'transparent'}`,
