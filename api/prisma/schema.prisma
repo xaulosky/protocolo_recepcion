@@ -18,6 +18,9 @@ enum Role {
   RECEPCION
   PROFESIONAL
   LECTURA
+  // Estación de un box (ej. "Box 3"): solo ve mensajería. Su línea con Recepción
+  // es un buzón privado (Conversation.buzonBoxId).
+  BOX
 }
 
 model User {
@@ -45,6 +48,8 @@ model User {
   taskActivities    TaskActivity[]
   chatMemberships   ConversationMember[]
   mensajes          Message[]
+  // Si el usuario es una estación Box, su buzón privado con Recepción.
+  buzon             Conversation? @relation("BuzonBox")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -177,6 +182,12 @@ model Conversation {
   nombre    String?  // nombre del grupo/canal (null en DMs)
   // Para DMs: clave canónica "menorId:mayorId" → unicidad garantizada por la BD.
   dmKey     String?  @unique
+  // Buzón de estación: conversación privada entre un Box y todo el equipo de
+  // Recepción. `buzonBoxId` = la cuenta Box dueña; miembros = ese Box + todos
+  // los usuarios activos con rol RECEPCION. El título es dinámico según quién mira:
+  // el box ve "Recepción"; recepción ve el nombre del box.
+  buzonBoxId String?  @unique
+  buzonBox   User?    @relation("BuzonBox", fields: [buzonBoxId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt // se toca con cada mensaje, para ordenar
 

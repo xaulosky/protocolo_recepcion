@@ -52,7 +52,8 @@ export function ChatFloating() {
                     {activeConv!.titulo}
                   </div>
                   <div style={{ fontSize: 11, opacity: 0.8 }}>
-                    {activeConv!.roles.length > 0 ? `Canal · ${activeConv!.members.length} integrantes`
+                    {activeConv!.esBuzon ? 'Buzón de recepción'
+                      : activeConv!.roles.length > 0 ? `Canal · ${activeConv!.members.length} integrantes`
                       : activeConv!.esGrupo ? `${activeConv!.members.length} integrantes` : 'Mensaje directo'}
                   </div>
                 </div>

@@ -19,6 +19,8 @@ const ROLE_DEFAULTS: Record<Role, ViewId[]> = {
   PROFESIONAL: [...PERMISSION_VIEWS],
   // Solo lectura: secciones de referencia, sin tareas.
   LECTURA: PERMISSION_VIEWS.filter((v) => v !== 'tareas'),
+  // Estación Box: solo mensajería.
+  BOX: ['chat'],
 };
 
 /** Conjunto efectivo de secciones que el usuario puede ver. */

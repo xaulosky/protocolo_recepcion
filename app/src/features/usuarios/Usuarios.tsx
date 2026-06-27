@@ -9,10 +9,10 @@ import { UserModal } from './UserModal';
 import type { UserFormData } from './UserModal';
 
 const ROLE_LABEL: Record<Role, string> = {
-  ADMIN: 'Administrador', RECEPCION: 'Recepción', PROFESIONAL: 'Profesional', LECTURA: 'Solo lectura',
+  ADMIN: 'Administrador', RECEPCION: 'Recepción', PROFESIONAL: 'Profesional', LECTURA: 'Solo lectura', BOX: 'Box / Estación',
 };
 const ROLE_COLOR: Record<Role, string> = {
-  ADMIN: 'var(--primary)', RECEPCION: 'var(--green)', PROFESIONAL: '#4A6A8C', LECTURA: 'var(--muted)',
+  ADMIN: 'var(--primary)', RECEPCION: 'var(--green)', PROFESIONAL: '#4A6A8C', LECTURA: 'var(--muted)', BOX: '#B07B3E',
 };
 
 export function Usuarios() {

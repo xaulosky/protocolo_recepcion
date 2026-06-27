@@ -46,8 +46,16 @@ export async function chatRoutes(app: FastifyInstance) {
   // GET /chat/users — usuarios para iniciar un DM (excluye cuentas compartidas/estación,
   // ej. "Recepción", a las que se escribe por el canal en vez de como DM individual).
   app.get('/users', async (req) => {
+    const me = await prisma.user.findUnique({ where: { id: req.user.sub }, select: { role: true } });
     const users = await prisma.user.findMany({
-      where: { activo: true, id: { not: req.user.sub }, ocultarEnDM: false },
+      where: {
+        activo: true,
+        id: { not: req.user.sub },
+        ocultarEnDM: false,
+        // Las estaciones Box no inician DMs con recepcionistas: le escriben al
+        // equipo por su buzón "Recepción". Sí ven otros boxes, admin y profesionales.
+        ...(me?.role === Role.BOX ? { role: { not: Role.RECEPCION } } : {}),
+      },
       select: memberSelect,
       orderBy: { nombre: 'asc' },
     });
@@ -78,11 +86,23 @@ export async function chatRoutes(app: FastifyInstance) {
         const c = m.conversation;
         const unread = await unreadCount(c.id, userId, m.lastReadAt);
         const otros = c.members.map((cm) => cm.user).filter((u) => u.id !== userId);
-        const titulo = c.esGrupo ? c.nombre ?? 'Grupo' : otros[0]?.nombre ?? 'Usuario';
+        // Buzón de estación: el box ve "Recepción"; recepción ve el nombre del box.
+        const esBuzon = c.buzonBoxId != null;
+        let titulo: string;
+        if (esBuzon) {
+          titulo = userId === c.buzonBoxId
+            ? 'Recepción'
+            : c.members.find((cm) => cm.user.id === c.buzonBoxId)?.user.nombre ?? 'Box';
+        } else if (c.esGrupo) {
+          titulo = c.nombre ?? 'Grupo';
+        } else {
+          titulo = otros[0]?.nombre ?? 'Usuario';
+        }
         const last = c.messages[0];
         return {
           id: c.id,
           esGrupo: c.esGrupo,
+          esBuzon,
           roles: c.roles,
           titulo,
           members: c.members.map((cm) => cm.user),
@@ -208,7 +228,7 @@ export async function chatRoutes(app: FastifyInstance) {
     const now = new Date();
     const conv = await prisma.conversation.update({
       where: { id }, data: { updatedAt: now },
-      select: { esGrupo: true, nombre: true, roles: true },
+      select: { esGrupo: true, nombre: true, roles: true, buzonBoxId: true },
     });
     await prisma.conversationMember.update({
       where: { conversationId_userId: { conversationId: id, userId: req.user.sub } },
@@ -220,15 +240,29 @@ export async function chatRoutes(app: FastifyInstance) {
       where: { conversationId: id, userId: { not: req.user.sub } },
       select: { userId: true },
     });
-    const esCanalOGrupo = conv.esGrupo || conv.roles.length > 0;
-    const title = esCanalOGrupo && conv.nombre
-      ? `${conv.nombre} · ${message.autor.nombre}`
-      : message.autor.nombre;
     const body = parsed.data.contenido.slice(0, 140);
+    const data = { url: '/mensajeria', conversationId: id };
+
+    // Título del push según el tipo de conversación (en el buzón depende de quién recibe).
+    let titleFor: (recipientId: string) => string;
+    if (conv.buzonBoxId) {
+      const box = await prisma.user.findUnique({ where: { id: conv.buzonBoxId }, select: { nombre: true } });
+      const boxNombre = box?.nombre ?? 'Box';
+      const autorEsBox = message.autor.id === conv.buzonBoxId;
+      titleFor = (rid) =>
+        rid === conv.buzonBoxId
+          ? `Recepción · ${message.autor.nombre}`               // el box ve "Recepción"
+          : autorEsBox ? boxNombre : `${boxNombre} · ${message.autor.nombre}`; // recepción ve "Box N"
+    } else {
+      const esCanalOGrupo = conv.esGrupo || conv.roles.length > 0;
+      const title = esCanalOGrupo && conv.nombre
+        ? `${conv.nombre} · ${message.autor.nombre}`
+        : message.autor.nombre;
+      titleFor = () => title;
+    }
+
     await Promise.all(
-      otros.map((m) =>
-        sendPush(m.userId, { title, body, data: { url: '/mensajeria', conversationId: id } }),
-      ),
+      otros.map((m) => sendPush(m.userId, { title: titleFor(m.userId), body, data })),
     );
 
     return reply.code(201).send({ message });

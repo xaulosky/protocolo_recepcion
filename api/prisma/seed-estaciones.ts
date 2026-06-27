@@ -1,61 +1,53 @@
 /**
- * Crea/actualiza los usuarios de estación (Box 1–9 + Recepción) y un canal "General"
- * que conecta a todas las estaciones. Idempotente: se puede correr varias veces.
+ * Crea/actualiza los usuarios de estación: Box 1–9 (rol BOX, solo mensajería) y la
+ * cuenta compartida de Recepción (rol RECEPCION, oculta en el selector de DM). Luego
+ * sincroniza los "buzones": una línea privada por cada Box con todo el equipo de
+ * Recepción. Idempotente: se puede correr varias veces.
  * Ejecutar: npx tsx prisma/seed-estaciones.ts
  */
 import bcrypt from 'bcryptjs';
 import { PrismaClient, Role } from '@prisma/client';
+import { syncBuzones } from '../src/lib/buzon.ts';
 
 const prisma = new PrismaClient();
 
-// Estaciones: 9 boxes + recepción. Contraseña = parte local del email + ".2026".
-const estaciones = [
-  ...Array.from({ length: 9 }, (_, i) => ({
-    email: `box${i + 1}@cialo.cl`,
-    nombre: `Box ${i + 1}`,
-    password: `box${i + 1}.2026`,
-  })),
-  { email: 'recepcion@cialo.cl', nombre: 'Recepción', password: 'recepcion.2026' },
-];
+// 9 boxes (estaciones, solo chat) + cuenta compartida de recepción.
+const boxes = Array.from({ length: 9 }, (_, i) => ({
+  email: `box${i + 1}@cialo.cl`,
+  nombre: `Box ${i + 1}`,
+  password: `box${i + 1}.2026`,
+}));
 
 async function main() {
-  console.log('Creando usuarios de estación…');
-  for (const e of estaciones) {
-    const passwordHash = await bcrypt.hash(e.password, 10);
+  console.log('Creando estaciones Box…');
+  for (const b of boxes) {
+    const passwordHash = await bcrypt.hash(b.password, 10);
     await prisma.user.upsert({
-      where: { email: e.email },
+      where: { email: b.email },
       // No piso la contraseña si el usuario ya existe (por si la cambiaron).
-      update: { nombre: e.nombre, role: Role.RECEPCION, activo: true, permisos: ['chat'] },
-      create: { email: e.email, nombre: e.nombre, role: Role.RECEPCION, activo: true, permisos: ['chat'], passwordHash },
+      update: { nombre: b.nombre, role: Role.BOX, activo: true, permisos: [], ocultarEnDM: false },
+      create: { email: b.email, nombre: b.nombre, role: Role.BOX, activo: true, permisos: [], ocultarEnDM: false, passwordHash },
     });
-    console.log(`  ✓ ${e.nombre} (${e.email})`);
+    console.log(`  ✓ ${b.nombre} (${b.email})`);
   }
 
-  // Canal "General": todos los RECEPCION (incluye las estaciones) quedan conectados.
-  console.log('Asegurando canal "General"…');
-  let canal = await prisma.conversation.findFirst({ where: { nombre: 'General', roles: { has: Role.RECEPCION } } });
-  if (!canal) {
-    canal = await prisma.conversation.create({
-      data: { esGrupo: true, roles: [Role.RECEPCION], nombre: 'General' },
-    });
-    console.log('  ✓ canal General creado');
-  } else {
-    console.log('  · canal General ya existía');
-  }
+  // Cuenta compartida de recepción (la que corre en los Mac de recepción).
+  // Rol RECEPCION (acceso completo) y oculta del selector de DM: se le escribe por
+  // el buzón/canal, no como persona individual.
+  console.log('Asegurando cuenta de Recepción…');
+  const recepHash = await bcrypt.hash('recepcion.2026', 10);
+  await prisma.user.upsert({
+    where: { email: 'recepcion@cialo.cl' },
+    update: { nombre: 'Recepción', role: Role.RECEPCION, activo: true, ocultarEnDM: true },
+    create: { email: 'recepcion@cialo.cl', nombre: 'Recepción', role: Role.RECEPCION, activo: true, ocultarEnDM: true, passwordHash: recepHash },
+  });
+  console.log('  ✓ recepcion@cialo.cl');
 
-  // Sincroniza miembros: todos los usuarios RECEPCION activos deben pertenecer.
-  const recepcionUsers = await prisma.user.findMany({ where: { activo: true, role: Role.RECEPCION }, select: { id: true } });
-  let agregados = 0;
-  for (const u of recepcionUsers) {
-    const existing = await prisma.conversationMember.findUnique({
-      where: { conversationId_userId: { conversationId: canal.id, userId: u.id } },
-    });
-    if (!existing) {
-      await prisma.conversationMember.create({ data: { conversationId: canal.id, userId: u.id } });
-      agregados++;
-    }
-  }
-  console.log(`  ✓ ${recepcionUsers.length} miembros en el canal (${agregados} nuevos)`);
+  // Buzones: una conversación privada Box ↔ equipo de Recepción por cada box.
+  console.log('Sincronizando buzones…');
+  await syncBuzones();
+  const total = await prisma.conversation.count({ where: { buzonBoxId: { not: null } } });
+  console.log(`  ✓ ${total} buzones activos`);
   console.log('Listo ✅');
 }
 

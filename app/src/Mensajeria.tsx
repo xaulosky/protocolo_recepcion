@@ -6,7 +6,7 @@ import { Icon } from './lib/icons';
 import { initials } from './lib/format';
 
 const ROLE_LABEL: Record<string, string> = {
-  ADMIN: 'Administrador', RECEPCION: 'Recepción', PROFESIONAL: 'Profesional', LECTURA: 'Solo lectura',
+  ADMIN: 'Administrador', RECEPCION: 'Recepción', PROFESIONAL: 'Profesional', LECTURA: 'Solo lectura', BOX: 'Box / Estación',
 };
 
 function Kiosk() {

@@ -1,6 +1,6 @@
 // Tipos de las entidades que devuelve la API (espejo de los modelos Prisma).
 
-export type Role = 'ADMIN' | 'RECEPCION' | 'PROFESIONAL' | 'LECTURA';
+export type Role = 'ADMIN' | 'RECEPCION' | 'PROFESIONAL' | 'LECTURA' | 'BOX';
 
 export interface AuthUser {
   id: string;
@@ -180,6 +180,7 @@ export interface ChatMessage {
 export interface Conversation {
   id: string;
   esGrupo: boolean;
+  esBuzon: boolean; // buzón de estación Box ↔ equipo de Recepción
   roles: Role[];
   titulo: string;
   members: ChatUser[];

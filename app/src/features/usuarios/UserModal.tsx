@@ -12,6 +12,7 @@ const ROLES: { value: Role; label: string }[] = [
   { value: 'RECEPCION', label: 'Recepción' },
   { value: 'PROFESIONAL', label: 'Profesional' },
   { value: 'LECTURA', label: 'Solo lectura' },
+  { value: 'BOX', label: 'Box / Estación (solo mensajería)' },
 ];
 
 export interface UserFormData {
@@ -152,7 +153,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
         <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, cursor: 'pointer', borderTop: '1px solid var(--border-soft)', paddingTop: 12 }}>
           <input type="checkbox" checked={ocultarEnDM} onChange={(e) => setOcultarEnDM(e.target.checked)} style={{ marginTop: 2 }} />
           <span>
-            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>Cuenta compartida / estación (ej. Recepción, Box)</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>Cuenta compartida / estación (ej. Recepción)</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted-2)', marginTop: 2 }}>
               No aparece en el selector de mensajes directos; se le escribe por el canal, no como DM individual.
             </span>
@@ -165,6 +166,14 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
             <div style={{ fontSize: 13, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <Icon name="shield" size={15} style={{ color: 'var(--primary)' }} />
               Los administradores tienen acceso completo a todas las secciones.
+            </div>
+          ) : role === 'BOX' ? (
+            <div style={{ fontSize: 13, color: 'var(--muted)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <Icon name="msg" size={15} style={{ color: 'var(--primary)', marginTop: 1 }} />
+              <span>
+                Las estaciones Box solo ven <strong>Mensajería</strong>. Tendrán una línea directa
+                con <strong>Recepción</strong> (buzón privado) y podrán escribir a otros boxes.
+              </span>
             </div>
           ) : (
             <>

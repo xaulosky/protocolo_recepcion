@@ -22,12 +22,13 @@ function diaLabel(iso: string) {
   return d.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
 }
 
-function Avatar({ name, size = 36, grupo = false, canal = false }: { name: string; size?: number; grupo?: boolean; canal?: boolean }) {
-  const especial = grupo || canal;
+function Avatar({ name, size = 36, grupo = false, canal = false, buzon = false }: { name: string; size?: number; grupo?: boolean; canal?: boolean; buzon?: boolean }) {
+  const especial = grupo || canal || buzon;
+  const cuadrado = canal || buzon; // canales y buzones: cuadrado redondeado
   return (
     <div
       style={{
-        width: size, height: size, borderRadius: canal ? 9 : '50%', flexShrink: 0,
+        width: size, height: size, borderRadius: cuadrado ? 9 : '50%', flexShrink: 0,
         background: especial ? 'var(--primary-soft-2)' : colorFromString(name),
         color: especial ? 'var(--primary)' : '#fff',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -48,7 +49,7 @@ function ConversationList({ variant }: { variant: Variant }) {
   const floating = variant === 'floating';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%', minHeight: 0, minWidth: 0 }}>
       {/* En la flotante la cabecera la pone el popup; aquí solo en sección/kiosko. */}
       {!floating && (
         <div style={{
@@ -71,24 +72,28 @@ function ConversationList({ variant }: { variant: Variant }) {
         </div>
       )}
 
-      {newChatOpen && <NewChatPanel onDone={() => setNewChatOpen(false)} />}
-
-      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-        {conversations.length === 0 && !newChatOpen && (
-          <div style={{ padding: 24, textAlign: 'center', color: 'var(--muted-2)', fontSize: 13 }}>
-            No tienes conversaciones aún.<br />Toca <strong>＋</strong> para empezar una.
-          </div>
-        )}
-        {conversations.map((c) => (
-          <ConversationRow
-            key={c.id}
-            c={c}
-            active={c.id === activeId}
-            onClick={() => openConversation(c.id)}
-            compact={variant === 'floating'}
-          />
-        ))}
-      </div>
+      {newChatOpen ? (
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+          <NewChatPanel onDone={() => setNewChatOpen(false)} />
+        </div>
+      ) : (
+        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+          {conversations.length === 0 && (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--muted-2)', fontSize: 13 }}>
+              No tienes conversaciones aún.<br />Toca <strong>＋</strong> para empezar una.
+            </div>
+          )}
+          {conversations.map((c) => (
+            <ConversationRow
+              key={c.id}
+              c={c}
+              active={c.id === activeId}
+              onClick={() => openConversation(c.id)}
+              compact={variant === 'floating'}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -109,7 +114,7 @@ function ConversationRow({ c, active, onClick, compact }: {
         borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent',
       }}
     >
-      <Avatar name={c.titulo} size={compact ? 34 : 38} grupo={c.esGrupo && !esCanal(c)} canal={esCanal(c)} />
+      <Avatar name={c.titulo} size={compact ? 34 : 38} grupo={c.esGrupo && !esCanal(c) && !c.esBuzon} canal={esCanal(c)} buzon={c.esBuzon} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
           <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -322,7 +327,10 @@ function MessageThread({ variant }: { variant: Variant }) {
   }
 
   const canal = esCanal(conv);
-  const subtitulo = canal
+  const buzon = conv.esBuzon;
+  const subtitulo = buzon
+    ? 'Buzón de recepción'
+    : canal
     ? `Canal · ${conv.members.length} integrantes`
     : conv.esGrupo
     ? `${conv.members.length} integrantes`
@@ -336,7 +344,7 @@ function MessageThread({ variant }: { variant: Variant }) {
           display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
           borderBottom: '1px solid var(--border-soft)', flexShrink: 0,
         }}>
-          <Avatar name={conv.titulo} size={34} grupo={conv.esGrupo && !canal} canal={canal} />
+          <Avatar name={conv.titulo} size={34} grupo={conv.esGrupo && !canal && !buzon} canal={canal} buzon={buzon} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.titulo}</div>
             <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>{subtitulo}</div>

@@ -5,6 +5,7 @@ import { prisma } from '../../db.ts';
 import { env } from '../../env.ts';
 import { hashPassword } from '../../lib/password.ts';
 import { syncUserChannels } from '../../lib/channels.ts';
+import { syncBuzones } from '../../lib/buzon.ts';
 import { sendMail } from '../../lib/notify.ts';
 import { welcomeEmail } from '../../lib/emails.ts';
 
@@ -63,6 +64,7 @@ export async function usersRoutes(app: FastifyInstance) {
       select,
     });
     await syncUserChannels(user.id); // entra a los canales de su rol
+    await syncBuzones(); // crea su buzón (si es Box) o lo suma a los buzones (si es Recepción)
 
     // Correo de bienvenida (no bloquea la respuesta si falla/no hay SMTP).
     const mail = welcomeEmail(user.nombre, user.email, env.APP_URL);
@@ -82,9 +84,10 @@ export async function usersRoutes(app: FastifyInstance) {
     if (password) data.passwordHash = await hashPassword(password);
 
     const user = await prisma.user.update({ where: { id }, data, select });
-    // Si cambió el rol (o se reactivó), re-sincroniza su pertenencia a canales.
+    // Si cambió el rol (o se reactivó), re-sincroniza canales y buzones.
     if (parsed.data.role !== undefined || parsed.data.activo !== undefined) {
       await syncUserChannels(id);
+      await syncBuzones();
     }
     return { user };
   });
