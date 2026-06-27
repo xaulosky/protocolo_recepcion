@@ -19,6 +19,7 @@ export interface ManagedUser {
   role: Role;
   activo: boolean;
   permisos: string[];
+  ocultarEnDM: boolean;
   professionalId: string | null;
   createdAt: string;
 }

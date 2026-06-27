@@ -44,6 +44,7 @@ export function Usuarios() {
     if (editing) {
       const body: Record<string, unknown> = {
         nombre: data.nombre, role: data.role, activo: data.activo, permisos: data.permisos,
+        ocultarEnDM: data.ocultarEnDM,
       };
       if (data.password) body.password = data.password;
       await api.patch(`/users/${editing.id}`, body);
@@ -51,7 +52,7 @@ export function Usuarios() {
     } else {
       await api.post('/users', {
         nombre: data.nombre, email: data.email, role: data.role,
-        password: data.password, permisos: data.permisos,
+        password: data.password, permisos: data.permisos, ocultarEnDM: data.ocultarEnDM,
       });
       toast('Usuario creado');
     }

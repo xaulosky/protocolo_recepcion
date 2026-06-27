@@ -43,10 +43,11 @@ export async function chatRoutes(app: FastifyInstance) {
     });
   }
 
-  // GET /chat/users — usuarios activos con los que se puede chatear (todos menos yo)
+  // GET /chat/users — usuarios para iniciar un DM (excluye cuentas compartidas/estación,
+  // ej. "Recepción", a las que se escribe por el canal en vez de como DM individual).
   app.get('/users', async (req) => {
     const users = await prisma.user.findMany({
-      where: { activo: true, id: { not: req.user.sub } },
+      where: { activo: true, id: { not: req.user.sub }, ocultarEnDM: false },
       select: memberSelect,
       orderBy: { nombre: 'asc' },
     });

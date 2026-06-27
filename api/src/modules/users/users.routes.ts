@@ -15,6 +15,7 @@ const createSchema = z.object({
   role: z.nativeEnum(Role),
   professionalId: z.string().optional(),
   permisos: z.array(z.string()).optional(),
+  ocultarEnDM: z.boolean().optional(),
 });
 
 const updateSchema = z.object({
@@ -24,9 +25,10 @@ const updateSchema = z.object({
   password: z.string().min(6).optional(),
   professionalId: z.string().nullable().optional(),
   permisos: z.array(z.string()).optional(),
+  ocultarEnDM: z.boolean().optional(),
 });
 
-const select = { id: true, email: true, nombre: true, role: true, activo: true, permisos: true, professionalId: true, createdAt: true } as const;
+const select = { id: true, email: true, nombre: true, role: true, activo: true, permisos: true, ocultarEnDM: true, professionalId: true, createdAt: true } as const;
 
 export async function usersRoutes(app: FastifyInstance) {
   const adminOnly = { preHandler: app.authorize([Role.ADMIN]) };

@@ -29,6 +29,9 @@ model User {
   activo       Boolean  @default(true)
   // Secciones (ViewIds) que el usuario puede ver. Vacío = usar defaults del rol.
   permisos     String[] @default([])
+  // Cuenta compartida/estación (ej. "Recepción"): se oculta del selector de
+  // mensajes directos; se le escribe por el canal, no como DM individual.
+  ocultarEnDM  Boolean  @default(false)
   // Si el usuario es un profesional, enlaza a su ficha clínica.
   professional   Professional? @relation(fields: [professionalId], references: [id])
   professionalId String?

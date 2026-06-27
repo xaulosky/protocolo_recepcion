@@ -21,6 +21,7 @@ export interface UserFormData {
   password?: string;
   activo?: boolean;
   permisos: string[];
+  ocultarEnDM: boolean;
 }
 
 interface Props {
@@ -38,6 +39,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
   const [activo, setActivo] = useState(true);
   const [custom, setCustom] = useState(false);
   const [permisos, setPermisos] = useState<string[]>([]);
+  const [ocultarEnDM, setOcultarEnDM] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -50,11 +52,12 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
       setEmail(editing.email);
       setRole(editing.role);
       setActivo(editing.activo);
+      setOcultarEnDM(editing.ocultarEnDM);
       const tienePersonalizados = editing.permisos && editing.permisos.length > 0;
       setCustom(!!tienePersonalizados);
       setPermisos(tienePersonalizados ? editing.permisos : defaultPermisos(editing.role));
     } else {
-      setNombre(''); setEmail(''); setRole('RECEPCION'); setActivo(true);
+      setNombre(''); setEmail(''); setRole('RECEPCION'); setActivo(true); setOcultarEnDM(false);
       setCustom(false); setPermisos(defaultPermisos('RECEPCION'));
     }
   }, [open, editing]);
@@ -86,6 +89,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
         activo,
         // Admin → permisos vacíos (ve todo). Custom → la selección. Si no → vacío (defaults del rol).
         permisos: isAdmin || !custom ? [] : permisos,
+        ocultarEnDM,
       });
       onClose();
     } catch (e) {
@@ -143,6 +147,17 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
             placeholder={editing ? '••••••' : 'Mínimo 6 caracteres'}
           />
         </Field>
+
+        {/* Cuenta compartida / estación */}
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, cursor: 'pointer', borderTop: '1px solid var(--border-soft)', paddingTop: 12 }}>
+          <input type="checkbox" checked={ocultarEnDM} onChange={(e) => setOcultarEnDM(e.target.checked)} style={{ marginTop: 2 }} />
+          <span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>Cuenta compartida / estación (ej. Recepción, Box)</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted-2)', marginTop: 2 }}>
+              No aparece en el selector de mensajes directos; se le escribe por el canal, no como DM individual.
+            </span>
+          </span>
+        </label>
 
         {/* Permisos */}
         <div style={{ borderTop: '1px solid var(--border-soft)', paddingTop: 12 }}>
