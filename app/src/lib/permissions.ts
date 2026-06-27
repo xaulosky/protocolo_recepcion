@@ -5,7 +5,7 @@ import type { ViewId } from './nav';
 export const PERMISSION_VIEWS: ViewId[] = [
   'dashboard', 'tareas', 'chat',
   'protocolos', 'guiones', 'pagos', 'suspensiones',
-  'tratamientos', 'profesionales', 'consultas', 'boxes',
+  'tratamientos', 'profesionales', 'consultas', 'boxes', 'cirugias',
   'productos', 'presupuestos', 'giftcards', 'consentimientos',
   'faq', 'reembolso',
 ];

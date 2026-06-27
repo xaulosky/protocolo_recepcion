@@ -16,6 +16,7 @@ const createSchema = z.object({
   prioridad: z.nativeEnum(Prioridad).default(Prioridad.NORMAL),
   asignadaId: z.string().optional(),
   dueAt: z.string().datetime({ offset: true }).optional().nullable(),
+  cirugiaId: z.string().optional().nullable(),
 });
 
 const updateSchema = z.object({

@@ -8,6 +8,7 @@ import { dataRoutes } from './modules/data/data.routes.ts';
 import { tasksRoutes } from './modules/tasks/tasks.routes.ts';
 import { notificationsRoutes } from './modules/notifications/notifications.routes.ts';
 import { chatRoutes } from './modules/chat/chat.routes.ts';
+import { cirugiasRoutes } from './modules/cirugias/cirugias.routes.ts';
 
 const app = Fastify({
   logger: { transport: env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined },
@@ -24,6 +25,7 @@ await app.register(dataRoutes, { prefix: '/data' });
 await app.register(tasksRoutes, { prefix: '/tasks' });
 await app.register(notificationsRoutes, { prefix: '/notifications' });
 await app.register(chatRoutes, { prefix: '/chat' });
+await app.register(cirugiasRoutes, { prefix: '/cirugias' });
 
 try {
   // En producción la API vive detrás de nginx: solo localhost. En dev, accesible en la red.

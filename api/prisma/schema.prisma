@@ -46,6 +46,8 @@ model User {
   tareasAsignadas   Task[]             @relation("TareaAsignada")
   tareasCreadas     Task[]             @relation("TareaCreador")
   taskActivities    TaskActivity[]
+  cirugiasCreadas   Cirugia[]          @relation("CirugiaCreador")
+  comunicacionLogs  ComunicacionLog[]
   chatMemberships   ConversationMember[]
   mensajes          Message[]
   // Si el usuario es una estación Box, su buzón privado con Recepción.
@@ -134,6 +136,37 @@ enum Prioridad {
   URGENTE
 }
 
+// ─────────────────────────────── Cirugías / Procedimientos ─────────────────────────────────
+
+enum EtapaCirugia {
+  EVALUACION
+  PRESUPUESTO_ENVIADO
+  CONFIRMADO
+  PREPARACION
+  EN_EJECUCION
+  POST_OPERATORIO
+  CERRADO
+}
+
+enum PresupuestoEstado {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+enum InsumoTipo {
+  INSUMO
+  INSTRUMENTAL
+}
+
+enum CanalComunicacion {
+  LLAMADA
+  EMAIL
+  WHATSAPP
+  PRESENCIAL
+  OTRO
+}
+
 model Task {
   id          String    @id @default(cuid())
   tipo        String
@@ -150,12 +183,17 @@ model Task {
 
   activities TaskActivity[]
 
+  // Vinculación opcional con un procedimiento/cirugía
+  cirugiaId   String?
+  cirugia     Cirugia? @relation(fields: [cirugiaId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([etapa])
   @@index([asignadaId])
   @@index([dueAt])
+  @@index([cirugiaId])
 }
 
 model TaskActivity {
@@ -262,6 +300,7 @@ model Professional {
 
   tratamientos TreatmentProfessional[]
   usuarios     User[]
+  cirugias     Cirugia[]
 
   @@index([especialidad])
 }
@@ -284,6 +323,8 @@ model Product {
   price       Int
   category    String?
   description String?
+
+  insumos CirugiaInsumo[]
 
   @@index([brand])
 }
@@ -373,4 +414,76 @@ model InternalProtocol {
   color    String?
   sections Json
   orden    Int    @default(0)
+}
+
+// ─────────────────────────────── Cirugías / Procedimientos ─────────────────────────────────
+
+model Cirugia {
+  id             String        @id @default(cuid())
+  paciente       String
+  tipo           String        // texto libre: "Rinoplastia", "Blefaroplastia", etc.
+  telefono       String?
+  email          String?
+  etapa          EtapaCirugia  @default(EVALUACION)
+  notas          String?
+  fechaCirugia   DateTime?
+
+  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+  professionalId String?
+
+  creadoPor      User?         @relation("CirugiaCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId    String?
+
+  presupuesto    Presupuesto?
+  insumos        CirugiaInsumo[]
+  comunicaciones ComunicacionLog[]
+  tareas         Task[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([etapa])
+  @@index([professionalId])
+}
+
+model Presupuesto {
+  id          String            @id @default(cuid())
+  cirugia     Cirugia           @relation(fields: [cirugiaId], references: [id], onDelete: Cascade)
+  cirugiaId   String            @unique
+  monto       Int               @default(0)
+  descuento   Int               @default(0)
+  estado      PresupuestoEstado @default(PENDIENTE)
+  enviadoAt   DateTime?
+  notas       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model CirugiaInsumo {
+  id        String     @id @default(cuid())
+  cirugia   Cirugia    @relation(fields: [cirugiaId], references: [id], onDelete: Cascade)
+  cirugiaId String
+  tipo      InsumoTipo @default(INSUMO)
+  nombre    String
+  product   Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId Int?
+  cantidad  Int        @default(1)
+  unidad    String?
+  listo     Boolean    @default(false)
+  createdAt DateTime   @default(now())
+
+  @@index([cirugiaId])
+}
+
+model ComunicacionLog {
+  id          String            @id @default(cuid())
+  cirugia     Cirugia           @relation(fields: [cirugiaId], references: [id], onDelete: Cascade)
+  cirugiaId   String
+  canal       CanalComunicacion @default(LLAMADA)
+  descripcion String
+  usuario     User              @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId   String
+  createdAt   DateTime          @default(now())
+
+  @@index([cirugiaId])
 }

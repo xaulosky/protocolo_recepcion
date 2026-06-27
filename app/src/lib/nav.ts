@@ -3,7 +3,7 @@ import type { IconName } from './icons';
 export type ViewId =
   | 'dashboard' | 'tareas' | 'chat'
   | 'protocolos' | 'guiones' | 'pagos' | 'suspensiones'
-  | 'tratamientos' | 'profesionales' | 'consultas' | 'boxes'
+  | 'tratamientos' | 'profesionales' | 'consultas' | 'boxes' | 'cirugias'
   | 'productos' | 'presupuestos' | 'giftcards' | 'consentimientos'
   | 'faq' | 'reembolso'
   | 'usuarios';
@@ -28,6 +28,7 @@ export const NAV: NavSection[] = [
     { id: 'profesionales', label: 'Profesionales', icon: 'users' },
     { id: 'consultas', label: 'Consultas', icon: 'clip' },
     { id: 'boxes', label: 'Boxes & Pabellón', icon: 'grid' },
+    { id: 'cirugias', label: 'Cirugías', icon: 'doc' },
   ]},
   { section: 'Comercial', items: [
     { id: 'productos', label: 'Productos', icon: 'pkg' },
@@ -56,6 +57,7 @@ export const VIEW_LABELS: Record<ViewId, string> = {
   profesionales: 'Profesionales',
   consultas: 'Consultas & Evaluaciones',
   boxes: 'Boxes & Pabellón',
+  cirugias: 'Cirugías',
   productos: 'Productos',
   presupuestos: 'Presupuestos',
   giftcards: 'Gift Cards',

@@ -20,6 +20,7 @@ import { Tratamientos } from './features/Tratamientos';
 import { Profesionales } from './features/Profesionales';
 import { Consultas } from './features/Consultas';
 import { Boxes } from './features/Boxes';
+import { Cirugias } from './features/cirugias/Cirugias';
 import { Productos } from './features/Productos';
 import { Presupuestos } from './features/Presupuestos';
 import { GiftCards } from './features/GiftCards';
@@ -42,6 +43,7 @@ const VIEWS: Record<ViewId, ComponentType> = {
   profesionales: Profesionales,
   consultas: Consultas,
   boxes: Boxes,
+  cirugias: Cirugias,
   productos: Productos,
   presupuestos: Presupuestos,
   giftcards: GiftCards,

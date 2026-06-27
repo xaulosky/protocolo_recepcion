@@ -148,8 +148,71 @@ export interface Task {
   dueAt: string | null;
   asignada: TaskUserRef | null;
   creadoPor: TaskUserRef | null;
+  cirugiaId: string | null;
   createdAt: string;
   activities?: TaskActivity[];
+}
+
+// ── Cirugías / Procedimientos ──
+
+export type EtapaCirugia =
+  | 'EVALUACION' | 'PRESUPUESTO_ENVIADO' | 'CONFIRMADO'
+  | 'PREPARACION' | 'EN_EJECUCION' | 'POST_OPERATORIO' | 'CERRADO';
+
+export type PresupuestoEstado = 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
+export type InsumoTipo        = 'INSUMO' | 'INSTRUMENTAL';
+export type CanalComunicacion = 'LLAMADA' | 'EMAIL' | 'WHATSAPP' | 'PRESENCIAL' | 'OTRO';
+
+export interface CirugiaPresupuesto {
+  id: string;
+  monto: number;
+  descuento: number;
+  estado: PresupuestoEstado;
+  enviadoAt: string | null;
+  notas: string | null;
+}
+
+export interface CirugiaInsumo {
+  id: string;
+  tipo: InsumoTipo;
+  nombre: string;
+  productId: number | null;
+  cantidad: number;
+  unidad: string | null;
+  listo: boolean;
+  createdAt: string;
+}
+
+export interface ComunicacionLog {
+  id: string;
+  canal: CanalComunicacion;
+  descripcion: string;
+  usuario: TaskUserRef;
+  createdAt: string;
+}
+
+export interface CirugiaListItem {
+  id: string;
+  paciente: string;
+  tipo: string;
+  etapa: EtapaCirugia;
+  telefono: string | null;
+  email: string | null;
+  fechaCirugia: string | null;
+  professional: { id: string; nombreCompleto: string; especialidad: string } | null;
+  creadoPor: TaskUserRef | null;
+  presupuesto: { estado: PresupuestoEstado; monto: number; descuento: number } | null;
+  _count: { tareas: number; insumos: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Cirugia extends Omit<CirugiaListItem, 'presupuesto' | '_count'> {
+  notas: string | null;
+  presupuesto: CirugiaPresupuesto | null;
+  insumos: CirugiaInsumo[];
+  comunicaciones: ComunicacionLog[];
+  tareas: Task[];
 }
 
 export interface Notification {
