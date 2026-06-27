@@ -5,6 +5,32 @@
 
 export const consentimientosData = [
     {
+        id: 'general-esteticos',
+        title: 'CONSENTIMIENTO INFORMADO PARA PROCEDIMIENTOS ESTÉTICOS',
+        treatment: 'Procedimientos Estéticos (General)',
+        introduction: 'Yo, la persona indicada más abajo, mayor de edad, declaro que toda la información suministrada es veraz y fidedigna. Por medio del presente, autorizo a Clínica Cialo a realizarme el procedimiento indicado, el cual me ha sido explicado de forma clara y comprensible. Declaro que comprendo la naturaleza del procedimiento, los resultados esperados, así como las posibles complicaciones y riesgos, y que he tenido la oportunidad de realizar todas las preguntas necesarias, recibiendo respuestas satisfactorias.',
+        beneficios: [],
+        efectosSecundarios: [
+            'Eritema (enrojecimiento) o inflamación transitoria en la zona tratada.',
+            'Sensación de calor, ardor o molestia temporal.',
+            'Posibilidad de resultados menores a los esperados dependiendo de la respuesta individual.',
+            'En casos poco frecuentes: hiperpigmentación transitoria u otras reacciones cutáneas.',
+        ],
+        contraindicaciones: [
+            'Embarazo o lactancia.',
+            'Enfermedades de la piel activas en la zona a tratar.',
+            'Infecciones o heridas abiertas en la zona.',
+            'Enfermedades graves no comunicadas al profesional.',
+            'Alergias o hipersensibilidades relevantes no informadas.',
+        ],
+        cuidados: [
+            'Seguir las indicaciones post-procedimiento entregadas por el profesional tratante.',
+            'Comunicar de inmediato cualquier síntoma inusual o reacción adversa.',
+            'Usar fotoprotección según las indicaciones.',
+            'Asistir a los controles programados.',
+        ],
+    },
+    {
         id: 'exilis-ultra-360',
         title: 'CONSENTIMIENTO INFORMADO EXILIS ULTRA 360',
         treatment: 'Exilis Ultra 360',

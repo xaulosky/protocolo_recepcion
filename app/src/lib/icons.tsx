@@ -27,6 +27,7 @@ const PATHS: Record<string, string> = {
   colL: '<polyline points="15 18 9 12 15 6"/>',
   colR: '<polyline points="9 18 15 12 9 6"/>',
   doc: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  print: '<polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
   box: '<path d="M21 10V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><rect x="1" y="10" width="22" height="12" rx="2"/><line x1="12" y1="10" x2="12" y2="22"/>',
   tasks: '<rect x="9" y="11" width="13" height="2" rx="1"/><rect x="9" y="16" width="10" height="2" rx="1"/><polyline points="4 11 5.5 12.5 8 10"/><polyline points="4 16 5.5 17.5 8 15"/>',
   plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
