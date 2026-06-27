@@ -39,34 +39,34 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Consentimiento — ${f.nombre}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Georgia',serif;color:#1A1918;max-width:780px;margin:24px auto;padding:0 28px;line-height:1.65;font-size:13px;}
-    .header{text-align:center;padding-bottom:12px;margin-bottom:16px;border-bottom:2.5px solid #7C6247;}
-    .header img{height:52px;width:auto;display:block;margin:0 auto 8px;}
-    .header h2{font-size:18px;color:#1A1918;margin-top:4px;font-weight:700;letter-spacing:.5px;}
-    .header sub{font-size:11px;color:#888;letter-spacing:.5px;}
-    .datos{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin:14px 0;padding:12px 16px;background:#FAF8F5;border:1px solid #E8E2D9;border-radius:8px;}
-    .dato label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:2px;}
-    .dato span{font-size:13.5px;font-weight:600;color:#1A1918;display:block;border-bottom:1px solid #BBA97A;padding-bottom:2px;}
+    body{font-family:'Georgia',serif;color:#111;max-width:720px;margin:0 auto;padding:0;line-height:1.6;font-size:12.5px;}
+    .header{text-align:center;padding:22px 0 16px;margin-bottom:18px;border-bottom:1px solid #111;}
+    .header img{height:46px;width:auto;display:block;margin:0 auto 14px;}
+    .header h2{font-size:13px;font-family:Arial,sans-serif;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;}
+    .header sub{display:block;margin-top:5px;font-size:10.5px;color:#777;letter-spacing:.5px;}
+    .datos{display:grid;grid-template-columns:1fr 1fr;gap:14px 36px;margin:18px 0;}
+    .dato label{font-size:8.5px;color:#999;text-transform:uppercase;letter-spacing:1.2px;display:block;margin-bottom:4px;font-family:Arial,sans-serif;}
+    .dato span{font-size:13px;color:#111;display:block;border-bottom:1px solid #111;padding-bottom:3px;}
     .dato.full{grid-column:1/-1;}
-    .declaration{font-size:13px;line-height:1.7;text-align:justify;margin:12px 0;color:#1A1918;}
-    h3{font-size:11.5px;color:#7C6247;text-transform:uppercase;letter-spacing:.8px;margin-top:14px;margin-bottom:6px;border-bottom:1px solid #E8E2D9;padding-bottom:3px;}
-    .section{margin-top:10px;}
-    ul{margin-left:18px;font-size:12.5px;color:#333;}
-    li{margin-bottom:4px;}
-    .foto{margin:12px 0;padding:10px 14px;background:#FAF8F5;border:1px solid #E8E2D9;border-radius:8px;}
-    .foto h3{margin-top:0;margin-bottom:6px;}
-    .foto p{font-size:12.5px;margin-bottom:8px;color:#444;}
-    .foto-opts{display:flex;gap:32px;}
-    .foto-opts label{font-size:13.5px;display:flex;align-items:center;gap:4px;}
-    .sign-section{margin-top:28px;}
-    .sign-grid{display:flex;gap:60px;justify-content:space-between;}
-    .sign-box{flex:1;text-align:center;}
-    .sign-line{border-top:1.5px solid #1A1918;margin-top:44px;padding-top:6px;}
-    .sign-name{font-size:12.5px;font-weight:700;color:#1A1918;}
-    .sign-role{font-size:11px;color:#888;margin-top:2px;}
-    .sign-rut{font-size:11px;color:#555;margin-top:2px;}
-    .legal{margin-top:20px;padding-top:10px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center;}
-    @media print{body{margin:0;padding:0 4mm;} @page{margin:14mm 16mm;size:letter;}}
+    hr{border:none;border-top:1px solid #ddd;margin:16px 0;}
+    .declaration{font-size:12.5px;line-height:1.65;text-align:justify;margin:10px 0;}
+    h3{font-size:8.5px;font-family:Arial,sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#111;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid #e0e0e0;}
+    ul{margin-left:16px;}
+    li{margin-bottom:3px;font-size:12px;}
+    .foto{margin:14px 0;padding-top:14px;border-top:1px solid #ddd;}
+    .foto-label{font-size:8.5px;font-family:Arial,sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:#111;margin-bottom:6px;}
+    .foto p{font-size:12px;margin-bottom:10px;color:#444;}
+    .foto-opts{display:flex;gap:36px;}
+    .foto-opts label{font-size:12.5px;display:flex;align-items:center;gap:6px;}
+    .sign-section{margin-top:30px;}
+    .sign-grid{display:flex;gap:48px;}
+    .sign-box{flex:1;}
+    .sign-line{border-top:1px solid #111;margin-top:40px;padding-top:5px;}
+    .sign-name{font-size:12px;font-weight:700;}
+    .sign-role{font-size:10px;color:#999;margin-top:2px;font-family:Arial,sans-serif;}
+    .sign-rut{font-size:10px;color:#666;margin-top:1px;}
+    .legal{margin-top:22px;font-size:9px;color:#bbb;text-align:center;}
+    @media print{body{margin:0;} @page{margin:15mm 18mm;size:letter;}}
   </style></head><body>
 
   <div class="header">
@@ -76,23 +76,22 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
   </div>
 
   <div class="datos">
-    <div class="dato"><label>Paciente</label><span>${f.nombre || '___________________________'}</span></div>
-    <div class="dato"><label>RUT</label><span>${f.rut || '___________________________'}</span></div>
-    <div class="dato"><label>Profesional tratante</label><span>${f.profesional || '___________________________'}</span></div>
+    <div class="dato"><label>Paciente</label><span>${f.nombre || ''}</span></div>
+    <div class="dato"><label>RUT</label><span>${f.rut || ''}</span></div>
+    <div class="dato"><label>Profesional tratante</label><span>${f.profesional || ''}</span></div>
     <div class="dato"><label>Fecha</label><span>${f.fecha}</span></div>
     ${f.procedimiento ? `<div class="dato full"><label>Procedimiento</label><span>${f.procedimiento}</span></div>` : ''}
   </div>
 
-  <div class="declaration">
-    Yo, <strong>${f.nombre || '___________________________'}</strong>, mayor de edad, titular del RUT <strong>${f.rut || '___________________________'}</strong>,
-    declaro que toda la información suministrada es veraz y fidedigna.
-    Por medio del presente, autorizo a <strong>Clínica Cialo</strong> y al/la profesional <strong>${f.profesional || '___________________________'}</strong>
-    a realizarme el procedimiento indicado, el cual me ha sido explicado de forma clara y comprensible.
-  </div>
+  <hr/>
 
   <div class="declaration">
-    Declaro que comprendo la naturaleza del procedimiento, los resultados esperados, así como las posibles complicaciones y riesgos,
-    y que he tenido la oportunidad de realizar todas las preguntas necesarias, recibiendo respuestas satisfactorias.
+    Yo, <strong>${f.nombre || '___________________________'}</strong>, mayor de edad, titular del RUT <strong>${f.rut || '___________________________'}</strong>,
+    declaro que toda la información suministrada es veraz y fidedigna. Por medio del presente, autorizo a <strong>Clínica Cialo</strong>
+    y al/la profesional <strong>${f.profesional || '___________________________'}</strong> a realizarme el procedimiento indicado,
+    el cual me ha sido explicado de forma clara y comprensible. Declaro que comprendo la naturaleza del procedimiento, los resultados
+    esperados, así como las posibles complicaciones y riesgos, y que he tenido la oportunidad de realizar todas las preguntas necesarias,
+    recibiendo respuestas satisfactorias.
     ${c.introduction && c.introduction !== consentIntroGenerico(c) ? `<br><br>${c.introduction}` : ''}
   </div>
 
@@ -104,16 +103,15 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
   ` : ''}
 
   <div class="foto">
-    <h3>Registro Fotográfico</h3>
-    <p>Autorizo el registro fotográfico de los procedimientos realizados, así como su uso con fines médicos, académicos y/o publicitarios, sin revelar mi identidad:</p>
+    <div class="foto-label">Registro Fotográfico</div>
+    <p>Autorizo el registro fotográfico de los procedimientos realizados y su uso con fines médicos, académicos y/o publicitarios, sin revelar mi identidad:</p>
     <div class="foto-opts">
-      <label>${cb(f.fotoAuth === 'si')} <strong>SÍ autorizo</strong></label>
-      <label>${cb(f.fotoAuth === 'no')} <strong>NO autorizo</strong></label>
+      <label>${cb(f.fotoAuth === 'si')} Sí autorizo</label>
+      <label>${cb(f.fotoAuth === 'no')} No autorizo</label>
     </div>
   </div>
 
-  <div class="declaration">
-    Entiendo que mi decisión respecto al registro fotográfico no afecta la realización del procedimiento.
+  <div class="declaration" style="margin-top:14px;">
     Habiendo leído y comprendido la totalidad del presente documento, firmo en señal de conformidad.
   </div>
 
@@ -123,22 +121,19 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
         <div class="sign-line">
           <div class="sign-name">${f.nombre || ''}</div>
           <div class="sign-rut">${f.rut ? `RUT ${f.rut}` : ''}</div>
-          <div class="sign-role">Firma del/la paciente</div>
+          <div class="sign-role">Firma paciente</div>
         </div>
       </div>
       <div class="sign-box">
         <div class="sign-line">
           <div class="sign-name">${f.profesional || ''}</div>
-          <div class="sign-role">Firma del/la profesional</div>
+          <div class="sign-role">Firma profesional</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="legal">
-    Este documento se emite en conformidad con la Ley N° 20.584 sobre derechos y deberes en salud.
-    Clínica Cialo — ${f.fecha}
-  </div>
+  <div class="legal">Ley N° 20.584 sobre derechos y deberes en salud · Clínica Cialo · ${f.fecha}</div>
 
   <script>window.onload = function(){ window.print(); }<\/script>
   </body></html>`;
@@ -287,61 +282,44 @@ export function Consentimientos() {
   return (
     <AsyncState loading={loading} error={error} onRetry={reload}>
       <div className="fade-up">
-        <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))' }}>
+        <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
           {consents.map((c) => {
-            const totalRiesgos = (c.efectosSecundarios?.length ?? 0) + (c.contraindicaciones?.length ?? 0);
+            const counts = SECTIONS
+              .map((s) => ({ label: s.label, n: (c[s.key] as string[] | undefined)?.length ?? 0 }))
+              .filter((x) => x.n > 0);
             return (
-              <div key={c.id} className="card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {/* Header */}
-                <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-                  <div style={{
-                    width: 40, height: 40, background: 'var(--cream)', border: '1px solid var(--cream-border)',
-                    borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--primary)',
-                  }}>
-                    <Icon name="doc" size={18} />
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 2 }}>{c.treatment}</div>
-                    <div style={{ fontSize: 11, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: .5 }}>Consentimiento informado</div>
-                  </div>
+              <div key={c.id} className="card" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column' }}>
+                {/* Etiqueta */}
+                <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>
+                  Consentimiento informado
                 </div>
 
-                {/* Resumen de secciones */}
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-                  {SECTIONS.map((s) => {
-                    const items = c[s.key] as string[] | undefined;
-                    if (!items?.length) return null;
-                    return (
-                      <span key={s.key} style={{
-                        fontSize: 11, padding: '2px 8px', borderRadius: 20,
-                        background: 'var(--surface-soft)', color: s.color, border: '1px solid var(--border-soft)',
-                      }}>
-                        {items.length} {s.label}
-                      </span>
-                    );
-                  })}
-                  {totalRiesgos === 0 && (
-                    <span style={{ fontSize: 11, color: 'var(--muted-2)', fontStyle: 'italic' }}>Formulario general</span>
-                  )}
+                {/* Nombre del tratamiento */}
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12 }}>
+                  {c.treatment}
                 </div>
 
-                {/* Intro recortada */}
-                <p style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 16, flex: 1,
-                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                  {c.introduction}
-                </p>
+                {/* Separador */}
+                <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
+
+                {/* Conteo de secciones */}
+                <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 16, flex: 1 }}>
+                  {counts.length > 0
+                    ? counts.map((x) => `${x.n} ${x.label}`).join(' · ')
+                    : <span style={{ fontStyle: 'italic' }}>Formulario general</span>}
+                </div>
 
                 {/* Acciones */}
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button
                     className="btn btn-primary"
-                    style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                    style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }}
                     onClick={() => setFilling(c)}
                   >
-                    <Icon name="print" size={14} />
-                    Completar e imprimir
+                    <Icon name="print" size={13} />
+                    Imprimir
                   </button>
-                  <button className="btn btn-soft" style={{ flex: 1 }} onClick={() => setPreview(c)}>
+                  <button className="btn btn-soft" style={{ flex: 1, fontSize: 13 }} onClick={() => setPreview(c)}>
                     Ver
                   </button>
                 </div>
@@ -357,45 +335,49 @@ export function Consentimientos() {
         {preview && (
           <div
             onClick={() => setPreview(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 620, maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}
+              style={{ background: 'var(--surface)', borderRadius: 12, padding: '28px 32px', width: '100%', maxWidth: 580, maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,.14)' }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{preview.treatment}</div>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--text)' }}>{preview.title}</div>
-                </div>
-                <button onClick={() => setPreview(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 4, flexShrink: 0 }}>
-                  <Icon name="close" size={18} />
+              {/* Cabecera */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Consentimiento informado</div>
+                <button onClick={() => setPreview(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2, flexShrink: 0, lineHeight: 1 }}>
+                  <Icon name="close" size={16} />
                 </button>
               </div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>{preview.treatment}</div>
 
-              <p style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.75, marginBottom: 20 }}>{preview.introduction}</p>
+              <div style={{ height: 1, background: 'var(--border)', marginBottom: 16 }} />
+
+              <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7, marginBottom: 20 }}>{preview.introduction}</p>
 
               {SECTIONS.map((s) => {
                 const items = preview[s.key] as string[] | undefined;
                 if (!items?.length) return null;
                 return (
-                  <div key={s.key} style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: s.color, textTransform: 'uppercase', letterSpacing: .8, marginBottom: 8 }}>{s.label}</div>
+                  <div key={s.key} style={{ marginBottom: 18 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 }}>{s.label}</div>
                     {items.map((it, i) => (
-                      <div key={i} style={{ fontSize: 13, color: 'var(--text-2)', display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 5 }}>
-                        <span style={{ color: s.color, flexShrink: 0, marginTop: 1 }}>•</span>{it}
+                      <div key={i} style={{ fontSize: 13, color: 'var(--text-2)', display: 'flex', gap: 10, marginBottom: 5 }}>
+                        <span style={{ color: 'var(--border-strong)', flexShrink: 0, marginTop: 1 }}>—</span>{it}
                       </div>
                     ))}
                   </div>
                 );
               })}
 
-              <div style={{ marginTop: 24, display: 'flex', gap: 8 }}>
-                <button className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={() => { setPreview(null); setFilling(preview); }}>
-                  <Icon name="print" size={14} />
-                  Completar e imprimir
+              <div style={{ height: 1, background: 'var(--border)', margin: '20px 0 18px' }} />
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }}
+                  onClick={() => { setPreview(null); setFilling(preview); }}>
+                  <Icon name="print" size={13} />
+                  Imprimir
                 </button>
-                <button className="btn btn-soft" onClick={() => setPreview(null)}>Cerrar</button>
+                <button className="btn btn-soft" style={{ fontSize: 13 }} onClick={() => setPreview(null)}>Cerrar</button>
               </div>
             </div>
           </div>
