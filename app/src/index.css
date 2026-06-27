@@ -184,3 +184,18 @@ button { cursor: pointer; }
   .no-print, .sidebar, header { display: none !important; }
   .main-area { margin-left: 0 !important; }
 }
+
+/* Responsive 2-column form grid — stacks to 1 col on mobile */
+.form-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 560px) {
+  .form-2 { grid-template-columns: 1fr; }
+}
+
+/* Horizontally scrollable tab bar — hides scrollbar visually */
+.tabs-scroll { display: flex; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.tabs-scroll::-webkit-scrollbar { display: none; }
+.tabs-scroll > button { flex-shrink: 0; }
+
+/* Hide scrollbar on stage bar */
+.stage-bar { display: flex; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.stage-bar::-webkit-scrollbar { display: none; }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../../lib/icons';
 import { AsyncState } from '../../components/AsyncState';
-import { fmtDate } from '../../lib/format';
+import { fmtDate, clp } from '../../lib/format';
 import { useAuth } from '../../store/auth-context';
 import type { EtapaCirugia } from '../../lib/types';
 import { useCirugias } from './useCirugias';
@@ -47,22 +47,28 @@ export function Cirugias() {
         )}
       </div>
 
-      {/* Filtros */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+      {/* Búsqueda */}
+      <div style={{ marginBottom: 10 }}>
         <input
           className="input"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar paciente o tipo..."
-          style={{ width: 220, fontSize: 13 }}
+          style={{ width: '100%', maxWidth: 340, fontSize: 13 }}
         />
+      </div>
+
+      {/* Filtros por etapa — scroll horizontal, sin wrap */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 18, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
         <button
           onClick={() => setEtapaFiltro('TODAS')}
           style={{
-            padding: '5px 12px', borderRadius: 20, border: '1px solid var(--border-soft)',
+            padding: '5px 14px', borderRadius: 20, border: '1px solid',
             cursor: 'pointer', fontSize: 12, fontWeight: etapaFiltro === 'TODAS' ? 600 : 400,
-            background: etapaFiltro === 'TODAS' ? 'var(--primary)' : 'var(--bg)',
+            background: etapaFiltro === 'TODAS' ? 'var(--primary)' : 'transparent',
             color: etapaFiltro === 'TODAS' ? '#fff' : 'var(--muted)',
+            borderColor: etapaFiltro === 'TODAS' ? 'var(--primary)' : 'var(--border-soft)',
+            whiteSpace: 'nowrap', flexShrink: 0,
           }}
         >
           Todas
@@ -74,11 +80,12 @@ export function Cirugias() {
             <button key={etapa}
               onClick={() => setEtapaFiltro(active ? 'TODAS' : etapa)}
               style={{
-                padding: '5px 12px', borderRadius: 20, border: '1px solid var(--border-soft)',
+                padding: '5px 14px', borderRadius: 20, border: '1px solid',
                 cursor: 'pointer', fontSize: 12, fontWeight: active ? 600 : 400,
-                background: active ? st.bg : 'var(--bg)',
+                background: active ? st.bg : 'transparent',
                 color: active ? st.color : 'var(--muted)',
                 borderColor: active ? st.color : 'var(--border-soft)',
+                whiteSpace: 'nowrap', flexShrink: 0,
               }}
             >
               {ETAPA_LABEL[etapa]}
@@ -97,9 +104,9 @@ export function Cirugias() {
                 const estSt = c.etapa ? ETAPA_STYLE[c.etapa] : null;
                 const presSt = c.presupuesto ? PRESUPUESTO_STYLE[c.presupuesto.estado] : null;
                 return (
-                  <div key={c.id} className="card card-hover" style={{ cursor: 'pointer' }} onClick={() => setDetailId(c.id)}>
-                    {/* Etapa badge */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                  <div key={c.id} className="card card-hover" style={{ cursor: 'pointer', borderLeft: `3px solid ${estSt?.color ?? 'var(--border-soft)'}`, paddingLeft: 14 }} onClick={() => setDetailId(c.id)}>
+                    {/* Etapa + presupuesto badges */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                       <span style={{ fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 12, background: estSt?.bg, color: estSt?.color }}>
                         {ETAPA_LABEL[c.etapa]}
                       </span>
@@ -111,7 +118,7 @@ export function Cirugias() {
                     </div>
 
                     {/* Paciente + tipo */}
-                    <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>{c.paciente}</div>
+                    <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--text)', marginBottom: 2 }}>{c.paciente}</div>
                     <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 10 }}>{c.tipo}</div>
 
                     {/* Info rows */}
@@ -125,19 +132,27 @@ export function Cirugias() {
                       {c.telefono && (
                         <InfoRow icon="phone" text={c.telefono} />
                       )}
-                      <div style={{ display: 'flex', gap: 10, marginTop: 2 }}>
-                        {c._count.tareas > 0 && (
-                          <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
-                            <Icon name="tasks" size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />
-                            {c._count.tareas} tarea{c._count.tareas !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {c._count.insumos > 0 && (
-                          <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
-                            <Icon name="pkg" size={11} style={{ verticalAlign: 'middle', marginRight: 3 }} />
-                            {c._count.insumos} insumo{c._count.insumos !== 1 ? 's' : ''}
-                          </span>
-                        )}
+                      {/* Monto + contadores */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                        {c.presupuesto && c.presupuesto.monto > 0
+                          ? <span style={{ fontSize: 13, fontWeight: 600, color: presSt?.color }}>
+                              ${clp(Math.round(c.presupuesto.monto * (1 - (c.presupuesto.descuento ?? 0) / 100)))}
+                            </span>
+                          : <span />}
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {c._count.tareas > 0 && (
+                            <span style={{ fontSize: 11, color: 'var(--muted-2)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                              <Icon name="tasks" size={11} />
+                              {c._count.tareas}
+                            </span>
+                          )}
+                          {c._count.insumos > 0 && (
+                            <span style={{ fontSize: 11, color: 'var(--muted-2)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                              <Icon name="pkg" size={11} />
+                              {c._count.insumos}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

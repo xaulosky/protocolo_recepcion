@@ -12,6 +12,16 @@ import {
   CANAL_LABEL, CANAL_ICON,
 } from './cirugiasStyles';
 
+const ETAPA_LABEL_BAR: Record<EtapaCirugia, string> = {
+  EVALUACION:          'Evaluación',
+  PRESUPUESTO_ENVIADO: 'Presupuesto',
+  CONFIRMADO:          'Confirmado',
+  PREPARACION:         'Preparación',
+  EN_EJECUCION:        'En ejecución',
+  POST_OPERATORIO:     'Post-op',
+  CERRADO:             'Cerrado',
+};
+
 type Tab = 'resumen' | 'presupuesto' | 'insumos' | 'tareas' | 'comunicaciones';
 
 interface Props {
@@ -116,10 +126,16 @@ function CirugiaBody({ cirugia, tab, setTab, saving, setSaving, profesionales, p
     await onActualizar({ etapa });
   };
 
+  const tabCounts: Partial<Record<Tab, number>> = {
+    insumos:        cirugia.insumos.length,
+    tareas:         cirugia.tareas.length,
+    comunicaciones: cirugia.comunicaciones.length,
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      {/* Barra de etapas */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 16, overflowX: 'auto', paddingBottom: 2 }}>
+      {/* Barra de etapas — stepper con indicadores */}
+      <div className="stage-bar" style={{ gap: 0, marginBottom: 10, paddingBottom: 2, background: 'var(--bg)', borderRadius: 8, padding: '6px 4px' }}>
         {ETAPAS_ORDEN.map((etapa, i) => {
           const isPast    = i < etapaActual;
           const isCurrent = i === etapaActual;
@@ -128,37 +144,94 @@ function CirugiaBody({ cirugia, tab, setTab, saving, setSaving, profesionales, p
             <button
               key={etapa}
               onClick={() => moverEtapa(etapa)}
+              title={ETAPA_LABEL[etapa]}
               style={{
-                flex: 1, minWidth: 80, padding: '6px 4px', border: 'none', cursor: 'pointer', fontSize: 11,
-                fontWeight: isCurrent ? 600 : 400, textAlign: 'center', borderRadius: 0,
-                background: isCurrent ? st.bg : isPast ? '#F8F8F8' : 'var(--bg)',
-                color: isCurrent ? st.color : isPast ? 'var(--muted-2)' : 'var(--muted)',
-                borderBottom: isCurrent ? `2px solid ${st.color}` : '2px solid var(--border-soft)',
+                flex: 1, minWidth: 68, padding: '6px 4px 5px', border: 'none', cursor: 'pointer',
+                textAlign: 'center', borderRadius: 6,
+                background: isCurrent ? st.bg : 'transparent',
+                borderBottom: isCurrent ? `2px solid ${st.color}` : `2px solid transparent`,
                 transition: 'all .15s',
               }}
             >
-              {ETAPA_LABEL[etapa]}
+              <div style={{
+                width: 18, height: 18, borderRadius: '50%', margin: '0 auto 4px',
+                background: isCurrent ? st.color : isPast ? `${st.color}28` : 'var(--border-soft)',
+                color: isCurrent ? '#fff' : isPast ? st.color : 'var(--muted)',
+                fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {isPast ? '✓' : i + 1}
+              </div>
+              <div style={{
+                fontSize: 10, fontWeight: isCurrent ? 600 : 400, whiteSpace: 'nowrap',
+                color: isCurrent ? st.color : isPast ? 'var(--muted-2)' : 'var(--muted)',
+              }}>
+                {ETAPA_LABEL_BAR[etapa]}
+              </div>
             </button>
           );
         })}
       </div>
 
-      {/* Tab bar */}
-      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border-soft)', marginBottom: 16 }}>
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            style={{
-              padding: '7px 14px', border: 'none', cursor: 'pointer', fontSize: 13,
-              background: 'transparent', color: tab === t.id ? 'var(--primary)' : 'var(--muted)',
-              borderBottom: tab === t.id ? '2px solid var(--primary)' : '2px solid transparent',
-              fontWeight: tab === t.id ? 600 : 400, marginBottom: -1,
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
+      {/* Quick info strip */}
+      {(cirugia.professional || cirugia.fechaCirugia || cirugia.telefono || cirugia.email) && (
+        <div style={{ display: 'flex', gap: 14, padding: '8px 2px 10px', marginBottom: 2, flexWrap: 'wrap', borderBottom: '1px solid var(--border-soft)' }}>
+          {cirugia.professional && (
+            <span style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 12, color: 'var(--text-2)' }}>
+              <Icon name="user" size={12} style={{ color: 'var(--muted-2)', flexShrink: 0 }} />
+              {cirugia.professional.nombreCompleto}
+            </span>
+          )}
+          {cirugia.fechaCirugia && (
+            <span style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 12, color: 'var(--text-2)' }}>
+              <Icon name="calendar" size={12} style={{ color: 'var(--muted-2)', flexShrink: 0 }} />
+              {fmtDate(cirugia.fechaCirugia)}
+            </span>
+          )}
+          {cirugia.telefono && (
+            <span style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 12, color: 'var(--text-2)' }}>
+              <Icon name="phone" size={12} style={{ color: 'var(--muted-2)', flexShrink: 0 }} />
+              {cirugia.telefono}
+            </span>
+          )}
+          {cirugia.email && (
+            <span style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 12, color: 'var(--text-2)' }}>
+              <Icon name="mail" size={12} style={{ color: 'var(--muted-2)', flexShrink: 0 }} />
+              {cirugia.email}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Tab bar con contadores */}
+      <div className="tabs-scroll" style={{ borderBottom: '1px solid var(--border-soft)', marginBottom: 16, marginTop: 4 }}>
+        {TABS.map((t) => {
+          const cnt = tabCounts[t.id];
+          return (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                padding: '7px 12px', border: 'none', cursor: 'pointer', fontSize: 13,
+                background: 'transparent', color: tab === t.id ? 'var(--primary)' : 'var(--muted)',
+                borderBottom: tab === t.id ? '2px solid var(--primary)' : '2px solid transparent',
+                fontWeight: tab === t.id ? 600 : 400, marginBottom: -1,
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}
+            >
+              {t.label}
+              {cnt !== undefined && cnt > 0 && (
+                <span style={{
+                  fontSize: 10, borderRadius: 10, padding: '1px 5px', lineHeight: 1.4,
+                  background: tab === t.id ? 'var(--primary)' : 'var(--border-soft)',
+                  color: tab === t.id ? '#fff' : 'var(--muted)',
+                  fontWeight: 600,
+                }}>
+                  {cnt}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Contenido del tab */}
@@ -225,7 +298,7 @@ function TabResumen({ cirugia, profesionales, saving, setSaving, onActualizar, o
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="form-2">
         <div>
           <label className="label">Paciente</label>
           <input className="input" value={draft.paciente} onChange={(e) => set('paciente', e.target.value)} />
@@ -238,7 +311,7 @@ function TabResumen({ cirugia, profesionales, saving, setSaving, onActualizar, o
           </datalist>
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="form-2">
         <div>
           <label className="label">Teléfono</label>
           <input className="input" value={draft.telefono} onChange={(e) => set('telefono', e.target.value)} placeholder="+56 9 0000 0000" />
@@ -248,7 +321,7 @@ function TabResumen({ cirugia, profesionales, saving, setSaving, onActualizar, o
           <input className="input" type="email" value={draft.email} onChange={(e) => set('email', e.target.value)} />
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="form-2">
         <div>
           <label className="label">Profesional</label>
           <select className="select" value={draft.professionalId} onChange={(e) => set('professionalId', e.target.value)}>
@@ -340,7 +413,7 @@ function TabPresupuesto({ cirugia, saving, setSaving, upsertPresupuesto }: TabPr
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="form-2">
         <div>
           <label className="label">Monto (CLP)</label>
           <input className="input" type="number" min={0} value={draft.monto} onChange={(e) => set('monto', Number(e.target.value))} placeholder="0" />
@@ -369,7 +442,7 @@ function TabPresupuesto({ cirugia, saving, setSaving, upsertPresupuesto }: TabPr
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+      <div className="form-2">
         <div>
           <label className="label">Estado</label>
           <select className="select" value={draft.estado} onChange={(e) => set('estado', e.target.value as PresupuestoEstado)}
@@ -583,7 +656,7 @@ function TabTareas({ cirugia }: TabTareasProps) {
 
       {showForm && (
         <div style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)', borderRadius: 8, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <div className="form-2" style={{ gap: 8 }}>
             <div>
               <label className="label" style={{ fontSize: 10 }}>Tipo</label>
               <select className="select" value={newTarea.tipo} onChange={(e) => setNewTarea((d) => ({ ...d, tipo: e.target.value }))}>
