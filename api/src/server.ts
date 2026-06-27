@@ -9,9 +9,14 @@ import { tasksRoutes } from './modules/tasks/tasks.routes.ts';
 import { notificationsRoutes } from './modules/notifications/notifications.routes.ts';
 import { chatRoutes } from './modules/chat/chat.routes.ts';
 import { cirugiasRoutes } from './modules/cirugias/cirugias.routes.ts';
+import { consentsRoutes } from './modules/consents/consents.routes.ts';
+import { firmaRoutes } from './modules/firma/firma.routes.ts';
 
 const app = Fastify({
   logger: { transport: env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined },
+  // Detrás de nginx en producción: confía en X-Forwarded-* para obtener la IP real
+  // del paciente al registrar la evidencia de firma.
+  trustProxy: true,
 });
 
 await app.register(cors, { origin: corsOrigins, credentials: true });
@@ -26,6 +31,8 @@ await app.register(tasksRoutes, { prefix: '/tasks' });
 await app.register(notificationsRoutes, { prefix: '/notifications' });
 await app.register(chatRoutes, { prefix: '/chat' });
 await app.register(cirugiasRoutes, { prefix: '/cirugias' });
+await app.register(consentsRoutes, { prefix: '/consentimientos' });
+await app.register(firmaRoutes, { prefix: '/firma' });
 
 try {
   // En producción la API vive detrás de nginx: solo localhost. En dev, accesible en la red.

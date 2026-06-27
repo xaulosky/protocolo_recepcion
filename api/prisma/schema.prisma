@@ -49,6 +49,7 @@ model User {
   cirugiasCreadas   Cirugia[]          @relation("CirugiaCreador")
   comunicacionLogs  ComunicacionLog[]
   cirugiaActividad  CirugiaActividad[] @relation("CirugiaActividadUsuario")
+  signedConsents    SignedConsent[]    @relation("ConsentCreador")
   chatMemberships   ConversationMember[]
   mensajes          Message[]
   // Si el usuario es una estación Box, su buzón privado con Recepción.
@@ -362,6 +363,58 @@ model Consent {
   contraindicaciones String[]
   cuidados          String[]
   extra             Json?
+
+  firmas SignedConsent[]
+}
+
+// ─────────────────── Consentimientos enviados a firma digital ───────────────────
+
+enum ConsentEstado {
+  PENDIENTE // enviado, esperando firma del paciente
+  FIRMADO   // el paciente firmó
+  ANULADO   // recepción lo anuló
+}
+
+// Una instancia de un consentimiento enviado a un paciente para firma electrónica
+// simple (Ley 19.799 + 20.584). El enlace público usa `token` como secreto.
+model SignedConsent {
+  id          String        @id @default(cuid())
+  token       String        @unique // secreto del enlace público (/firma/:token)
+
+  // Plantilla de origen + snapshot inmutable de su contenido al momento de enviar.
+  consent     Consent?      @relation(fields: [consentId], references: [id], onDelete: SetNull)
+  consentId   String?
+  titulo      String
+  tratamiento String
+  snapshot    Json          // { introduction, beneficios[], efectosSecundarios[], contraindicaciones[], cuidados[] }
+
+  // Datos del paciente (los completa recepción al enviar).
+  paciente      String
+  rut           String
+  profesional   String
+  procedimiento String
+  telefono      String?
+  email         String?
+  fecha         String   // fecha mostrada en el documento (DD/MM/AAAA)
+
+  estado      ConsentEstado @default(PENDIENTE)
+
+  // Resultado de la firma (se llena cuando el paciente firma).
+  firmaImagen    String?   @db.Text // dataURL PNG de la firma dibujada
+  firmanteNombre String?            // nombre que confirmó el paciente
+  fotoAuth       Boolean?           // true = autoriza registro fotográfico, false = no, null = sin firmar
+  firmadoAt      DateTime?
+  firmaIp        String?            // evidencia de auditoría
+  firmaUserAgent String?
+
+  creadoPor   User?         @relation("ConsentCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([estado])
+  @@index([createdAt])
 }
 
 model FaqItem {

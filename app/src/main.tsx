@@ -4,11 +4,14 @@ import './index.css'
 import App from './App.tsx'
 import Mensajeria from './Mensajeria.tsx'
 import { ResetPassword } from './features/auth/ResetPassword.tsx'
+import { FirmaPublica } from './features/firma/FirmaPublica.tsx'
 
-// Rutas especiales: /mensajeria (PWA kiosko) y /reset (restablecer contraseña).
+// Rutas especiales: /mensajeria (PWA kiosko), /reset (restablecer contraseña)
+// y /firma/:token (firma pública del paciente, sin sesión).
 const path = window.location.pathname
 const isMensajeria = path.startsWith('/mensajeria')
 const isReset = path.startsWith('/reset')
+const isFirma = path.startsWith('/firma')
 
 if (isMensajeria) {
   const link = document.createElement('link')
@@ -27,6 +30,6 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {isReset ? <ResetPassword /> : isMensajeria ? <Mensajeria /> : <App />}
+    {isFirma ? <FirmaPublica /> : isReset ? <ResetPassword /> : isMensajeria ? <Mensajeria /> : <App />}
   </StrictMode>,
 )

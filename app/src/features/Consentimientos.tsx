@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AsyncState } from '../components/AsyncState';
 import { useResource } from '../lib/useResource';
+import { api } from '../lib/api';
+import { useCopy } from '../store/app-context';
 import { Icon } from '../lib/icons';
-import type { Consent } from '../lib/types';
+import type { Consent, SignedConsent, SignedConsentDetail } from '../lib/types';
 
-// ── Datos del paciente que se llenan antes de imprimir ──
+// ── Datos del paciente que se llenan antes de imprimir/enviar ──
 
 interface FillData {
   nombre: string;
@@ -12,19 +14,32 @@ interface FillData {
   profesional: string;
   procedimiento: string;
   fecha: string;
-  fotoAuth: 'si' | 'no' | '';
+  telefono: string;
+  email: string;
 }
 
-const EMPTY: FillData = { nombre: '', rut: '', profesional: '', procedimiento: '', fecha: todayStr(), fotoAuth: '' };
+const EMPTY: FillData = { nombre: '', rut: '', profesional: '', procedimiento: '', fecha: todayStr(), telefono: '', email: '' };
 
 function todayStr() {
   const d = new Date();
   return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
 }
 
+/** El consentimiento genérico ya incluye su declaración en `introduction`; evita duplicarla. */
+function esIntroGenerica(intro: string) {
+  return intro.trim().startsWith('Yo, la persona indicada');
+}
+
 // ── Generación del documento imprimible ──
 
-function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
+interface FirmaPrint {
+  imagen: string;        // dataURL de la firma dibujada
+  firmante: string;
+  firmadoAt: string;     // ya formateado
+  fotoAuth: boolean;
+}
+
+function buildPrintHtml(c: Consent, f: FillData, origin: string, firma?: FirmaPrint): string {
   const cb = (checked: boolean) =>
     `<span style="display:inline-block;width:14px;height:14px;border:2px solid #1A1918;border-radius:3px;margin-right:6px;vertical-align:middle;background:${checked ? '#1A1918' : 'transparent'};"></span>`;
 
@@ -35,6 +50,25 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
 
   const hasContent =
     c.beneficios?.length || c.efectosSecundarios?.length || c.contraindicaciones?.length || c.cuidados?.length;
+
+  const fa = firma ? firma.fotoAuth : null;
+
+  const firmaPaciente = firma
+    ? `<div class="sign-box">
+         <div class="firma-img"><img src="${firma.imagen}" alt="Firma" /></div>
+         <div class="sign-line nomargin">
+           <div class="sign-name">${f.nombre || ''}</div>
+           <div class="sign-rut">${f.rut ? `RUT ${f.rut}` : ''}</div>
+           <div class="sign-role">Firma paciente · firmado digitalmente</div>
+         </div>
+       </div>`
+    : `<div class="sign-box">
+         <div class="sign-line">
+           <div class="sign-name">${f.nombre || ''}</div>
+           <div class="sign-rut">${f.rut ? `RUT ${f.rut}` : ''}</div>
+           <div class="sign-role">Firma paciente</div>
+         </div>
+       </div>`;
 
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Consentimiento — ${f.nombre}</title>
   <style>
@@ -61,11 +95,15 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
     .sign-section{margin-top:30px;}
     .sign-grid{display:flex;gap:48px;}
     .sign-box{flex:1;}
+    .firma-img{height:50px;display:flex;align-items:flex-end;justify-content:center;}
+    .firma-img img{max-height:50px;max-width:92%;}
     .sign-line{border-top:1px solid #111;margin-top:40px;padding-top:5px;}
+    .sign-line.nomargin{margin-top:2px;}
     .sign-name{font-size:12px;font-weight:700;}
     .sign-role{font-size:10px;color:#999;margin-top:2px;font-family:Arial,sans-serif;}
     .sign-rut{font-size:10px;color:#666;margin-top:1px;}
-    .legal{margin-top:22px;font-size:9px;color:#bbb;text-align:center;}
+    .audit{margin-top:16px;font-size:9.5px;color:#888;text-align:center;font-family:Arial,sans-serif;}
+    .legal{margin-top:14px;font-size:9px;color:#bbb;text-align:center;}
     @media print{body{margin:0;} @page{margin:15mm 18mm;size:letter;}}
   </style></head><body>
 
@@ -92,7 +130,7 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
     el cual me ha sido explicado de forma clara y comprensible. Declaro que comprendo la naturaleza del procedimiento, los resultados
     esperados, así como las posibles complicaciones y riesgos, y que he tenido la oportunidad de realizar todas las preguntas necesarias,
     recibiendo respuestas satisfactorias.
-    ${c.introduction && c.introduction !== consentIntroGenerico(c) ? `<br><br>${c.introduction}` : ''}
+    ${c.introduction && !esIntroGenerica(c.introduction) ? `<br><br>${c.introduction}` : ''}
   </div>
 
   ${hasContent ? `
@@ -106,8 +144,8 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
     <div class="foto-label">Registro Fotográfico</div>
     <p>Autorizo el registro fotográfico de los procedimientos realizados y su uso con fines médicos, académicos y/o publicitarios, sin revelar mi identidad:</p>
     <div class="foto-opts">
-      <label>${cb(f.fotoAuth === 'si')} Sí autorizo</label>
-      <label>${cb(f.fotoAuth === 'no')} No autorizo</label>
+      <label>${cb(fa === true)} Sí autorizo</label>
+      <label>${cb(fa === false)} No autorizo</label>
     </div>
   </div>
 
@@ -117,13 +155,7 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
 
   <div class="sign-section">
     <div class="sign-grid">
-      <div class="sign-box">
-        <div class="sign-line">
-          <div class="sign-name">${f.nombre || ''}</div>
-          <div class="sign-rut">${f.rut ? `RUT ${f.rut}` : ''}</div>
-          <div class="sign-role">Firma paciente</div>
-        </div>
-      </div>
+      ${firmaPaciente}
       <div class="sign-box">
         <div class="sign-line">
           <div class="sign-name">${f.profesional || ''}</div>
@@ -133,53 +165,129 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string): string {
     </div>
   </div>
 
+  ${firma ? `<div class="audit">Firmado electrónicamente por ${firma.firmante} el ${firma.firmadoAt}. Firma electrónica simple — Ley N° 19.799.</div>` : ''}
+
   <div class="legal">Ley N° 20.584 sobre derechos y deberes en salud · Clínica Cialo · ${f.fecha}</div>
 
   <script>window.onload = function(){ window.print(); }<\/script>
   </body></html>`;
 }
 
-function consentIntroGenerico(c: Consent) {
-  return c.id === 'general-esteticos' ? c.introduction : '';
-}
-
-function printWithData(c: Consent, f: FillData) {
+function abrirImpresion(html: string) {
   const win = window.open('', '_blank', 'width=860,height=960');
   if (!win) return;
-  win.document.write(buildPrintHtml(c, f, window.location.origin));
+  win.document.write(html);
   win.document.close();
   win.focus();
 }
 
-// ── Modal de llenado ──
+/** Imprime en blanco (para firma presencial a mano). */
+function printWithData(c: Consent, f: FillData) {
+  abrirImpresion(buildPrintHtml(c, f, window.location.origin));
+}
 
-function FillModal({ consent, onClose }: { consent: Consent; onClose: () => void }) {
-  const [data, setData] = useState<FillData>({
-    ...EMPTY,
-    procedimiento: consent.treatment,
-  });
+/** Imprime un consentimiento ya firmado digitalmente, con la firma incrustada. */
+function printSigned(d: SignedConsentDetail) {
+  const c: Consent = {
+    id: d.consentId ?? '', title: d.titulo, treatment: d.tratamiento,
+    introduction: d.snapshot.introduction, beneficios: d.snapshot.beneficios,
+    efectosSecundarios: d.snapshot.efectosSecundarios, contraindicaciones: d.snapshot.contraindicaciones,
+    cuidados: d.snapshot.cuidados,
+  };
+  const f: FillData = { nombre: d.paciente, rut: d.rut, profesional: d.profesional, procedimiento: d.procedimiento, fecha: d.fecha, telefono: '', email: '' };
+  const firma: FirmaPrint | undefined = d.firmaImagen
+    ? { imagen: d.firmaImagen, firmante: d.firmanteNombre || d.paciente, firmadoAt: fmtFecha(d.firmadoAt), fotoAuth: !!d.fotoAuth }
+    : undefined;
+  abrirImpresion(buildPrintHtml(c, f, window.location.origin, firma));
+}
+
+// ── Utilidades de envío ──
+
+function fmtFecha(iso?: string | null) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  catch { return iso; }
+}
+
+/** Normaliza un teléfono chileno a formato internacional sin símbolos (569XXXXXXXX). */
+function normalizarTel(t?: string | null) {
+  if (!t) return '';
+  let d = t.replace(/\D/g, '');
+  if (d.startsWith('56')) return d;
+  if (d.length === 9 && d.startsWith('9')) return '56' + d;
+  if (d.length === 8) return '569' + d;
+  return d;
+}
+
+function waLink(tel: string, mensaje: string) {
+  const t = normalizarTel(tel);
+  return `https://wa.me/${t}?text=${encodeURIComponent(mensaje)}`;
+}
+
+function mensajeWa(paciente: string, tratamiento: string, enlace: string) {
+  return `Hola ${paciente}, aquí tienes tu consentimiento informado para ${tratamiento}. Por favor revísalo y fírmalo desde tu teléfono en este enlace:\n${enlace}`;
+}
+
+// ── Modal: completar datos → imprimir o generar enlace de firma ──
+
+function FillModal({ consent, onClose, onCreated }: { consent: Consent; onClose: () => void; onCreated: () => void }) {
+  const [data, setData] = useState<FillData>({ ...EMPTY, procedimiento: consent.treatment });
+  const [creando, setCreando] = useState(false);
+  const [enlace, setEnlace] = useState<string | null>(null);
+  const [firmaId, setFirmaId] = useState<string | null>(null);
+  const [emailEstado, setEmailEstado] = useState<'idle' | 'enviando' | 'ok' | 'error'>('idle');
+  const copy = useCopy();
 
   const set = (k: keyof FillData, v: string) => setData((d) => ({ ...d, [k]: v }));
-
-  const valid = data.nombre.trim() && data.rut.trim() && data.profesional.trim() && data.fotoAuth !== '';
+  const valid = data.nombre.trim() && data.rut.trim() && data.profesional.trim();
 
   const inp: React.CSSProperties = {
     width: '100%', padding: '8px 10px', fontSize: 13.5, border: '1px solid var(--border)',
     borderRadius: 7, outline: 'none', fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--text)',
   };
+  const lbl: React.CSSProperties = { fontSize: 11.5, color: 'var(--muted)', display: 'block', marginBottom: 5 };
+
+  const generar = async () => {
+    if (!valid) return;
+    setCreando(true);
+    try {
+      const res = await api.post<{ firma: SignedConsent; enlace: string }>('/consentimientos', {
+        consentId: consent.id,
+        paciente: data.nombre.trim(),
+        rut: data.rut.trim(),
+        profesional: data.profesional.trim(),
+        procedimiento: data.procedimiento.trim() || consent.treatment,
+        fecha: data.fecha,
+        telefono: data.telefono.trim() || null,
+        email: data.email.trim() || null,
+      });
+      setEnlace(res.enlace);
+      setFirmaId(res.firma.id);
+      onCreated();
+    } catch {
+      setCreando(false);
+    }
+  };
+
+  const enviarEmail = async () => {
+    if (!firmaId || !data.email.trim()) return;
+    setEmailEstado('enviando');
+    try {
+      const { sent } = await api.post<{ sent: boolean }>(`/consentimientos/${firmaId}/email`, { email: data.email.trim() });
+      setEmailEstado(sent ? 'ok' : 'error');
+    } catch {
+      setEmailEstado('error');
+    }
+  };
 
   return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 520, boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
-            <div style={{ fontSize: 11, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>Completar consentimiento</div>
+            <div style={{ fontSize: 11, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+              {enlace ? 'Enlace de firma generado' : 'Completar consentimiento'}
+            </div>
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3 }}>{consent.treatment}</div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 4 }}>
@@ -187,202 +295,251 @@ function FillModal({ consent, onClose }: { consent: Consent; onClose: () => void
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <label style={{ fontSize: 11.5, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Nombre completo del paciente *</label>
-              <input value={data.nombre} onChange={(e) => set('nombre', e.target.value)} style={inp} placeholder="María González Pérez" />
+        {!enlace ? (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label style={lbl}>Nombre completo del paciente *</label><input value={data.nombre} onChange={(e) => set('nombre', e.target.value)} style={inp} placeholder="María González Pérez" /></div>
+                <div><label style={lbl}>RUT *</label><input value={data.rut} onChange={(e) => set('rut', e.target.value)} style={inp} placeholder="12.345.678-9" /></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label style={lbl}>Profesional tratante *</label><input value={data.profesional} onChange={(e) => set('profesional', e.target.value)} style={inp} placeholder="Nombre del profesional" /></div>
+                <div><label style={lbl}>Fecha</label><input value={data.fecha} onChange={(e) => set('fecha', e.target.value)} style={inp} placeholder="DD/MM/AAAA" /></div>
+              </div>
+              <div><label style={lbl}>Procedimiento</label><input value={data.procedimiento} onChange={(e) => set('procedimiento', e.target.value)} style={inp} /></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label style={lbl}>Teléfono (para WhatsApp)</label><input value={data.telefono} onChange={(e) => set('telefono', e.target.value)} style={inp} placeholder="+56 9 1234 5678" /></div>
+                <div><label style={lbl}>Email (opcional)</label><input value={data.email} onChange={(e) => set('email', e.target.value)} style={inp} placeholder="paciente@correo.cl" /></div>
+              </div>
             </div>
-            <div>
-              <label style={{ fontSize: 11.5, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>RUT *</label>
-              <input value={data.rut} onChange={(e) => set('rut', e.target.value)} style={inp} placeholder="12.345.678-9" />
-            </div>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div>
-              <label style={{ fontSize: 11.5, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Profesional tratante *</label>
-              <input value={data.profesional} onChange={(e) => set('profesional', e.target.value)} style={inp} placeholder="Nombre del profesional" />
+            <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>
+              <button onClick={() => printWithData(consent, data)} disabled={!valid} className="btn btn-soft" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: valid ? 1 : 0.5 }}>
+                <Icon name="print" size={15} /> Imprimir
+              </button>
+              <button onClick={generar} disabled={!valid || creando} className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, opacity: !valid || creando ? 0.5 : 1 }}>
+                <Icon name="pen" size={15} /> {creando ? 'Generando…' : 'Generar enlace de firma'}
+              </button>
             </div>
-            <div>
-              <label style={{ fontSize: 11.5, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Fecha</label>
-              <input value={data.fecha} onChange={(e) => set('fecha', e.target.value)} style={inp} placeholder="DD/MM/AAAA" />
-            </div>
-          </div>
-
+            <p style={{ fontSize: 11.5, color: 'var(--muted-2)', marginTop: 12, lineHeight: 1.5 }}>
+              «Imprimir» genera el documento para firma presencial. «Generar enlace» crea un link para que el paciente firme desde su teléfono.
+            </p>
+          </>
+        ) : (
+          // ── Panel de compartir ──
           <div>
-            <label style={{ fontSize: 11.5, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Procedimiento</label>
-            <input value={data.procedimiento} onChange={(e) => set('procedimiento', e.target.value)} style={inp} />
-          </div>
-
-          <div>
-            <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 8 }}>Registro fotográfico *</div>
-            <div style={{ display: 'flex', gap: 20 }}>
-              {(['si', 'no'] as const).map((val) => (
-                <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, color: 'var(--text)' }}>
-                  <div
-                    onClick={() => set('fotoAuth', val)}
-                    style={{
-                      width: 18, height: 18, borderRadius: '50%', border: `2px solid ${data.fotoAuth === val ? 'var(--primary)' : 'var(--border)'}`,
-                      background: data.fotoAuth === val ? 'var(--primary)' : 'transparent',
-                      cursor: 'pointer', flexShrink: 0, transition: 'all .15s',
-                    }}
-                  />
-                  {val === 'si' ? 'SÍ autorizo registro fotográfico' : 'NO autorizo registro fotográfico'}
-                </label>
-              ))}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--green)', fontSize: 14, fontWeight: 600, marginBottom: 14 }}>
+              <Icon name="check" size={18} /> Enlace listo para enviar a {data.nombre}
             </div>
-          </div>
-        </div>
 
-        <div style={{ marginTop: 24, display: 'flex', gap: 10 }}>
-          <button
-            onClick={onClose}
-            style={{ flex: 1, padding: '10px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-2)', cursor: 'pointer', fontSize: 14 }}
-          >
-            Cancelar
-          </button>
-          <button
-            disabled={!valid}
-            onClick={() => { printWithData(consent, data); onClose(); }}
-            style={{
-              flex: 2, padding: '10px', borderRadius: 8, border: 'none',
-              background: valid ? 'var(--primary)' : 'var(--border)',
-              color: '#fff', cursor: valid ? 'pointer' : 'default', fontSize: 14, fontWeight: 600,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            }}
-          >
-            <Icon name="print" size={16} />
-            Imprimir consentimiento
-          </button>
-        </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+              <input readOnly value={enlace} style={{ ...inp, color: 'var(--muted)' }} onFocus={(e) => e.target.select()} />
+              <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Icon name="clip" size={15} /> Copiar
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <a href={waLink(data.telefono, mensajeWa(data.nombre, consent.treatment, enlace))} target="_blank" rel="noreferrer"
+                className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none', background: '#25D366', border: 'none' }}>
+                <Icon name="msg" size={16} /> Enviar por WhatsApp{data.telefono ? '' : ' (elegir contacto)'}
+              </a>
+
+              <button onClick={enviarEmail} disabled={!data.email.trim() || emailEstado === 'enviando' || emailEstado === 'ok'}
+                className="btn btn-soft" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: data.email.trim() ? 1 : 0.5 }}>
+                <Icon name="mail" size={16} />
+                {emailEstado === 'enviando' ? 'Enviando…' : emailEstado === 'ok' ? 'Correo enviado ✓' : emailEstado === 'error' ? 'No se pudo enviar (reintentar)' : data.email.trim() ? `Enviar por email a ${data.email.trim()}` : 'Sin email (agrégalo arriba)'}
+              </button>
+            </div>
+
+            <button onClick={onClose} className="btn btn-soft" style={{ width: '100%', marginTop: 18 }}>Listo</button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// ── Vista previa de secciones ──
+// ── Vista previa de secciones (solo lectura) ──
 
-const SECTIONS: { key: keyof Consent; label: string; color: string }[] = [
-  { key: 'beneficios',         label: 'Beneficios',          color: 'var(--green)'   },
-  { key: 'efectosSecundarios', label: 'Riesgos',             color: 'var(--orange)'  },
-  { key: 'contraindicaciones', label: 'Contraindicaciones',  color: 'var(--red)'     },
-  { key: 'cuidados',           label: 'Cuidados',            color: 'var(--primary)' },
+const SECTIONS: { key: keyof Consent; label: string }[] = [
+  { key: 'beneficios',         label: 'Beneficios'         },
+  { key: 'efectosSecundarios', label: 'Riesgos'            },
+  { key: 'contraindicaciones', label: 'Contraindicaciones' },
+  { key: 'cuidados',           label: 'Cuidados'           },
 ];
+
+// ── Lista de envíos (pestaña "Enviados") ──
+
+const ESTADO_INFO: Record<string, { label: string; color: string; bg: string }> = {
+  PENDIENTE: { label: 'Pendiente de firma', color: 'var(--orange)',  bg: 'var(--danger-soft)' },
+  FIRMADO:   { label: 'Firmado',            color: 'var(--green)',   bg: 'var(--surface-soft)' },
+  ANULADO:   { label: 'Anulado',            color: 'var(--muted-2)', bg: 'var(--surface-soft)' },
+};
+
+function Enviados({ refreshKey }: { refreshKey: number }) {
+  const [items, setItems] = useState<SignedConsent[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const copy = useCopy();
+
+  const cargar = () => {
+    api.get<{ firmas: SignedConsent[] }>('/consentimientos')
+      .then((r) => setItems(r.firmas))
+      .catch((e) => setError(e instanceof Error ? e.message : 'Error al cargar'));
+  };
+
+  useEffect(cargar, [refreshKey]);
+
+  const anular = async (id: string) => {
+    await api.del(`/consentimientos/${id}`).catch(() => {});
+    cargar();
+  };
+
+  const imprimir = async (id: string) => {
+    const { firma } = await api.get<{ firma: SignedConsentDetail }>(`/consentimientos/${id}`);
+    printSigned(firma);
+  };
+
+  if (error) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--orange)', fontSize: 14 }}>{error}</div>;
+  if (!items) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: 14 }}>Cargando…</div>;
+  if (items.length === 0) return (
+    <div style={{ padding: 48, textAlign: 'center', color: 'var(--muted-2)' }}>
+      <Icon name="pen" size={28} />
+      <p style={{ marginTop: 10, fontSize: 14 }}>Aún no has enviado consentimientos a firmar.</p>
+      <p style={{ fontSize: 12.5 }}>Genera un enlace desde la pestaña «Plantillas».</p>
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {items.map((it) => {
+        const est = ESTADO_INFO[it.estado];
+        const enlace = `${window.location.origin}/firma/${it.token}`;
+        return (
+          <div key={it.id} className="card" style={{ padding: 16, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{it.paciente}</span>
+                <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 20, color: est.color, background: est.bg, fontWeight: 600 }}>{est.label}</span>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                {it.tratamiento} · {it.rut}
+                {it.estado === 'FIRMADO' && it.firmadoAt ? ` · firmado ${fmtFecha(it.firmadoAt)}` : ` · enviado ${fmtFecha(it.createdAt)}`}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+              {it.estado === 'PENDIENTE' && (
+                <>
+                  <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" title="Copiar enlace" style={{ padding: '7px 10px' }}><Icon name="clip" size={15} /></button>
+                  <a href={waLink(it.telefono || '', mensajeWa(it.paciente, it.tratamiento, enlace))} target="_blank" rel="noreferrer" className="btn btn-soft" title="Enviar por WhatsApp" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center' }}><Icon name="msg" size={15} /></a>
+                  <button onClick={() => anular(it.id)} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}><Icon name="trash" size={15} /></button>
+                </>
+              )}
+              {it.estado === 'FIRMADO' && (
+                <button onClick={() => imprimir(it.id)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}><Icon name="print" size={14} /> Imprimir firmado</button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 // ── Componente principal ──
 
 export function Consentimientos() {
-  const [filling, setFilling]  = useState<Consent | null>(null);
-  const [preview, setPreview]  = useState<Consent | null>(null);
+  const [tab, setTab] = useState<'plantillas' | 'enviados'>('plantillas');
+  const [filling, setFilling] = useState<Consent | null>(null);
+  const [preview, setPreview] = useState<Consent | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { data, loading, error, reload } = useResource<{ consents: Consent[] }>('/data/consents');
   const consents = data?.consents ?? [];
 
+  const tabBtn = (id: 'plantillas' | 'enviados', label: string): React.CSSProperties => ({
+    padding: '8px 16px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: 'none', background: 'none',
+    color: tab === id ? 'var(--text)' : 'var(--muted-2)',
+    borderBottom: `2px solid ${tab === id ? 'var(--primary)' : 'transparent'}`,
+  });
+
   return (
-    <AsyncState loading={loading} error={error} onRetry={reload}>
-      <div className="fade-up">
-        <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
-          {consents.map((c) => {
-            const counts = SECTIONS
-              .map((s) => ({ label: s.label, n: (c[s.key] as string[] | undefined)?.length ?? 0 }))
-              .filter((x) => x.n > 0);
-            return (
-              <div key={c.id} className="card" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column' }}>
-                {/* Etiqueta */}
-                <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>
-                  Consentimiento informado
-                </div>
+    <div className="fade-up">
+      {/* Pestañas */}
+      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
+        <button style={tabBtn('plantillas', '')} onClick={() => setTab('plantillas')}>Plantillas</button>
+        <button style={tabBtn('enviados', '')} onClick={() => setTab('enviados')}>Enviados a firma</button>
+      </div>
 
-                {/* Nombre del tratamiento */}
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12 }}>
-                  {c.treatment}
-                </div>
-
-                {/* Separador */}
-                <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
-
-                {/* Conteo de secciones */}
-                <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 16, flex: 1 }}>
-                  {counts.length > 0
-                    ? counts.map((x) => `${x.n} ${x.label}`).join(' · ')
-                    : <span style={{ fontStyle: 'italic' }}>Formulario general</span>}
-                </div>
-
-                {/* Acciones */}
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    className="btn btn-primary"
-                    style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }}
-                    onClick={() => setFilling(c)}
-                  >
-                    <Icon name="print" size={13} />
-                    Imprimir
-                  </button>
-                  <button className="btn btn-soft" style={{ flex: 1, fontSize: 13 }} onClick={() => setPreview(c)}>
-                    Ver
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Modal de llenado */}
-        {filling && <FillModal consent={filling} onClose={() => setFilling(null)} />}
-
-        {/* Modal vista previa */}
-        {preview && (
-          <div
-            onClick={() => setPreview(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              style={{ background: 'var(--surface)', borderRadius: 12, padding: '28px 32px', width: '100%', maxWidth: 580, maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,.14)' }}
-            >
-              {/* Cabecera */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Consentimiento informado</div>
-                <button onClick={() => setPreview(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2, flexShrink: 0, lineHeight: 1 }}>
-                  <Icon name="close" size={16} />
-                </button>
-              </div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>{preview.treatment}</div>
-
-              <div style={{ height: 1, background: 'var(--border)', marginBottom: 16 }} />
-
-              <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7, marginBottom: 20 }}>{preview.introduction}</p>
-
-              {SECTIONS.map((s) => {
-                const items = preview[s.key] as string[] | undefined;
-                if (!items?.length) return null;
-                return (
-                  <div key={s.key} style={{ marginBottom: 18 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 }}>{s.label}</div>
-                    {items.map((it, i) => (
-                      <div key={i} style={{ fontSize: 13, color: 'var(--text-2)', display: 'flex', gap: 10, marginBottom: 5 }}>
-                        <span style={{ color: 'var(--border-strong)', flexShrink: 0, marginTop: 1 }}>—</span>{it}
-                      </div>
-                    ))}
+      {tab === 'enviados' ? (
+        <Enviados refreshKey={refreshKey} />
+      ) : (
+        <AsyncState loading={loading} error={error} onRetry={reload}>
+          <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
+            {consents.map((c) => {
+              const counts = SECTIONS
+                .map((s) => ({ label: s.label, n: (c[s.key] as string[] | undefined)?.length ?? 0 }))
+                .filter((x) => x.n > 0);
+              return (
+                <div key={c.id} className="card" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Consentimiento informado</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12 }}>{c.treatment}</div>
+                  <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
+                  <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 16, flex: 1 }}>
+                    {counts.length > 0 ? counts.map((x) => `${x.n} ${x.label}`).join(' · ') : <span style={{ fontStyle: 'italic' }}>Formulario general</span>}
                   </div>
-                );
-              })}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }} onClick={() => setFilling(c)}>
+                      <Icon name="pen" size={13} /> Enviar a firmar
+                    </button>
+                    <button className="btn btn-soft" style={{ flex: 1, fontSize: 13 }} onClick={() => setPreview(c)}>Ver</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </AsyncState>
+      )}
 
-              <div style={{ height: 1, background: 'var(--border)', margin: '20px 0 18px' }} />
+      {/* Modal de llenado / compartir */}
+      {filling && <FillModal consent={filling} onClose={() => setFilling(null)} onCreated={() => setRefreshKey((k) => k + 1)} />}
 
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }}
-                  onClick={() => { setPreview(null); setFilling(preview); }}>
-                  <Icon name="print" size={13} />
-                  Imprimir
-                </button>
-                <button className="btn btn-soft" style={{ fontSize: 13 }} onClick={() => setPreview(null)}>Cerrar</button>
-              </div>
+      {/* Modal vista previa */}
+      {preview && (
+        <div onClick={() => setPreview(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 12, padding: '28px 32px', width: '100%', maxWidth: 580, maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,.14)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+              <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2 }}>Consentimiento informado</div>
+              <button onClick={() => setPreview(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2, flexShrink: 0, lineHeight: 1 }}><Icon name="close" size={16} /></button>
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 16 }}>{preview.treatment}</div>
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 16 }} />
+            <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7, marginBottom: 20 }}>{preview.introduction}</p>
+            {SECTIONS.map((s) => {
+              const sectionItems = preview[s.key] as string[] | undefined;
+              if (!sectionItems?.length) return null;
+              return (
+                <div key={s.key} style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 }}>{s.label}</div>
+                  {sectionItems.map((it, i) => (
+                    <div key={i} style={{ fontSize: 13, color: 'var(--text-2)', display: 'flex', gap: 10, marginBottom: 5 }}>
+                      <span style={{ color: 'var(--border-strong)', flexShrink: 0, marginTop: 1 }}>—</span>{it}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+            <div style={{ height: 1, background: 'var(--border)', margin: '20px 0 18px' }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }} onClick={() => { setPreview(null); setFilling(preview); }}>
+                <Icon name="pen" size={13} /> Enviar a firmar
+              </button>
+              <button className="btn btn-soft" style={{ fontSize: 13 }} onClick={() => setPreview(null)}>Cerrar</button>
             </div>
           </div>
-        )}
-      </div>
-    </AsyncState>
+        </div>
+      )}
+    </div>
   );
 }

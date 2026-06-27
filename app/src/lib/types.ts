@@ -93,6 +93,63 @@ export interface Consent {
   cuidados: string[];
 }
 
+// ── Consentimientos enviados a firma digital ──
+
+export type ConsentEstado = 'PENDIENTE' | 'FIRMADO' | 'ANULADO';
+
+export interface SignedConsent {
+  id: string;
+  token: string;
+  titulo: string;
+  tratamiento: string;
+  paciente: string;
+  rut: string;
+  profesional: string;
+  procedimiento: string;
+  telefono?: string | null;
+  email?: string | null;
+  fecha: string;
+  estado: ConsentEstado;
+  firmadoAt?: string | null;
+  createdAt: string;
+  creadoPor?: { id: string; nombre: string } | null;
+}
+
+/** Snapshot del contenido del consentimiento que ve y firma el paciente. */
+export interface ConsentSnapshot {
+  introduction: string;
+  beneficios: string[];
+  efectosSecundarios: string[];
+  contraindicaciones: string[];
+  cuidados: string[];
+}
+
+/** Detalle completo de un envío (incluye snapshot y datos de la firma). */
+export interface SignedConsentDetail extends SignedConsent {
+  consentId?: string | null;
+  snapshot: ConsentSnapshot;
+  firmaImagen?: string | null;
+  firmanteNombre?: string | null;
+  fotoAuth?: boolean | null;
+  firmaIp?: string | null;
+  firmaUserAgent?: string | null;
+}
+
+/** Vista pública (paciente) cargada desde /firma/:token. */
+export interface FirmaPublicData {
+  titulo: string;
+  tratamiento: string;
+  snapshot: ConsentSnapshot;
+  paciente: string;
+  rut: string;
+  profesional: string;
+  procedimiento: string;
+  fecha: string;
+  estado: ConsentEstado;
+  firmadoAt?: string | null;
+  firmanteNombre?: string | null;
+}
+
 export interface FaqItem {
   id: string;
   categoria: string;
