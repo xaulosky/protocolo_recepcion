@@ -34,7 +34,7 @@ export const NAV: NavSection[] = [
     { id: 'productos', label: 'Productos', icon: 'pkg' },
     { id: 'presupuestos', label: 'Presupuestos', icon: 'file' },
     { id: 'giftcards', label: 'Gift Cards', icon: 'gift' },
-    { id: 'consentimientos', label: 'Consentimientos', icon: 'pen' },
+    { id: 'consentimientos', label: 'Documentos', icon: 'pen' },
   ]},
   { section: 'Soporte', items: [
     { id: 'faq', label: 'Preguntas Frecuentes', icon: 'help' },
@@ -61,7 +61,7 @@ export const VIEW_LABELS: Record<ViewId, string> = {
   productos: 'Productos',
   presupuestos: 'Presupuestos',
   giftcards: 'Gift Cards',
-  consentimientos: 'Consentimientos Informados',
+  consentimientos: 'Documentos Clínicos',
   faq: 'Preguntas Frecuentes',
   reembolso: 'Solicitud de Reembolso',
   usuarios: 'Gestión de Usuarios',

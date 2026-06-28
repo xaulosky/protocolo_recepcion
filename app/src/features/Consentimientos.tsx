@@ -5,6 +5,8 @@ import { api } from '../lib/api';
 import { useCopy } from '../store/app-context';
 import { Icon } from '../lib/icons';
 import type { Consent, SignedConsent, SignedConsentDetail } from '../lib/types';
+import { cuidadosPostData } from '../data/cuidadosData';
+import type { CuidadoPost } from '../data/cuidadosData';
 
 // ── Datos del paciente que se llenan antes de imprimir/enviar ──
 
@@ -447,10 +449,126 @@ function Enviados({ refreshKey }: { refreshKey: number }) {
   );
 }
 
+// ── Cuidados post-tratamiento ──
+
+function buildCuidadoPrintHtml(c: CuidadoPost, paciente: string, fecha: string): string {
+  const sectionsHtml = c.secciones.map((s) => {
+    const esAlerta = s.titulo.includes('ALERTA');
+    return `<div class="section${esAlerta ? ' alert-section' : ''}">
+      <h3>${s.titulo}</h3>
+      <ul>${s.items.map((i) => `<li>${i}</li>`).join('')}</ul>
+    </div>`;
+  }).join('');
+
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${c.titulo}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Georgia',serif;color:#111;max-width:720px;margin:0 auto;padding:20px;line-height:1.6;font-size:12.5px;}
+    .header{text-align:center;padding:22px 0 16px;margin-bottom:18px;border-bottom:1px solid #111;}
+    .header img{height:46px;width:auto;display:block;margin:0 auto 14px;}
+    .header h2{font-size:13px;font-family:Arial,sans-serif;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;}
+    .patient-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;padding:14px;border:1px solid #ddd;border-radius:6px;font-size:12px;}
+    .patient-info label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;}
+    .patient-info .val{border-bottom:1px solid #ccc;padding-bottom:2px;margin-top:2px;min-height:18px;}
+    .intro{font-size:12.5px;color:#333;line-height:1.7;margin-bottom:20px;padding:12px 14px;background:#f9f9f9;border-left:3px solid #7C6247;border-radius:4px;}
+    .section{margin-bottom:16px;}
+    .section h3{font-size:11px;font-family:Arial,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#1A1918;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #eee;}
+    .section ul{padding-left:18px;}
+    .section ul li{margin-bottom:4px;font-size:12px;line-height:1.6;color:#333;}
+    .alert-section h3{color:#c0392b;}
+    .alert-section ul li{color:#c0392b;}
+    .sign-section{margin-top:28px;padding-top:16px;border-top:1px solid #111;display:flex;gap:40px;}
+    .sign-line{flex:1;}
+    .sign-line .line{border-bottom:1px solid #555;height:36px;margin-bottom:5px;}
+    .sign-line .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;}
+    @media print{body{padding:0;}@page{margin:15mm 12mm;size:A4;}}
+  </style>
+  </head><body>
+  <div class="header">
+    <img src="/logo-cialo.png" alt="Clínica Cialo" onerror="this.style.display='none'" />
+    <h2>${c.titulo}</h2>
+  </div>
+  <div class="patient-info">
+    <div><label>Nombre del paciente</label><div class="val">${paciente || ''}</div></div>
+    <div><label>Fecha de la sesión</label><div class="val">${fecha || ''}</div></div>
+  </div>
+  <div class="intro">${c.intro}</div>
+  ${sectionsHtml}
+  <div class="sign-section">
+    <div class="sign-line"><div class="line"></div><div class="lbl">Firma paciente · recibí las indicaciones</div></div>
+    <div class="sign-line"><div class="line"></div><div class="lbl">Profesional tratante</div></div>
+  </div>
+  <script>window.onload=function(){window.print();window.close();}</script>
+  </body></html>`;
+}
+
+function CuidadoPrintModal({ cuidado, onClose }: { cuidado: CuidadoPost; onClose: () => void }) {
+  const [paciente, setPaciente] = useState('');
+  const [fecha, setFecha] = useState(todayStr());
+
+  const imprimir = () => {
+    const html = buildCuidadoPrintHtml(cuidado, paciente, fecha);
+    const w = window.open('', '_blank', 'width=820,height=700');
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 12, padding: '28px 32px', width: '100%', maxWidth: 420, boxShadow: '0 24px 64px rgba(0,0,0,.14)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>Imprimir hoja de cuidados</div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2 }}><Icon name="close" size={16} /></button>
+        </div>
+        <div style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 20 }}>{cuidado.tratamiento}</div>
+        <div style={{ marginBottom: 12 }}>
+          <label className="label">Nombre del paciente</label>
+          <input className="input" value={paciente} onChange={(e) => setPaciente(e.target.value)} placeholder="Nombre completo" />
+        </div>
+        <div style={{ marginBottom: 22 }}>
+          <label className="label">Fecha de la sesión</label>
+          <input className="input" value={fecha} onChange={(e) => setFecha(e.target.value)} placeholder="DD/MM/AAAA" />
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-soft" style={{ flex: 1 }} onClick={onClose}>Cancelar</button>
+          <button className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} onClick={imprimir}>
+            <Icon name="print" size={14} /> Imprimir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CuidadosTab() {
+  const [printing, setPrinting] = useState<CuidadoPost | null>(null);
+  return (
+    <>
+      <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
+        {cuidadosPostData.map((c) => (
+          <div key={c.id} className="card" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Cuidados post-tratamiento</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12 }}>{c.tratamiento}</div>
+            <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
+            <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 16, flex: 1 }}>
+              {c.secciones.length} secciones · {c.secciones.reduce((n, s) => n + s.items.length, 0)} indicaciones
+            </div>
+            <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }} onClick={() => setPrinting(c)}>
+              <Icon name="print" size={13} /> Imprimir
+            </button>
+          </div>
+        ))}
+      </div>
+      {printing && <CuidadoPrintModal cuidado={printing} onClose={() => setPrinting(null)} />}
+    </>
+  );
+}
+
 // ── Componente principal ──
 
 export function Consentimientos() {
-  const [tab, setTab] = useState<'plantillas' | 'enviados'>('plantillas');
+  const [tab, setTab] = useState<'plantillas' | 'cuidados' | 'enviados'>('plantillas');
   const [filling, setFilling] = useState<Consent | null>(null);
   const [preview, setPreview] = useState<Consent | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -458,7 +576,7 @@ export function Consentimientos() {
   const { data, loading, error, reload } = useResource<{ consents: Consent[] }>('/data/consents');
   const consents = data?.consents ?? [];
 
-  const tabBtn = (id: 'plantillas' | 'enviados', _label: string): React.CSSProperties => ({
+  const tabBtn = (id: 'plantillas' | 'cuidados' | 'enviados'): React.CSSProperties => ({
     padding: '8px 16px', fontSize: 13.5, fontWeight: 600, cursor: 'pointer', border: 'none', background: 'none',
     color: tab === id ? 'var(--text)' : 'var(--muted-2)',
     borderBottom: `2px solid ${tab === id ? 'var(--primary)' : 'transparent'}`,
@@ -468,12 +586,15 @@ export function Consentimientos() {
     <div className="fade-up">
       {/* Pestañas */}
       <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
-        <button style={tabBtn('plantillas', '')} onClick={() => setTab('plantillas')}>Plantillas</button>
-        <button style={tabBtn('enviados', '')} onClick={() => setTab('enviados')}>Enviados a firma</button>
+        <button style={tabBtn('plantillas')} onClick={() => setTab('plantillas')}>Consentimientos</button>
+        <button style={tabBtn('cuidados')} onClick={() => setTab('cuidados')}>Post-Tratamiento</button>
+        <button style={tabBtn('enviados')} onClick={() => setTab('enviados')}>Enviados a firma</button>
       </div>
 
       {tab === 'enviados' ? (
         <Enviados refreshKey={refreshKey} />
+      ) : tab === 'cuidados' ? (
+        <CuidadosTab />
       ) : (
         <AsyncState loading={loading} error={error} onRetry={reload}>
           <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
