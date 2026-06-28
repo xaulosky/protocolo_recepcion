@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Prioridad } from '../../lib/types';
 import type { NewTarea, AssignableUser } from './useTareas';
 import { Modal } from '../../components/Modal';
+import { colorFromString } from '../../lib/format';
 
 const TIPOS = [
   'Confirmación de cita', 'Mensaje sin responder', 'Reagendamiento',
@@ -16,26 +17,30 @@ interface Props {
   onGuardar: (data: NewTarea & { dueAt?: string }) => Promise<void>;
 }
 
-const EMPTY = { tipo: '', descripcion: '', asignadaId: '', prioridad: 'NORMAL' as Prioridad, paciente: '', dueAt: '' };
+const EMPTY = { tipo: '', descripcion: '', prioridad: 'NORMAL' as Prioridad, paciente: '', dueAt: '' };
 
 export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar }: Props) {
   const [draft, setDraft] = useState({ ...EMPTY });
+  const [asignadasIds, setAsignadasIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Pre-rellenar fecha si viene del calendario
   useEffect(() => {
     if (open) {
       setDraft({ ...EMPTY, dueAt: initialDueAt ?? '' });
+      setAsignadasIds([]);
       setError('');
     }
   }, [open, initialDueAt]);
 
   const set = (k: keyof typeof EMPTY, v: string) => setDraft((d) => ({ ...d, [k]: v }));
 
+  const toggleUser = (id: string) =>
+    setAsignadasIds((cur) => cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]);
+
   const guardar = async () => {
-    if (!draft.tipo || !draft.asignadaId || !draft.descripcion) {
-      setError('Completa tipo, descripción y asignada');
+    if (!draft.tipo || !draft.descripcion) {
+      setError('Completa tipo y descripción');
       return;
     }
     setSaving(true);
@@ -44,7 +49,7 @@ export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar 
       await onGuardar({
         tipo: draft.tipo,
         descripcion: draft.descripcion,
-        asignadaId: draft.asignadaId,
+        asignadasIds,
         prioridad: draft.prioridad,
         paciente: draft.paciente || undefined,
         dueAt: draft.dueAt ? new Date(draft.dueAt).toISOString() : undefined,
@@ -61,21 +66,12 @@ export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar 
     <Modal open={open} onClose={onClose} title="Nueva tarea" maxWidth={520}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div>
-            <label className="label">Tipo *</label>
-            <select className="select" value={draft.tipo} onChange={(e) => set('tipo', e.target.value)}>
-              <option value="">Seleccionar...</option>
-              {TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="label">Asignada a *</label>
-            <select className="select" value={draft.asignadaId} onChange={(e) => set('asignadaId', e.target.value)}>
-              <option value="">Seleccionar...</option>
-              {users.map((u) => <option key={u.id} value={u.id}>{u.nombre}</option>)}
-            </select>
-          </div>
+        <div>
+          <label className="label">Tipo *</label>
+          <select className="select" value={draft.tipo} onChange={(e) => set('tipo', e.target.value)}>
+            <option value="">Seleccionar...</option>
+            {TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
         </div>
 
         <div>
@@ -106,6 +102,40 @@ export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar 
         </div>
 
         <div>
+          <label className="label">Asignar a</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+            {users.map((u) => {
+              const sel = asignadasIds.includes(u.id);
+              return (
+                <button
+                  key={u.id}
+                  type="button"
+                  onClick={() => toggleUser(u.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '5px 10px', borderRadius: 20, border: '1px solid',
+                    fontSize: 12.5, fontWeight: 500, cursor: 'pointer', transition: 'all .15s',
+                    background: sel ? 'var(--primary)' : 'var(--surface)',
+                    borderColor: sel ? 'var(--primary)' : 'var(--border)',
+                    color: sel ? '#fff' : 'var(--text-2)',
+                  }}
+                >
+                  <div style={{
+                    width: 18, height: 18, borderRadius: 9, flexShrink: 0,
+                    background: sel ? 'rgba(255,255,255,0.3)' : colorFromString(u.nombre),
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 9, fontWeight: 700, color: '#fff',
+                  }}>
+                    {u.nombre.charAt(0)}
+                  </div>
+                  {u.nombre}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
           <label className="label">Fecha y hora</label>
           <input
             type="datetime-local"
@@ -115,9 +145,7 @@ export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar 
           />
         </div>
 
-        {error && (
-          <p style={{ fontSize: 12, color: 'var(--orange)', margin: 0 }}>{error}</p>
-        )}
+        {error && <p style={{ fontSize: 12, color: 'var(--orange)', margin: 0 }}>{error}</p>}
 
         <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
           <button className="btn btn-primary" onClick={guardar} disabled={saving}>

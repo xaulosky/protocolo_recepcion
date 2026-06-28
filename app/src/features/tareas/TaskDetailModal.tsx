@@ -35,10 +35,9 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Campos editables
   const [etapa, setEtapa]           = useState<Etapa>('PENDIENTE');
   const [prioridad, setPrioridad]   = useState<Prioridad>('NORMAL');
-  const [asignadaId, setAsignadaId] = useState('');
+  const [asignadasIds, setAsignadasIds] = useState<string[]>([]);
   const [descripcion, setDescripcion] = useState('');
   const [paciente, setPaciente]     = useState('');
   const [dueAt, setDueAt]           = useState('');
@@ -51,12 +50,15 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
       setActivities(t.activities ?? []);
       setEtapa(t.etapa);
       setPrioridad(t.prioridad);
-      setAsignadaId(t.asignada?.id ?? '');
+      setAsignadasIds(t.asignadas.map((u) => u.id));
       setDescripcion(t.descripcion);
       setPaciente(t.paciente ?? '');
       setDueAt(t.dueAt ? toDateTimeLocal(t.dueAt) : '');
     }).finally(() => setLoading(false));
   }, [taskId, onGetTask]);
+
+  const toggleUser = (id: string) =>
+    setAsignadasIds((cur) => cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]);
 
   const guardar = async () => {
     if (!task) return;
@@ -65,12 +67,11 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
       const updated = await onActualizar(task.id, {
         etapa,
         prioridad,
-        asignadaId: asignadaId || null,
+        asignadasIds,
         descripcion,
         paciente: paciente || null,
         dueAt: dueAt ? new Date(dueAt).toISOString() : null,
       });
-      // Recargar historial
       const fresh = await onGetTask(task.id);
       setActivities(fresh.activities ?? []);
       setTask(updated);
@@ -92,10 +93,9 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
       {!loading && task && (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 24 }}>
 
-          {/* ── Columna izquierda: detalles + edición ── */}
+          {/* ── Columna izquierda ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-            {/* Badges de estado actuales */}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 5, background: 'var(--primary-soft)', color: 'var(--primary)' }}>
                 {task.tipo}
@@ -110,7 +110,6 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
               )}
             </div>
 
-            {/* Descripción */}
             <div>
               <label className="label">Descripción</label>
               <textarea
@@ -122,13 +121,11 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
               />
             </div>
 
-            {/* Paciente */}
             <div>
               <label className="label">Paciente</label>
               <input className="input" value={paciente} onChange={(e) => setPaciente(e.target.value)} placeholder="Nombre del paciente (opcional)" />
             </div>
 
-            {/* Etapa + Prioridad */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <div>
                 <label className="label">Etapa</label>
@@ -146,16 +143,40 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
               </div>
             </div>
 
-            {/* Asignada a */}
             <div>
               <label className="label">Asignada a</label>
-              <select className="select" value={asignadaId} onChange={(e) => setAsignadaId(e.target.value)}>
-                <option value="">Sin asignar</option>
-                {users.map((u) => <option key={u.id} value={u.id}>{u.nombre}</option>)}
-              </select>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                {users.map((u) => {
+                  const sel = asignadasIds.includes(u.id);
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() => toggleUser(u.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '5px 10px', borderRadius: 20, border: '1px solid',
+                        fontSize: 12.5, fontWeight: 500, cursor: 'pointer', transition: 'all .15s',
+                        background: sel ? 'var(--primary)' : 'var(--surface)',
+                        borderColor: sel ? 'var(--primary)' : 'var(--border)',
+                        color: sel ? '#fff' : 'var(--text-2)',
+                      }}
+                    >
+                      <div style={{
+                        width: 18, height: 18, borderRadius: 9, flexShrink: 0,
+                        background: sel ? 'rgba(255,255,255,0.3)' : colorFromString(u.nombre),
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 9, fontWeight: 700, color: '#fff',
+                      }}>
+                        {u.nombre.charAt(0)}
+                      </div>
+                      {u.nombre}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Fecha y hora */}
             <div>
               <label className="label">Fecha y hora programada</label>
               <input
@@ -174,7 +195,6 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
               )}
             </div>
 
-            {/* Creada por / fecha */}
             <div style={{ fontSize: 11.5, color: 'var(--muted-2)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
               {task.creadoPor && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -186,7 +206,6 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
               </span>
             </div>
 
-            {/* Acciones */}
             <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
               <button className="btn btn-primary" onClick={guardar} disabled={saving}>
                 {saving ? 'Guardando…' : 'Guardar cambios'}
@@ -227,18 +246,15 @@ function ActivityItem({ a, isLast }: { a: TaskActivity; isLast: boolean }) {
   const nombre = a.user?.nombre ?? '?';
   return (
     <div style={{ display: 'flex', gap: 10, position: 'relative', paddingBottom: isLast ? 0 : 16 }}>
-      {/* Línea vertical */}
       {!isLast && (
         <div style={{ position: 'absolute', left: 12, top: 24, bottom: 0, width: 1, background: 'var(--border-soft)' }} />
       )}
-      {/* Icono */}
       <div style={{
         width: 24, height: 24, borderRadius: 12, background: 'var(--primary-soft)',
         color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, zIndex: 1,
       }}>
         <Icon name={iconName} size={11} />
       </div>
-      {/* Contenido */}
       <div style={{ flex: 1, paddingTop: 3 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
           <div style={{ width: 16, height: 16, borderRadius: 8, background: colorFromString(nombre), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff' }}>

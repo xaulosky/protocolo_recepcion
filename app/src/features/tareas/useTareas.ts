@@ -29,7 +29,7 @@ export interface NewTarea {
   descripcion: string;
   paciente?: string;
   prioridad: Prioridad;
-  asignadaId?: string;
+  asignadasIds?: string[];
 }
 
 export interface UpdateTarea {
@@ -38,7 +38,7 @@ export interface UpdateTarea {
   paciente?: string | null;
   prioridad?: Prioridad;
   etapa?: Etapa;
-  asignadaId?: string | null;
+  asignadasIds?: string[];
   dueAt?: string | null;
 }
 

@@ -28,7 +28,7 @@ export function Tareas() {
   const canEdit = !hasRole('LECTURA');
 
   const filtered = isAdmin && filter !== 'Todas'
-    ? tasks.filter((t) => t.asignada?.id === filter)
+    ? tasks.filter((t) => t.asignadas.some((u) => u.id === filter))
     : tasks;
 
   const handleCrear = async (data: Parameters<typeof crear>[0]) => {
@@ -214,13 +214,52 @@ function KanbanView({ tasks, onMover, onEliminar, onClickTask }: {
   );
 }
 
+function AvatarStack({ users }: { users: { id: string; nombre: string }[] }) {
+  if (users.length === 0) return <span style={{ fontSize: 11, color: 'var(--muted-4)' }}>Sin asignar</span>;
+  const visible = users.slice(0, 4);
+  const extra   = users.length - visible.length;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'flex' }}>
+        {visible.map((u, i) => (
+          <div
+            key={u.id}
+            title={u.nombre}
+            style={{
+              width: 22, height: 22, borderRadius: 11, border: '2px solid #fff',
+              background: colorFromString(u.nombre),
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0,
+              marginLeft: i > 0 ? -6 : 0,
+            }}
+          >
+            {u.nombre.charAt(0)}
+          </div>
+        ))}
+        {extra > 0 && (
+          <div style={{
+            width: 22, height: 22, borderRadius: 11, border: '2px solid #fff',
+            background: 'var(--muted-3)', marginLeft: -6,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 8, fontWeight: 700, color: '#fff', flexShrink: 0,
+          }}>
+            +{extra}
+          </div>
+        )}
+      </div>
+      {users.length === 1 && (
+        <span style={{ fontSize: 11, color: 'var(--muted)' }}>{users[0].nombre}</span>
+      )}
+    </div>
+  );
+}
+
 function KanbanCard({ t, isDragging, onDragStart, onDragEnd, onMover, onEliminar, onClick }: {
   t: Task; isDragging: boolean;
   onDragStart: () => void; onDragEnd: () => void;
   onMover: () => void; onEliminar: () => void; onClick: () => void;
 }) {
-  const prio   = PRIO_STYLE[t.prioridad];
-  const nombre = t.asignada?.nombre ?? 'Sin asignar';
+  const prio = PRIO_STYLE[t.prioridad];
   return (
     <div
       draggable
@@ -256,12 +295,7 @@ function KanbanCard({ t, isDragging, onDragStart, onDragEnd, onMover, onEliminar
         </div>
       )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-softer)', paddingTop: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <div style={{ width: 20, height: 20, borderRadius: 10, background: colorFromString(nombre), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff' }}>
-            {nombre.charAt(0)}
-          </div>
-          <span style={{ fontSize: 11, color: 'var(--muted)' }}>{nombre}</span>
-        </div>
+        <AvatarStack users={t.asignadas} />
         <div style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
           {t.etapa !== 'CERRADO' && (
             <button onClick={onMover} title="Avanzar etapa" style={{ fontSize: 11.5, padding: '3px 8px', background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 4, border: 'none', fontWeight: 600 }}>→</button>
@@ -316,9 +350,8 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask }: {
         </thead>
         <tbody>
           {tasks.map((t, i) => {
-            const prio   = PRIO_STYLE[t.prioridad];
-            const estilo = ETAPA_STYLE[t.etapa];
-            const asignada  = t.asignada?.nombre ?? '—';
+            const prio      = PRIO_STYLE[t.prioridad];
+            const estilo    = ETAPA_STYLE[t.etapa];
             const creadoPor = t.creadoPor?.nombre ?? '—';
             return (
               <tr
@@ -349,12 +382,7 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask }: {
                   <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 4, background: prio.bg, color: prio.color }}>{PRIORIDAD_LABEL[t.prioridad]}</span>
                 </td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 22, height: 22, borderRadius: 11, background: colorFromString(asignada), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
-                      {asignada.charAt(0)}
-                    </div>
-                    <span style={{ color: 'var(--text)' }}>{asignada}</span>
-                  </div>
+                  <AvatarStack users={t.asignadas} />
                 </td>
                 <td style={{ padding: '10px 14px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>{creadoPor}</td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>

@@ -14,7 +14,7 @@ const createSchema = z.object({
   descripcion: z.string().min(1),
   paciente: z.string().optional(),
   prioridad: z.nativeEnum(Prioridad).default(Prioridad.NORMAL),
-  asignadaId: z.string().optional(),
+  asignadasIds: z.array(z.string()).optional().default([]),
   dueAt: z.string().datetime({ offset: true }).optional().nullable(),
   cirugiaId: z.string().optional().nullable(),
 });
@@ -25,13 +25,13 @@ const updateSchema = z.object({
   paciente: z.string().nullable().optional(),
   prioridad: z.nativeEnum(Prioridad).optional(),
   etapa: z.nativeEnum(Etapa).optional(),
-  asignadaId: z.string().nullable().optional(),
+  asignadasIds: z.array(z.string()).optional(),
   dueAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 const includeBase = {
-  asignada:  { select: { id: true, nombre: true } },
-  creadoPor: { select: { id: true, nombre: true } },
+  asignadas:  { select: { id: true, nombre: true } },
+  creadoPor:  { select: { id: true, nombre: true } },
 } as const;
 
 const includeWithHistory = {
@@ -54,7 +54,12 @@ export async function tasksRoutes(app: FastifyInstance) {
     const userId = req.user.sub;
     const isAdmin = req.user.role === Role.ADMIN;
     const tasks = await prisma.task.findMany({
-      where: isAdmin ? undefined : { OR: [{ asignadaId: userId }, { creadoPorId: userId }] },
+      where: isAdmin ? undefined : {
+        OR: [
+          { asignadas: { some: { id: userId } } },
+          { creadoPorId: userId },
+        ],
+      },
       include: includeBase,
       orderBy: { createdAt: 'asc' },
     });
@@ -74,23 +79,33 @@ export async function tasksRoutes(app: FastifyInstance) {
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos', detalles: parsed.error.flatten() });
 
+    const { asignadasIds, dueAt, ...rest } = parsed.data;
+
     const task = await prisma.task.create({
-      data: { ...parsed.data, dueAt: parsed.data.dueAt ? new Date(parsed.data.dueAt) : null, creadoPorId: req.user.sub },
+      data: {
+        ...rest,
+        dueAt: dueAt ? new Date(dueAt) : null,
+        creadoPorId: req.user.sub,
+        asignadas: asignadasIds.length ? { connect: asignadasIds.map((id) => ({ id })) } : undefined,
+      },
       include: includeBase,
     });
 
+    const nombres = task.asignadas.map((u) => u.nombre).join(', ');
     await recordActivity(task.id, req.user.sub, 'CREADA',
-      task.asignada ? `Asignada a ${task.asignada.nombre}` : undefined
+      nombres ? `Asignada a ${nombres}` : undefined
     );
 
-    if (task.asignadaId && task.asignadaId !== req.user.sub) {
-      await notify({
-        userId: task.asignadaId,
-        type: 'TAREA_ASIGNADA',
-        title: 'Nueva tarea asignada',
-        body: `${task.tipo}: ${task.descripcion}`,
-        data: { taskId: task.id },
-      });
+    for (const u of task.asignadas) {
+      if (u.id !== req.user.sub) {
+        await notify({
+          userId: u.id,
+          type: 'TAREA_ASIGNADA',
+          title: 'Nueva tarea asignada',
+          body: `${task.tipo}: ${task.descripcion}`,
+          data: { taskId: task.id },
+        });
+      }
     }
     return reply.code(201).send({ task });
   });
@@ -103,13 +118,19 @@ export async function tasksRoutes(app: FastifyInstance) {
 
     const before = await prisma.task.findUnique({
       where: { id },
-      include: { asignada: { select: { nombre: true } } },
+      include: { asignadas: { select: { id: true, nombre: true } } },
     });
     if (!before) return reply.code(404).send({ error: 'Tarea no encontrada' });
 
-    const data = { ...parsed.data, dueAt: parsed.data.dueAt !== undefined
-      ? (parsed.data.dueAt ? new Date(parsed.data.dueAt) : null)
-      : undefined };
+    const { asignadasIds, dueAt, ...rest } = parsed.data;
+
+    const data: Record<string, unknown> = {
+      ...rest,
+      ...(dueAt !== undefined ? { dueAt: dueAt ? new Date(dueAt) : null } : {}),
+      ...(asignadasIds !== undefined
+        ? { asignadas: { set: asignadasIds.map((uid) => ({ id: uid })) } }
+        : {}),
+    };
 
     const task = await prisma.task.update({ where: { id }, data, include: includeBase });
 
@@ -118,7 +139,6 @@ export async function tasksRoutes(app: FastifyInstance) {
       await recordActivity(id, req.user.sub, 'MOVIDA',
         `${ETAPA_ES[before.etapa]} → ${ETAPA_ES[parsed.data.etapa]}`);
 
-      // Si la tarea está vinculada a una cirugía, registrar en actividad de cirugía
       if (before.cirugiaId) {
         await prisma.cirugiaActividad.create({
           data: {
@@ -130,9 +150,27 @@ export async function tasksRoutes(app: FastifyInstance) {
         });
       }
     }
-    if (parsed.data.asignadaId !== undefined && parsed.data.asignadaId !== before.asignadaId) {
-      const nombre = task.asignada?.nombre ?? 'nadie';
-      await recordActivity(id, req.user.sub, 'REASIGNADA', `Reasignada a ${nombre}`);
+    if (asignadasIds !== undefined) {
+      const beforeIds = new Set(before.asignadas.map((u) => u.id));
+      const afterIds  = new Set(asignadasIds);
+      const changed   = beforeIds.size !== afterIds.size || [...afterIds].some((uid) => !beforeIds.has(uid));
+      if (changed) {
+        const nombres = task.asignadas.map((u) => u.nombre).join(', ') || 'nadie';
+        await recordActivity(id, req.user.sub, 'REASIGNADA', `Reasignada a ${nombres}`);
+
+        // Notificar a los nuevos asignados
+        for (const u of task.asignadas) {
+          if (!beforeIds.has(u.id) && u.id !== req.user.sub) {
+            await notify({
+              userId: u.id,
+              type: 'TAREA_ASIGNADA',
+              title: 'Tarea asignada a ti',
+              body: `${task.tipo}: ${task.descripcion}`,
+              data: { taskId: task.id },
+            });
+          }
+        }
+      }
     }
     if (parsed.data.dueAt !== undefined) {
       const label = parsed.data.dueAt
@@ -148,16 +186,6 @@ export async function tasksRoutes(app: FastifyInstance) {
       await recordActivity(id, req.user.sub, 'EDITADA', `Prioridad: ${PRIO[parsed.data.prioridad]}`);
     }
 
-    // Notificar si se reasignó a otra persona
-    if (task.asignadaId && task.asignadaId !== before.asignadaId && task.asignadaId !== req.user.sub) {
-      await notify({
-        userId: task.asignadaId,
-        type: 'TAREA_ASIGNADA',
-        title: 'Tarea asignada a ti',
-        body: `${task.tipo}: ${task.descripcion}`,
-        data: { taskId: task.id },
-      });
-    }
     return { task };
   });
 

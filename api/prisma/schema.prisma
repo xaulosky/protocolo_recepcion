@@ -43,7 +43,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   notifications     Notification[]
   pushSubscriptions PushSubscription[]
-  tareasAsignadas   Task[]             @relation("TareaAsignada")
+  tareasAsignadas   Task[]             @relation("TareaAsignadas")
   tareasCreadas     Task[]             @relation("TareaCreador")
   taskActivities    TaskActivity[]
   cirugiasCreadas   Cirugia[]          @relation("CirugiaCreador")
@@ -178,8 +178,7 @@ model Task {
   prioridad   Prioridad @default(NORMAL)
   dueAt       DateTime?
 
-  asignada     User?   @relation("TareaAsignada", fields: [asignadaId], references: [id])
-  asignadaId   String?
+  asignadas    User[]  @relation("TareaAsignadas")
   creadoPor    User?   @relation("TareaCreador", fields: [creadoPorId], references: [id])
   creadoPorId  String?
 
@@ -193,7 +192,6 @@ model Task {
   updatedAt DateTime @updatedAt
 
   @@index([etapa])
-  @@index([asignadaId])
   @@index([dueAt])
   @@index([cirugiaId])
 }

@@ -203,7 +203,7 @@ export interface Task {
   etapa: Etapa;
   prioridad: Prioridad;
   dueAt: string | null;
-  asignada: TaskUserRef | null;
+  asignadas: TaskUserRef[];
   creadoPor: TaskUserRef | null;
   cirugiaId: string | null;
   createdAt: string;
