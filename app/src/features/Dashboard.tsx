@@ -45,8 +45,8 @@ export function Dashboard() {
   const recepStats = users
     .map((u) => ({
       nombre: u.nombre,
-      count: abiertas.filter((t) => t.asignada?.id === u.id).length,
-      urgente: abiertas.filter((t) => t.asignada?.id === u.id && t.prioridad === 'URGENTE').length,
+      count: abiertas.filter((t) => t.asignadas.some((a) => a.id === u.id)).length,
+      urgente: abiertas.filter((t) => t.asignadas.some((a) => a.id === u.id) && t.prioridad === 'URGENTE').length,
     }))
     .filter((r) => r.count > 0);
 
