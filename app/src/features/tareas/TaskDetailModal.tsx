@@ -5,6 +5,7 @@ import { ETAPA_LABEL, ETAPAS, PRIORIDAD_LABEL } from './useTareas';
 import { Modal } from '../../components/Modal';
 import { Icon } from '../../lib/icons';
 import { colorFromString, fmtDateTime, toDateTimeLocal } from '../../lib/format';
+import { UserMultiSelect } from '../../components/UserMultiSelect';
 
 const PRIO_STYLE: Record<Prioridad, { bg: string; color: string }> = {
   URGENTE: { bg: '#FBF0EB', color: '#C97B4B' },
@@ -56,9 +57,6 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
       setDueAt(t.dueAt ? toDateTimeLocal(t.dueAt) : '');
     }).finally(() => setLoading(false));
   }, [taskId, onGetTask]);
-
-  const toggleUser = (id: string) =>
-    setAsignadasIds((cur) => cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]);
 
   const guardar = async () => {
     if (!task) return;
@@ -145,36 +143,7 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
 
             <div>
               <label className="label">Asignada a</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                {users.map((u) => {
-                  const sel = asignadasIds.includes(u.id);
-                  return (
-                    <button
-                      key={u.id}
-                      type="button"
-                      onClick={() => toggleUser(u.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 6,
-                        padding: '5px 10px', borderRadius: 20, border: '1px solid',
-                        fontSize: 12.5, fontWeight: 500, cursor: 'pointer', transition: 'all .15s',
-                        background: sel ? 'var(--primary)' : 'var(--surface)',
-                        borderColor: sel ? 'var(--primary)' : 'var(--border)',
-                        color: sel ? '#fff' : 'var(--text-2)',
-                      }}
-                    >
-                      <div style={{
-                        width: 18, height: 18, borderRadius: 9, flexShrink: 0,
-                        background: sel ? 'rgba(255,255,255,0.3)' : colorFromString(u.nombre),
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 9, fontWeight: 700, color: '#fff',
-                      }}>
-                        {u.nombre.charAt(0)}
-                      </div>
-                      {u.nombre}
-                    </button>
-                  );
-                })}
-              </div>
+              <UserMultiSelect users={users} selected={asignadasIds} onChange={setAsignadasIds} />
             </div>
 
             <div>
