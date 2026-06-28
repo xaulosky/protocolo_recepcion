@@ -295,5 +295,24 @@ export const consentimientosData = [
         ],
         registroFotografico: true,
         liberacionResponsabilidad: 'Libero de responsabilidad a la Matrona Stefania Kuncar Ferrón y a su equipo frente a complicaciones derivadas del incumplimiento de las indicaciones post procedimiento o de condiciones personales no declaradas.'
-    }
+    },
+    {
+        id: 'contrato-servicios',
+        title: 'CONTRATO DE PRESTACIÓN DE SERVICIOS MÉDICOS, ESTÉTICOS Y AMBULATORIOS DE SALUD',
+        treatment: 'Servicios Clínica Cialo',
+        introduction: 'El presente documento actúa como un contrato del servicio prestado por Clínica Cialo. La firma del presente contrato será realizada de puño y letra del paciente; para todos los efectos se entenderá que acepta este contrato. Para menores de edad, uno de sus padres actuará como tutor y autorizará el tratamiento. Este contrato es verificado con previa revisión física por el paciente, quien firma informado y consciente de cada uno de los puntos aquí expuestos, habiendo resuelto con anticipación cualquier duda.',
+        beneficios: [],
+        efectosSecundarios: [],
+        contraindicaciones: [],
+        cuidados: [
+            '1.A) Ningún paquete promocional, servicio o abono tendrá derecho a cambio de tratamiento una vez pagado, si las modificaciones o cancelaciones no se realizan con al menos 24 horas de anticipación por canales oficiales. Lo mismo aplica para inasistencias. No se realizan devoluciones de dinero.',
+            '1.B) Los reclamos en cuanto a pagos deben notificarse directamente en recepción para ser derivados a la administración de la clínica, mediante solicitud escrita vía correo electrónico a contacto@cialo.cl.',
+            '1.C.1) Entiendo que los resultados pueden variar con cada individuo y reconozco que es imposible predecir mi respuesta al tratamiento ni la cantidad de sesiones requeridas. Todos nuestros tratamientos son complementarios; su efectividad estará condicionada a las sesiones, dieta, recomendaciones y cuidados del propio paciente. Ningún tratamiento será garantizado al 100%, ya que cada paciente puede reaccionar de forma diferente, pudiendo requerir complementar con otros procedimientos o cambiar de tratamiento si el profesional clínico lo estima conveniente.',
+            '1.C.2) Este procedimiento puede requerir sesiones adicionales a las recomendadas en la evaluación previa, dado que cada paciente puede reaccionar de manera diferente al tratamiento para obtener el resultado esperado.',
+            '1.D) El tratamiento comienza desde el agendamiento de la primera cita dentro de algún paquete promocional. Una vez iniciado, el tratamiento tiene una vigencia de 10 meses para ser completado; las sesiones de servicio individual tienen una vigencia de 6 meses. Una vez agendadas las horas, el paciente debe ser puntual en la llegada a cada sesión.',
+            '1.E) Un tratamiento vencerá automáticamente y el paciente perderá el derecho sobre él si no asiste a la clínica por más de 90 días continuos desde la última sesión.',
+            '1.F) Los tratamientos son realizados por el equipo interdisciplinario de la clínica; no existe exclusividad de ningún profesional para la realización de los tratamientos, ya que todos los profesionales asignados estarán capacitados para ejercer el tratamiento indicado.',
+            '1.G) Una vez leído cada punto, manifiesto que entendí y me fue comunicado el procedimiento y tratamiento a tomar.',
+        ],
+    },
 ];

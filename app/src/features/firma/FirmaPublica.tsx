@@ -184,7 +184,7 @@ export function FirmaPublica() {
     s.beneficios.length         ? { titulo: 'Beneficios esperados',          texto: '', items: s.beneficios,         color: 'green'   } : null,
     s.efectosSecundarios.length ? { titulo: 'Posibles efectos y riesgos',    texto: '', items: s.efectosSecundarios, color: 'orange'  } : null,
     s.contraindicaciones.length ? { titulo: 'Contraindicaciones',            texto: '', items: s.contraindicaciones, color: 'red'     } : null,
-    s.cuidados.length           ? { titulo: 'Cuidados post-procedimiento',   texto: '', items: s.cuidados,           color: 'primary' } : null,
+    s.cuidados.length           ? { titulo: s.beneficios.length + s.efectosSecundarios.length + s.contraindicaciones.length === 0 ? 'Términos del contrato' : 'Cuidados post-procedimiento', texto: '', items: s.cuidados, color: 'primary' } : null,
   ].filter(Boolean) as { titulo: string; texto: string; items: string[] | null; color: string }[];
 
   const TOTAL = 1 + infoSteps.length + 2; // portada + info + foto + firma
