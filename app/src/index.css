@@ -176,7 +176,7 @@ button { cursor: pointer; }
 @media (max-width: 900px) {
   .mobile-menu-btn { display: flex !important; }
   .sidebar { transform: translateX(-100%); }
-  .sidebar[data-mobile-open='true'] { transform: translateX(0) !important; }
+  .sidebar.sidebar-open { transform: translateX(0); }
   .main-area { margin-left: 0 !important; }
 }
 

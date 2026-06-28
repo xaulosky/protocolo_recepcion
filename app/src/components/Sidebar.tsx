@@ -40,14 +40,13 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
         />
       )}
       <aside
-        data-mobile-open={mobileOpen}
         style={{
           position: 'fixed', top: 0, left: 0, height: '100vh', width,
           background: '#fff', borderRight: '1px solid var(--border)',
           display: 'flex', flexDirection: 'column', zIndex: 50, overflow: 'hidden',
           transition: 'transform .25s ease, width .25s ease',
         }}
-        className="sidebar"
+        className={`sidebar${mobileOpen ? ' sidebar-open' : ''}`}
       >
         <div style={{ height: 60, padding: '0 14px', borderBottom: '1px solid var(--border-soft)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{ width: 32, height: 32, background: 'var(--primary)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
