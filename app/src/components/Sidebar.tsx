@@ -45,8 +45,9 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
           background: '#fff', borderRight: '1px solid var(--border)',
           display: 'flex', flexDirection: 'column', zIndex: 50, overflow: 'hidden',
           transition: 'transform .25s ease, width .25s ease',
+          ...(mobileOpen ? { transform: 'translateX(0)' } : {}),
         }}
-        className={`sidebar${mobileOpen ? ' sidebar-open' : ''}`}
+        className="sidebar"
       >
         <div style={{ height: 60, padding: '0 14px', borderBottom: '1px solid var(--border-soft)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <div style={{ width: 32, height: 32, background: 'var(--primary)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>

@@ -75,7 +75,7 @@ function Shell() {
         className="main-area"
         style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft, transition: 'margin-left .25s ease', overflow: 'hidden', minWidth: 0 }}
       >
-        <Header onOpenMobile={() => setMobileOpen(true)} />
+        <Header onOpenMobile={() => setMobileOpen(m => !m)} />
         <main style={{ flex: 1, overflowY: view === 'chat' ? 'hidden' : 'auto', padding: view === 'chat' ? 0 : 24, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {allowed
             ? <ViewComponent />
