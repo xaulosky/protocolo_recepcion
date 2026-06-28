@@ -49,10 +49,12 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
         }}
         className="sidebar"
       >
-        <div style={{ height: 60, padding: '0 14px', borderBottom: '1px solid var(--border-soft)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          <div style={{ width: 32, height: 32, background: 'var(--primary)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
-            <Icon name="logo" size={18} />
-          </div>
+        <div style={{ height: 60, padding: '0 14px', borderBottom: '1px solid var(--border-soft)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, justifyContent: collapsed ? 'center' : undefined }}>
+          {!collapsed && (
+            <div style={{ width: 32, height: 32, background: 'var(--primary)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
+              <Icon name="logo" size={18} />
+            </div>
+          )}
           {!collapsed && (
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.2px' }}>Cialo Hub</div>
