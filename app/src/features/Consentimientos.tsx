@@ -35,9 +35,9 @@ function esIntroGenerica(intro: string) {
 // ── Generación del documento imprimible ──
 
 interface FirmaPrint {
-  imagen: string;        // dataURL de la firma dibujada
+  imagen: string;
   firmante: string;
-  firmadoAt: string;     // ya formateado
+  firmadoAt: string;
   fotoAuth: boolean;
 }
 
@@ -183,12 +183,10 @@ function abrirImpresion(html: string) {
   win.focus();
 }
 
-/** Imprime en blanco (para firma presencial a mano). */
 function printWithData(c: Consent, f: FillData) {
   abrirImpresion(buildPrintHtml(c, f, window.location.origin));
 }
 
-/** Imprime un consentimiento ya firmado digitalmente, con la firma incrustada. */
 function printSigned(d: SignedConsentDetail) {
   const c: Consent = {
     id: d.consentId ?? '', title: d.titulo, treatment: d.tratamiento,
@@ -203,7 +201,7 @@ function printSigned(d: SignedConsentDetail) {
   abrirImpresion(buildPrintHtml(c, f, window.location.origin, firma));
 }
 
-// ── Utilidades de envío ──
+// ── Utilidades ──
 
 function fmtFecha(iso?: string | null) {
   if (!iso) return '';
@@ -211,7 +209,10 @@ function fmtFecha(iso?: string | null) {
   catch { return iso; }
 }
 
-/** Normaliza un teléfono chileno a formato internacional sin símbolos (569XXXXXXXX). */
+function diasDesde(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+}
+
 function normalizarTel(t?: string | null) {
   if (!t) return '';
   let d = t.replace(/\D/g, '');
@@ -328,13 +329,11 @@ function FillModal({ consent, onClose, onCreated }: { consent: Consent; onClose:
             </p>
           </>
         ) : (
-          // ── Panel de compartir ──
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--green)', fontSize: 14, fontWeight: 600, marginBottom: 18 }}>
               <Icon name="check" size={18} /> Enlace listo para {data.nombre}
             </div>
 
-            {/* Firma presencial — primera opción porque es la más usada en clínica */}
             <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 18 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
                 Firma presencial en clínica
@@ -359,12 +358,11 @@ function FillModal({ consent, onClose, onCreated }: { consent: Consent; onClose:
               </div>
             </div>
 
-            {/* Enviar al paciente */}
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
               Enviar al paciente
             </div>
             <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-              <input readOnly value={enlace} style={{ ...inp, color: 'var(--muted)', fontSize: 12 }} onFocus={(e) => e.target.select()} />
+              <input readOnly value={enlace} style={{ width: '100%', padding: '8px 10px', fontSize: 12, border: '1px solid var(--border)', borderRadius: 7, color: 'var(--muted)', background: 'var(--surface)', fontFamily: 'inherit' }} onFocus={(e) => e.target.select()} />
               <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Icon name="clip" size={15} />
               </button>
@@ -398,13 +396,15 @@ const SECTIONS: { key: keyof Consent; label: string }[] = [
   { key: 'cuidados',           label: 'Cuidados'           },
 ];
 
-// ── Lista de envíos (pestaña "Enviados") ──
+// ── Helpers de estado ──
 
 const ESTADO_INFO: Record<string, { label: string; color: string; bg: string }> = {
   PENDIENTE: { label: 'Pendiente de firma', color: 'var(--orange)',  bg: 'var(--danger-soft)' },
   FIRMADO:   { label: 'Firmado',            color: 'var(--green)',   bg: 'var(--surface-soft)' },
   ANULADO:   { label: 'Anulado',            color: 'var(--muted-2)', bg: 'var(--surface-soft)' },
 };
+
+// ── Modales auxiliares ──
 
 function QrModal({ url, onClose }: { url: string; onClose: () => void }) {
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(url)}`;
@@ -429,31 +429,43 @@ function DetalleConsentModal({ item, onClose }: { item: SignedConsent; onClose: 
     </div>
   ) : null;
 
+  const expirado = item.expiresAt && new Date(item.expiresAt) < new Date() && item.estado === 'PENDIENTE';
+
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 480, boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
             <div style={{ fontSize: 10.5, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Detalle del consentimiento</div>
             <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{item.paciente}</div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, color: est.color, background: est.bg, fontWeight: 600 }}>{est.label}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, color: est.color, background: est.bg, fontWeight: 600 }}>
+              {item.firmaManual ? 'Firmado (papel)' : est.label}
+            </span>
             <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2 }}><Icon name="close" size={17} /></button>
           </div>
         </div>
+
+        {expirado && (
+          <div style={{ background: 'var(--danger-soft)', border: '1px solid var(--orange)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--orange)' }}>
+            El enlace de firma venció el {fmtFecha(item.expiresAt)}. El paciente no puede firmar digitalmente. Puedes anularlo o marcarlo como firmado en papel.
+          </div>
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
           {row('RUT', item.rut)}
           {row('Fecha', item.fecha)}
           {row('Tratamiento', item.titulo)}
-          {row('Procedimiento', item.procedimiento !== item.tratamiento ? item.procedimiento : undefined)}
+          {item.procedimiento !== item.tratamiento && row('Procedimiento', item.procedimiento)}
           {row('Profesional', item.profesional)}
           {row('Email', item.email)}
           {row('Teléfono', item.telefono)}
+          {item.emailEnviadoAt && row('Email enviado', fmtFecha(item.emailEnviadoAt))}
           {row('Creado por', item.creadoPor?.nombre)}
           {row('Creado el', fmtFecha(item.createdAt))}
-          {item.firmadoAt && row('Firmado el', fmtFecha(item.firmadoAt))}
+          {item.expiresAt && row('Enlace vence', fmtFecha(item.expiresAt))}
+          {item.firmadoAt && row(item.firmaManual ? 'Firmado en papel' : 'Firmado digitalmente', fmtFecha(item.firmadoAt))}
         </div>
 
         <button onClick={onClose} className="btn btn-soft" style={{ width: '100%' }}>Cerrar</button>
@@ -462,15 +474,161 @@ function DetalleConsentModal({ item, onClose }: { item: SignedConsent; onClose: 
   );
 }
 
+function EditarConsentModal({ item, onClose, onSaved }: { item: SignedConsent; onClose: () => void; onSaved: (updated: SignedConsent) => void }) {
+  const [email, setEmail] = useState(item.email ?? '');
+  const [telefono, setTelefono] = useState(item.telefono ?? '');
+  const [fecha, setFecha] = useState(item.fecha);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const inp: React.CSSProperties = { width: '100%', padding: '8px 10px', fontSize: 13.5, border: '1px solid var(--border)', borderRadius: 7, outline: 'none', fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--text)' };
+  const lbl: React.CSSProperties = { fontSize: 11.5, color: 'var(--muted)', display: 'block', marginBottom: 5 };
+
+  const guardar = async () => {
+    setGuardando(true);
+    setError(null);
+    try {
+      const { firma } = await api.patch<{ firma: SignedConsent }>(`/consentimientos/${item.id}`, {
+        email: email.trim() || null,
+        telefono: telefono.trim() || null,
+        fecha: fecha.trim() || item.fecha,
+      });
+      onSaved(firma);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo guardar');
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: 10.5, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Editar datos del envío</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{item.paciente}</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2 }}><Icon name="close" size={17} /></button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div><label style={lbl}>Email</label><input value={email} onChange={(e) => setEmail(e.target.value)} style={inp} placeholder="paciente@correo.cl" type="email" /></div>
+          <div><label style={lbl}>Teléfono</label><input value={telefono} onChange={(e) => setTelefono(e.target.value)} style={inp} placeholder="+56 9 1234 5678" /></div>
+          <div><label style={lbl}>Fecha del procedimiento</label><input value={fecha} onChange={(e) => setFecha(e.target.value)} style={inp} placeholder="DD/MM/AAAA" /></div>
+        </div>
+
+        {error && <div style={{ marginTop: 12, fontSize: 13, color: 'var(--orange)', background: 'var(--danger-soft)', borderRadius: 7, padding: '8px 12px' }}>{error}</div>}
+
+        <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
+          <button onClick={onClose} className="btn btn-soft" style={{ flex: 1 }}>Cancelar</button>
+          <button onClick={guardar} disabled={guardando} className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: guardando ? 0.6 : 1 }}>
+            <Icon name="save" size={14} /> {guardando ? 'Guardando…' : 'Guardar cambios'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VistaFirmadoModal({ id, onClose, onPrint }: { id: string; onClose: () => void; onPrint: (d: SignedConsentDetail) => void }) {
+  const [detalle, setDetalle] = useState<SignedConsentDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.get<{ firma: SignedConsentDetail }>(`/consentimientos/${id}`)
+      .then((r) => setDetalle(r.firma))
+      .catch((e) => setError(e instanceof Error ? e.message : 'Error'));
+  }, [id]);
+
+  const s = detalle?.snapshot;
+  const secciones = s ? [
+    { label: 'Beneficios', items: s.beneficios },
+    { label: 'Riesgos', items: s.efectosSecundarios },
+    { label: 'Contraindicaciones', items: s.contraindicaciones },
+    { label: 'Cuidados', items: s.cuidados },
+  ].filter((x) => x.items?.length) : [];
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 580, maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+          <div>
+            <div style={{ fontSize: 10.5, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Consentimiento firmado</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{detalle?.titulo ?? '…'}</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2 }}><Icon name="close" size={17} /></button>
+        </div>
+
+        {!detalle && !error && <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: 14 }}>Cargando…</div>}
+        {error && <div style={{ color: 'var(--orange)', fontSize: 13 }}>{error}</div>}
+
+        {detalle && (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, background: 'var(--surface-soft)', borderRadius: 10, padding: 16, marginBottom: 18 }}>
+              {[['Paciente', detalle.paciente], ['RUT', detalle.rut], ['Profesional', detalle.profesional], ['Fecha', detalle.fecha]].map(([l, v]) => (
+                <div key={l}>
+                  <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: .8, marginBottom: 2 }}>{l}</div>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>{v}</div>
+                </div>
+              ))}
+            </div>
+
+            {s?.introduction && (
+              <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7, marginBottom: 16 }}>{s.introduction}</p>
+            )}
+
+            {secciones.map((sec) => (
+              <div key={sec.label} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>{sec.label}</div>
+                {sec.items.map((it, i) => (
+                  <div key={i} style={{ fontSize: 13, color: 'var(--text-2)', display: 'flex', gap: 8, marginBottom: 4, lineHeight: 1.55 }}>
+                    <span style={{ color: 'var(--border-strong)', flexShrink: 0 }}>—</span>{it}
+                  </div>
+                ))}
+              </div>
+            ))}
+
+            {detalle.firmaImagen && (
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Firma del paciente</div>
+                <img src={detalle.firmaImagen} alt="Firma" style={{ maxHeight: 80, border: '1px solid var(--border)', borderRadius: 6, background: '#fff', padding: 4 }} />
+                <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>
+                  {detalle.firmanteNombre} · {fmtFecha(detalle.firmadoAt)}
+                  {detalle.fotoAuth !== null && detalle.fotoAuth !== undefined && (
+                    <span style={{ marginLeft: 10 }}>{detalle.fotoAuth ? '✓ Autoriza fotos' : '✗ No autoriza fotos'}</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
+              <button onClick={onClose} className="btn btn-soft" style={{ flex: 1 }}>Cerrar</button>
+              <button onClick={() => { onPrint(detalle); onClose(); }} className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <Icon name="print" size={14} /> Imprimir
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Lista de envíos (pestaña "Enviados") ──
+
 function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string) => void }) {
   const [items, setItems] = useState<SignedConsent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTE' | 'FIRMADO' | 'ANULADO'>('TODOS');
+  const [busqueda, setBusqueda] = useState('');
   const [emailEstados, setEmailEstados] = useState<Map<string, 'sending' | 'ok' | 'error'>>(new Map());
   const [detalle, setDetalle] = useState<SignedConsent | null>(null);
+  const [editando, setEditando] = useState<SignedConsent | null>(null);
+  const [vistaFirmado, setVistaFirmado] = useState<string | null>(null);
   const copy = useCopy();
 
   const cargar = () => {
+    setError(null);
     api.get<{ firmas: SignedConsent[] }>('/consentimientos')
       .then((r) => setItems(r.firmas))
       .catch((e) => setError(e instanceof Error ? e.message : 'Error al cargar'));
@@ -478,14 +636,21 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
 
   useEffect(cargar, [refreshKey]);
 
+  // Auto-refetch al volver al tab
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') cargar(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
+
   const anular = async (id: string) => {
     await api.del(`/consentimientos/${id}`).catch(() => {});
     cargar();
   };
 
-  const imprimir = async (id: string) => {
-    const { firma } = await api.get<{ firma: SignedConsentDetail }>(`/consentimientos/${id}`);
-    printSigned(firma);
+  const firmarManual = async (id: string) => {
+    await api.post(`/consentimientos/${id}/firmar-manual`, {}).catch(() => {});
+    cargar();
   };
 
   const reenviarEmail = async (id: string, email: string) => {
@@ -493,56 +658,112 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
     try {
       await api.post(`/consentimientos/${id}/email`, { email });
       setEmailEstados((m) => new Map(m).set(id, 'ok'));
+      cargar();
     } catch {
       setEmailEstados((m) => new Map(m).set(id, 'error'));
     }
   };
 
+  const updateItem = (updated: SignedConsent) => {
+    setItems((prev) => prev ? prev.map((i) => i.id === updated.id ? updated : i) : prev);
+    setEditando(null);
+  };
+
   if (error) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--orange)', fontSize: 14 }}>{error}</div>;
   if (!items) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: 14 }}>Cargando…</div>;
 
-  const filtrados = filtroEstado === 'TODOS' ? items : items.filter(i => i.estado === filtroEstado);
-  const conteos = { PENDIENTE: items.filter(i => i.estado === 'PENDIENTE').length, FIRMADO: items.filter(i => i.estado === 'FIRMADO').length, ANULADO: items.filter(i => i.estado === 'ANULADO').length };
+  const q = busqueda.toLowerCase();
+  const porEstado = filtroEstado === 'TODOS' ? items : items.filter(i => i.estado === filtroEstado);
+  const filtrados = q ? porEstado.filter(i =>
+    i.paciente.toLowerCase().includes(q) || i.rut.toLowerCase().includes(q) || i.tratamiento.toLowerCase().includes(q)
+  ) : porEstado;
+
+  const conteos = {
+    PENDIENTE: items.filter(i => i.estado === 'PENDIENTE').length,
+    FIRMADO:   items.filter(i => i.estado === 'FIRMADO').length,
+    ANULADO:   items.filter(i => i.estado === 'ANULADO').length,
+  };
 
   if (items.length === 0) return (
     <div style={{ padding: 48, textAlign: 'center', color: 'var(--muted-2)' }}>
       <Icon name="pen" size={28} />
       <p style={{ marginTop: 10, fontSize: 14 }}>Aún no has enviado consentimientos a firmar.</p>
-      <p style={{ fontSize: 12.5 }}>Genera un enlace desde la pestaña «Plantillas».</p>
+      <p style={{ fontSize: 12.5 }}>Genera un enlace desde la pestaña «Consentimientos».</p>
     </div>
   );
 
   return (
     <>
-      <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
-        {(['TODOS', 'PENDIENTE', 'FIRMADO', 'ANULADO'] as const).map((e) => (
-          <button key={e} className={`chip${filtroEstado === e ? ' active' : ''}`} onClick={() => setFiltroEstado(e)}>
-            {e === 'TODOS' ? `Todos (${items.length})` : e === 'PENDIENTE' ? `Pendientes (${conteos.PENDIENTE})` : e === 'FIRMADO' ? `Firmados (${conteos.FIRMADO})` : `Anulados (${conteos.ANULADO})`}
-          </button>
-        ))}
+      {/* Filtros y búsqueda */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 160 }}>
+          <Icon name="search" size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-2)', pointerEvents: 'none' }} />
+          <input
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar por nombre, RUT o tratamiento…"
+            style={{ width: '100%', padding: '7px 10px 7px 32px', fontSize: 13, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--surface)', color: 'var(--text)', outline: 'none', fontFamily: 'inherit' }}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {(['TODOS', 'PENDIENTE', 'FIRMADO', 'ANULADO'] as const).map((e) => (
+            <button key={e} className={`chip${filtroEstado === e ? ' active' : ''}`} onClick={() => setFiltroEstado(e)}>
+              {e === 'TODOS' ? `Todos (${items.length})` : e === 'PENDIENTE' ? `Pendientes (${conteos.PENDIENTE})` : e === 'FIRMADO' ? `Firmados (${conteos.FIRMADO})` : `Anulados (${conteos.ANULADO})`}
+            </button>
+          ))}
+        </div>
+        <button onClick={cargar} className="btn btn-soft" title="Actualizar lista" style={{ padding: '6px 10px', flexShrink: 0 }}>
+          <Icon name="ref" size={14} />
+        </button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {filtrados.length === 0 && <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted-2)', fontSize: 14 }}>Sin resultados para este filtro.</div>}
+        {filtrados.length === 0 && (
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted-2)', fontSize: 14 }}>
+            {busqueda ? `Sin resultados para "${busqueda}"` : 'Sin resultados para este filtro.'}
+          </div>
+        )}
         {filtrados.map((it) => {
           const est = ESTADO_INFO[it.estado];
           const enlace = `${window.location.origin}/firma/${it.token}`;
+          const dias = diasDesde(it.createdAt);
+          const esViejo = it.estado === 'PENDIENTE' && dias >= 3;
+          const expirado = it.expiresAt && new Date(it.expiresAt) < new Date() && it.estado === 'PENDIENTE';
+          const emailEst = emailEstados.get(it.id);
+          const tieneEmail = !!it.email;
+
           return (
-            <div key={it.id} className="card" style={{ padding: 16, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+            <div key={it.id} className="card" style={{ padding: 16, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between', borderLeft: expirado ? '3px solid var(--orange)' : esViejo ? '3px solid var(--orange)' : '3px solid transparent' }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{it.paciente}</span>
-                  <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 20, color: est.color, background: est.bg, fontWeight: 600 }}>{est.label}</span>
+                  <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 20, color: est.color, background: est.bg, fontWeight: 600 }}>
+                    {it.firmaManual ? 'Firmado (papel)' : est.label}
+                  </span>
+                  {expirado && (
+                    <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 20, color: 'var(--orange)', background: 'var(--danger-soft)', fontWeight: 600 }}>Enlace vencido</span>
+                  )}
+                  {esViejo && !expirado && (
+                    <span style={{ fontSize: 10.5, color: 'var(--orange)' }}>hace {dias} días</span>
+                  )}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--muted)' }}>
                   {it.tratamiento} · {it.rut}
-                  {it.estado === 'FIRMADO' && it.firmadoAt ? ` · firmado ${fmtFecha(it.firmadoAt)}` : ` · enviado ${fmtFecha(it.createdAt)}`}
+                  {it.estado === 'FIRMADO' && it.firmadoAt
+                    ? ` · firmado ${fmtFecha(it.firmadoAt)}`
+                    : ` · enviado ${fmtFecha(it.createdAt)}`}
+                  {it.emailEnviadoAt && it.estado === 'PENDIENTE' && (
+                    <span style={{ color: 'var(--green)' }}> · email {fmtFecha(it.emailEnviadoAt)}</span>
+                  )}
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                <button onClick={() => setDetalle(it)} className="btn btn-soft" title="Ver detalles" style={{ padding: '7px 10px' }}><Icon name="eye" size={15} /></button>
-                {it.estado === 'PENDIENTE' && (
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
+                <button onClick={() => setDetalle(it)} className="btn btn-soft" title="Ver detalles" style={{ padding: '7px 10px' }}>
+                  <Icon name="eye" size={15} />
+                </button>
+
+                {it.estado === 'PENDIENTE' && !expirado && (
                   <>
                     <a href={enlace} target="_blank" rel="noreferrer" className="btn btn-primary" title="Abrir para firmar en este dispositivo" style={{ padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, textDecoration: 'none' }}>
                       <Icon name="pen" size={14} /> Firmar aquí
@@ -550,26 +771,39 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
                     <button onClick={() => onQr(enlace)} className="btn btn-soft" title="Mostrar QR" style={{ padding: '7px 10px' }}><Icon name="grid" size={15} /></button>
                     <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" title="Copiar enlace" style={{ padding: '7px 10px' }}><Icon name="clip" size={15} /></button>
                     <a href={waLink(it.telefono || '', mensajeWa(it.paciente, it.tratamiento, enlace))} target="_blank" rel="noreferrer" className="btn btn-soft" title="Enviar por WhatsApp" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center' }}><Icon name="msg" size={15} /></a>
-                    {(() => {
-                      const est = emailEstados.get(it.id);
-                      const tieneEmail = !!it.email;
-                      return (
-                        <button
-                          onClick={() => tieneEmail && est !== 'sending' && est !== 'ok' && reenviarEmail(it.id, it.email!)}
-                          className="btn btn-soft"
-                          title={tieneEmail ? `Reenviar por email a ${it.email}` : 'Sin email registrado'}
-                          disabled={!tieneEmail || est === 'sending' || est === 'ok'}
-                          style={{ padding: '7px 10px', color: est === 'ok' ? 'var(--green)' : est === 'error' ? 'var(--orange)' : tieneEmail ? 'inherit' : 'var(--muted-2)', opacity: tieneEmail ? 1 : 0.4 }}
-                        >
-                          <Icon name={est === 'ok' ? 'check' : 'mail'} size={15} />
-                        </button>
-                      );
-                    })()}
-                    <button onClick={() => anular(it.id)} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}><Icon name="trash" size={15} /></button>
+                    <button
+                      onClick={() => tieneEmail && emailEst !== 'sending' && emailEst !== 'ok' && reenviarEmail(it.id, it.email!)}
+                      className="btn btn-soft"
+                      title={tieneEmail ? `Reenviar email a ${it.email}` : 'Sin email registrado'}
+                      disabled={!tieneEmail || emailEst === 'sending' || emailEst === 'ok'}
+                      style={{ padding: '7px 10px', color: emailEst === 'ok' ? 'var(--green)' : emailEst === 'error' ? 'var(--orange)' : tieneEmail ? 'inherit' : 'var(--muted-2)', opacity: tieneEmail ? 1 : 0.4 }}
+                    >
+                      <Icon name={emailEst === 'ok' ? 'check' : 'mail'} size={15} />
+                    </button>
+                    <button onClick={() => setEditando(it)} className="btn btn-soft" title="Editar email, teléfono o fecha" style={{ padding: '7px 10px' }}><Icon name="edit" size={15} /></button>
                   </>
                 )}
+
+                {it.estado === 'PENDIENTE' && (
+                  <>
+                    <button
+                      onClick={() => { if (confirm(`¿Marcar como firmado en papel para ${it.paciente}?`)) firmarManual(it.id); }}
+                      className="btn btn-soft"
+                      title="Marcar como firmado en papel"
+                      style={{ padding: '7px 10px', color: 'var(--green)' }}
+                    >
+                      <Icon name="file" size={15} />
+                    </button>
+                    <button onClick={() => { if (confirm(`¿Anular el consentimiento de ${it.paciente}?`)) anular(it.id); }} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}>
+                      <Icon name="trash" size={15} />
+                    </button>
+                  </>
+                )}
+
                 {it.estado === 'FIRMADO' && (
-                  <button onClick={() => imprimir(it.id)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}><Icon name="print" size={14} /> Imprimir firmado</button>
+                  <button onClick={() => setVistaFirmado(it.id)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                    <Icon name="eye" size={14} /> Ver firmado
+                  </button>
                 )}
               </div>
             </div>
@@ -578,6 +812,8 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
       </div>
 
       {detalle && <DetalleConsentModal item={detalle} onClose={() => setDetalle(null)} />}
+      {editando && <EditarConsentModal item={editando} onClose={() => setEditando(null)} onSaved={updateItem} />}
+      {vistaFirmado && <VistaFirmadoModal id={vistaFirmado} onClose={() => setVistaFirmado(null)} onPrint={(d) => { printSigned(d); }} />}
     </>
   );
 }
@@ -716,7 +952,6 @@ export function Consentimientos() {
   return (
     <>
       <div className="fade-up">
-        {/* Pestañas */}
         <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
           <button style={tabBtn('plantillas')} onClick={() => setTab('plantillas')}>Consentimientos</button>
           <button style={tabBtn('cuidados')} onClick={() => setTab('cuidados')}>Post-Tratamiento</button>
@@ -757,7 +992,7 @@ export function Consentimientos() {
       </div>
 
       {/* Modales fuera del fade-up para evitar que el transform de la animación
-          rompa position:fixed (los modales quedarían anclados al div en vez de al viewport) */}
+          rompa position:fixed */}
       {filling && <FillModal consent={filling} onClose={() => setFilling(null)} onCreated={() => setRefreshKey((k) => k + 1)} />}
 
       {preview && (

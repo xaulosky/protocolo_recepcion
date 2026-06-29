@@ -17,6 +17,13 @@ function enlaceFirma(token: string) {
   return `${env.APP_URL.replace(/\/$/, '')}/firma/${token}`;
 }
 
+/** 60 días desde ahora — vencimiento por defecto de nuevos enlaces. */
+function defaultExpiry() {
+  const d = new Date();
+  d.setDate(d.getDate() + 60);
+  return d;
+}
+
 const crearSchema = z.object({
   consentId:     z.string().min(1),
   paciente:      z.string().min(1),
@@ -28,12 +35,19 @@ const crearSchema = z.object({
   email:         z.string().email().optional().or(z.literal('')).nullable(),
 });
 
+const editarSchema = z.object({
+  email:    z.string().email().optional().or(z.literal('')).nullable(),
+  telefono: z.string().optional().nullable(),
+  fecha:    z.string().optional().nullable(),
+});
+
 // Campos visibles en el listado de recepción (sin el snapshot ni la imagen de firma).
 const seleccionListado = {
   id: true, token: true, titulo: true, tratamiento: true,
   paciente: true, rut: true, profesional: true, procedimiento: true,
   telefono: true, email: true, fecha: true, estado: true,
   firmadoAt: true, createdAt: true,
+  emailEnviadoAt: true, firmaManual: true, expiresAt: true,
   creadoPor: { select: { id: true, nombre: true } },
 } as const;
 
@@ -83,6 +97,7 @@ export async function consentsRoutes(app: FastifyInstance) {
         fecha:         parsed.data.fecha,
         telefono:      parsed.data.telefono || null,
         email:         parsed.data.email || null,
+        expiresAt:     defaultExpiry(),
         creadoPorId:   req.user.sub,
       },
       select: seleccionListado,
@@ -91,7 +106,7 @@ export async function consentsRoutes(app: FastifyInstance) {
     return reply.code(201).send({ firma, enlace: enlaceFirma(firma.token) });
   });
 
-  // GET /consentimientos/:id — detalle completo (incluye snapshot y firma) para imprimir
+  // GET /consentimientos/:id — detalle completo (incluye snapshot y firma) para imprimir/ver
   app.get('/:id', { preHandler: app.authenticate }, async (req, reply) => {
     const { id } = req.params as { id: string };
     const firma = await prisma.signedConsent.findUnique({
@@ -100,6 +115,25 @@ export async function consentsRoutes(app: FastifyInstance) {
     });
     if (!firma) return reply.code(404).send({ error: 'No encontrado' });
     return { firma, enlace: enlaceFirma(firma.token) };
+  });
+
+  // PATCH /consentimientos/:id — editar email, teléfono o fecha (solo si PENDIENTE)
+  app.patch('/:id', canWrite, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const parsed = editarSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos' });
+
+    const firma = await prisma.signedConsent.findUnique({ where: { id }, select: { estado: true } });
+    if (!firma) return reply.code(404).send({ error: 'No encontrado' });
+    if (firma.estado !== 'PENDIENTE') return reply.code(409).send({ error: 'Solo se pueden editar consentimientos pendientes' });
+
+    const data: Record<string, unknown> = {};
+    if (parsed.data.email    !== undefined) data.email    = parsed.data.email    || null;
+    if (parsed.data.telefono !== undefined) data.telefono = parsed.data.telefono || null;
+    if (parsed.data.fecha    !== undefined && parsed.data.fecha) data.fecha = parsed.data.fecha;
+
+    const actualizado = await prisma.signedConsent.update({ where: { id }, data, select: seleccionListado });
+    return { firma: actualizado };
   });
 
   // POST /consentimientos/:id/email — enviar (o reenviar) el enlace por correo
@@ -121,10 +155,31 @@ export async function consentsRoutes(app: FastifyInstance) {
     });
     const sent = await sendMail({ to: destino, ...tpl });
 
-    // Guarda el correo usado para futuros reenvíos.
-    if (destino !== firma.email) await prisma.signedConsent.update({ where: { id }, data: { email: destino } });
+    await prisma.signedConsent.update({
+      where: { id },
+      data: {
+        emailEnviadoAt: new Date(),
+        ...(destino !== firma.email ? { email: destino } : {}),
+      },
+    });
 
     return { sent };
+  });
+
+  // POST /consentimientos/:id/firmar-manual — marcar como firmado en papel (presencial)
+  app.post('/:id/firmar-manual', canWrite, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const firma = await prisma.signedConsent.findUnique({ where: { id }, select: { estado: true } });
+    if (!firma) return reply.code(404).send({ error: 'No encontrado' });
+    if (firma.estado === 'ANULADO') return reply.code(409).send({ error: 'El consentimiento está anulado' });
+    if (firma.estado === 'FIRMADO') return reply.code(409).send({ error: 'Ya está firmado' });
+
+    const actualizado = await prisma.signedConsent.update({
+      where: { id },
+      data: { estado: 'FIRMADO', firmaManual: true, firmadoAt: new Date() },
+      select: seleccionListado,
+    });
+    return { firma: actualizado };
   });
 
   // DELETE /consentimientos/:id — anular (soft: conserva el registro legal)

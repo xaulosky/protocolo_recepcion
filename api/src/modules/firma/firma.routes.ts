@@ -37,6 +37,9 @@ export async function firmaRoutes(app: FastifyInstance) {
     const { token } = req.params as { token: string };
     const firma = await prisma.signedConsent.findUnique({ where: { token } });
     if (!firma) return reply.code(404).send({ error: 'Enlace no válido o expirado' });
+    if (firma.expiresAt && firma.expiresAt < new Date() && firma.estado === 'PENDIENTE') {
+      return reply.code(410).send({ error: 'Este enlace de firma venció. Comunícate con la clínica para recibir uno nuevo.' });
+    }
     return { firma: vistaPublica(firma) };
   });
 
@@ -50,6 +53,9 @@ export async function firmaRoutes(app: FastifyInstance) {
     if (!firma) return reply.code(404).send({ error: 'Enlace no válido' });
     if (firma.estado === 'ANULADO') return reply.code(410).send({ error: 'Este consentimiento fue anulado' });
     if (firma.estado === 'FIRMADO') return reply.code(409).send({ error: 'Este consentimiento ya fue firmado' });
+    if (firma.expiresAt && firma.expiresAt < new Date()) {
+      return reply.code(410).send({ error: 'Este enlace de firma venció. Comunícate con la clínica para recibir uno nuevo.' });
+    }
 
     await prisma.signedConsent.update({
       where: { token },

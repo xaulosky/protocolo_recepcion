@@ -524,6 +524,10 @@ model SignedConsent {
   creadoPor   User?         @relation("ConsentCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
   creadoPorId String?
 
+  emailEnviadoAt DateTime?          // última vez que se envió el correo al paciente
+  firmaManual    Boolean  @default(false) // firmado en papel (presencial), marcado por recepción
+  expiresAt      DateTime?          // vencimiento del enlace (null = sin límite para registros legacy)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

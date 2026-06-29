@@ -116,6 +116,9 @@ export interface SignedConsent {
   estado: ConsentEstado;
   firmadoAt?: string | null;
   createdAt: string;
+  emailEnviadoAt?: string | null;
+  firmaManual?: boolean;
+  expiresAt?: string | null;
   creadoPor?: { id: string; nombre: string } | null;
 }
 
