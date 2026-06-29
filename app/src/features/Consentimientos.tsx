@@ -474,7 +474,7 @@ function DetalleConsentModal({ item, onClose }: { item: SignedConsent; onClose: 
   );
 }
 
-function EditarConsentModal({ item, onClose, onSaved }: { item: SignedConsent; onClose: () => void; onSaved: (updated: SignedConsent) => void }) {
+function EditarConsentModal({ item, onClose, onSaved }: { item: SignedConsent; onClose: () => void; onSaved: () => void }) {
   const [email, setEmail] = useState(item.email ?? '');
   const [telefono, setTelefono] = useState(item.telefono ?? '');
   const [fecha, setFecha] = useState(item.fecha);
@@ -488,12 +488,12 @@ function EditarConsentModal({ item, onClose, onSaved }: { item: SignedConsent; o
     setGuardando(true);
     setError(null);
     try {
-      const { firma } = await api.patch<{ firma: SignedConsent }>(`/consentimientos/${item.id}`, {
+      await api.patch<{ firma: SignedConsent }>(`/consentimientos/${item.id}`, {
         email: email.trim() || null,
         telefono: telefono.trim() || null,
         fecha: fecha.trim() || item.fecha,
       });
-      onSaved(firma);
+      onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudo guardar');
       setGuardando(false);
@@ -616,15 +616,18 @@ function VistaFirmadoModal({ id, onClose, onPrint }: { id: string; onClose: () =
 
 // ── Lista de envíos (pestaña "Enviados") ──
 
-function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string) => void }) {
+function Enviados({ refreshKey, onQr, onDetalle, onEditar, onVerFirmado }: {
+  refreshKey: number;
+  onQr: (url: string) => void;
+  onDetalle: (item: SignedConsent) => void;
+  onEditar: (item: SignedConsent) => void;
+  onVerFirmado: (id: string) => void;
+}) {
   const [items, setItems] = useState<SignedConsent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTE' | 'FIRMADO' | 'ANULADO'>('TODOS');
   const [busqueda, setBusqueda] = useState('');
   const [emailEstados, setEmailEstados] = useState<Map<string, 'sending' | 'ok' | 'error'>>(new Map());
-  const [detalle, setDetalle] = useState<SignedConsent | null>(null);
-  const [editando, setEditando] = useState<SignedConsent | null>(null);
-  const [vistaFirmado, setVistaFirmado] = useState<string | null>(null);
   const copy = useCopy();
 
   const cargar = () => {
@@ -662,11 +665,6 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
     } catch {
       setEmailEstados((m) => new Map(m).set(id, 'error'));
     }
-  };
-
-  const updateItem = (updated: SignedConsent) => {
-    setItems((prev) => prev ? prev.map((i) => i.id === updated.id ? updated : i) : prev);
-    setEditando(null);
   };
 
   if (error) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--orange)', fontSize: 14 }}>{error}</div>;
@@ -759,7 +757,7 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
               </div>
 
               <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
-                <button onClick={() => setDetalle(it)} className="btn btn-soft" title="Ver detalles" style={{ padding: '7px 10px' }}>
+                <button onClick={() => onDetalle(it)} className="btn btn-soft" title="Ver detalles" style={{ padding: '7px 10px' }}>
                   <Icon name="eye" size={15} />
                 </button>
 
@@ -780,7 +778,7 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
                     >
                       <Icon name={emailEst === 'ok' ? 'check' : 'mail'} size={15} />
                     </button>
-                    <button onClick={() => setEditando(it)} className="btn btn-soft" title="Editar email, teléfono o fecha" style={{ padding: '7px 10px' }}><Icon name="edit" size={15} /></button>
+                    <button onClick={() => onEditar(it)} className="btn btn-soft" title="Editar email, teléfono o fecha" style={{ padding: '7px 10px' }}><Icon name="edit" size={15} /></button>
                   </>
                 )}
 
@@ -801,7 +799,7 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
                 )}
 
                 {it.estado === 'FIRMADO' && (
-                  <button onClick={() => setVistaFirmado(it.id)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                  <button onClick={() => onVerFirmado(it.id)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
                     <Icon name="eye" size={14} /> Ver firmado
                   </button>
                 )}
@@ -811,9 +809,6 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
         })}
       </div>
 
-      {detalle && <DetalleConsentModal item={detalle} onClose={() => setDetalle(null)} />}
-      {editando && <EditarConsentModal item={editando} onClose={() => setEditando(null)} onSaved={updateItem} />}
-      {vistaFirmado && <VistaFirmadoModal id={vistaFirmado} onClose={() => setVistaFirmado(null)} onPrint={(d) => { printSigned(d); }} />}
     </>
   );
 }
@@ -939,6 +934,10 @@ export function Consentimientos() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [printingCuidado, setPrintingCuidado] = useState<CuidadoPost | null>(null);
+  // Modales de Enviados — aquí para renderizarlos fuera de .fade-up
+  const [detalleItem, setDetalleItem] = useState<SignedConsent | null>(null);
+  const [editandoItem, setEditandoItem] = useState<SignedConsent | null>(null);
+  const [vistaFirmadoId, setVistaFirmadoId] = useState<string | null>(null);
 
   const { data, loading, error, reload } = useResource<{ consents: Consent[] }>('/data/consents');
   const consents = data?.consents ?? [];
@@ -959,7 +958,13 @@ export function Consentimientos() {
         </div>
 
         {tab === 'enviados' ? (
-          <Enviados refreshKey={refreshKey} onQr={setQrUrl} />
+          <Enviados
+            refreshKey={refreshKey}
+            onQr={setQrUrl}
+            onDetalle={setDetalleItem}
+            onEditar={setEditandoItem}
+            onVerFirmado={setVistaFirmadoId}
+          />
         ) : tab === 'cuidados' ? (
           <CuidadosTab onPrint={setPrintingCuidado} />
         ) : (
@@ -1032,6 +1037,21 @@ export function Consentimientos() {
 
       {qrUrl && <QrModal url={qrUrl} onClose={() => setQrUrl(null)} />}
       {printingCuidado && <CuidadoPrintModal cuidado={printingCuidado} onClose={() => setPrintingCuidado(null)} />}
+      {detalleItem && <DetalleConsentModal item={detalleItem} onClose={() => setDetalleItem(null)} />}
+      {editandoItem && (
+        <EditarConsentModal
+          item={editandoItem}
+          onClose={() => setEditandoItem(null)}
+          onSaved={() => { setEditandoItem(null); setRefreshKey((k) => k + 1); }}
+        />
+      )}
+      {vistaFirmadoId && (
+        <VistaFirmadoModal
+          id={vistaFirmadoId}
+          onClose={() => setVistaFirmadoId(null)}
+          onPrint={(d) => { printSigned(d); }}
+        />
+      )}
     </>
   );
 }
