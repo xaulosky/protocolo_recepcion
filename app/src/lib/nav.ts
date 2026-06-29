@@ -5,8 +5,8 @@ export type ViewId =
   | 'protocolos' | 'guiones' | 'pagos' | 'suspensiones'
   | 'tratamientos' | 'profesionales' | 'consultas' | 'boxes' | 'cirugias'
   | 'productos' | 'presupuestos' | 'giftcards' | 'consentimientos'
-  | 'faq' | 'reembolso'
-  | 'usuarios';
+  | 'faq' | 'reembolso' | 'reportes'
+  | 'usuarios' | 'admin';
 
 export interface NavItem { id: ViewId; label: string; icon: IconName; }
 export interface NavSection { section: string; items: NavItem[]; }
@@ -39,9 +39,11 @@ export const NAV: NavSection[] = [
   { section: 'Soporte', items: [
     { id: 'faq', label: 'Preguntas Frecuentes', icon: 'help' },
     { id: 'reembolso', label: 'Solicitud de Reembolso', icon: 'ref' },
+    { id: 'reportes', label: 'Reportes', icon: 'chart' },
   ]},
   { section: 'Administración', items: [
     { id: 'usuarios', label: 'Usuarios', icon: 'shield' },
+    { id: 'admin', label: 'Panel Admin', icon: 'key' },
   ]},
 ];
 
@@ -64,5 +66,7 @@ export const VIEW_LABELS: Record<ViewId, string> = {
   consentimientos: 'Documentos Clínicos',
   faq: 'Preguntas Frecuentes',
   reembolso: 'Solicitud de Reembolso',
+  reportes: 'Reportes & Análisis',
   usuarios: 'Gestión de Usuarios',
+  admin: 'Panel de Administración',
 };

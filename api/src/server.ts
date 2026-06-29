@@ -11,6 +11,9 @@ import { chatRoutes } from './modules/chat/chat.routes.ts';
 import { cirugiasRoutes } from './modules/cirugias/cirugias.routes.ts';
 import { consentsRoutes } from './modules/consents/consents.routes.ts';
 import { firmaRoutes } from './modules/firma/firma.routes.ts';
+import { quotesRoutes } from './modules/quotes/quotes.routes.ts';
+import { giftcardsRoutes } from './modules/giftcards/giftcards.routes.ts';
+import { reembolsosRoutes } from './modules/reembolsos/reembolsos.routes.ts';
 
 const app = Fastify({
   logger: { transport: env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined },
@@ -33,6 +36,9 @@ await app.register(chatRoutes, { prefix: '/chat' });
 await app.register(cirugiasRoutes, { prefix: '/cirugias' });
 await app.register(consentsRoutes, { prefix: '/consentimientos' });
 await app.register(firmaRoutes, { prefix: '/firma' });
+await app.register(quotesRoutes, { prefix: '/quotes' });
+await app.register(giftcardsRoutes, { prefix: '/gift-cards' });
+await app.register(reembolsosRoutes, { prefix: '/reembolsos' });
 
 try {
   // En producción la API vive detrás de nginx: solo localhost. En dev, accesible en la red.

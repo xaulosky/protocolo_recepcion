@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { useChat } from './ChatProvider';
 import { useAuth } from '../../store/auth-context';
 import { Icon } from '../../lib/icons';
+import { api } from '../../lib/api';
 import { colorFromString, initials } from '../../lib/format';
 import type { ChatMessage, ChatUser, Conversation } from '../../lib/types';
 
@@ -285,11 +286,77 @@ function NewChatPanel({ onDone }: { onDone: () => void }) {
 // ───────────────────────── Hilo de mensajes ─────────────────────────
 
 function MessageThread({ variant }: { variant: Variant }) {
-  const { conversations, activeId, messages, myId, send, loadingMessages } = useChat();
+  const { conversations, activeId, messages, myId, send, loadingMessages, refreshMessages } = useChat();
   const conv = conversations.find((c) => c.id === activeId);
   const [texto, setTexto] = useState('');
+  const [replyTo, setReplyTo] = useState<{ id: string; contenido: string; autorNombre: string } | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // ── Search state ──
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchQ, setSearchQ] = useState('');
+  const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const doSearch = useCallback((q: string) => {
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    if (q.length < 2) { setSearchResults([]); return; }
+    searchTimeout.current = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const res = await api.get<{ messages: ChatMessage[] }>(
+          `/chat/search?q=${encodeURIComponent(q)}${activeId ? `&conversationId=${activeId}` : ''}`
+        );
+        setSearchResults(res.messages);
+      } catch { setSearchResults([]); }
+      finally { setSearchLoading(false); }
+    }, 350);
+  }, [activeId]);
+
+  const toggleSearch = () => {
+    setSearchActive((prev) => !prev);
+    setSearchQ('');
+    setSearchResults([]);
+  };
+
+  // ── Reactions ──
+  const handleReact = useCallback(async (messageId: string, emoji: string) => {
+    try {
+      await api.post(`/chat/messages/${messageId}/react`, { emoji });
+      refreshMessages();
+    } catch { /* silencioso */ }
+  }, [refreshMessages]);
+
+  // ── Edit / Delete / Reply ──
+  const handleEdit = useCallback(() => {
+    refreshMessages();
+  }, [refreshMessages]);
+
+  const handleDelete = useCallback(async (messageId: string) => {
+    if (!window.confirm('¿Eliminar este mensaje?')) return;
+    try {
+      await api.del(`/chat/messages/${messageId}`);
+      refreshMessages();
+    } catch { /* silencioso */ }
+  }, [refreshMessages]);
+
+  const handleReply = useCallback((m: ChatMessage) => {
+    setReplyTo({ id: m.id, contenido: m.contenido, autorNombre: m.autor.nombre });
+  }, []);
+
+  const sendWithReply = useCallback(async (contenido: string, parentId: string | null) => {
+    if (!activeId) return;
+    if (parentId) {
+      try {
+        await api.post(`/chat/conversations/${activeId}/messages`, { contenido, parentId });
+        refreshMessages();
+      } catch { /* silencioso */ }
+    } else {
+      send(contenido);
+    }
+  }, [activeId, send, refreshMessages]);
 
   // Auto-scroll al fondo cuando llegan mensajes (si ya estaba cerca del fondo).
   useEffect(() => {
@@ -308,7 +375,8 @@ function MessageThread({ variant }: { variant: Variant }) {
     const t = texto.trim();
     if (!t) return;
     setTexto('');
-    send(t);
+    sendWithReply(t, replyTo?.id ?? null);
+    setReplyTo(null);
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -345,10 +413,50 @@ function MessageThread({ variant }: { variant: Variant }) {
           borderBottom: '1px solid var(--border-soft)', flexShrink: 0,
         }}>
           <Avatar name={conv.titulo} size={34} grupo={conv.esGrupo && !canal && !buzon} canal={canal} buzon={buzon} />
-          <div style={{ minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.titulo}</div>
             <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>{subtitulo}</div>
           </div>
+          <button
+            onClick={toggleSearch}
+            title={searchActive ? 'Cerrar búsqueda' : 'Buscar mensajes'}
+            style={{
+              width: 30, height: 30, borderRadius: 7, border: '1px solid var(--cream-border)',
+              background: searchActive ? 'var(--primary)' : 'var(--primary-soft)',
+              color: searchActive ? '#fff' : 'var(--primary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
+            }}
+          >
+            <Icon name={searchActive ? 'close' : 'search'} size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Search panel */}
+      {searchActive && variant !== 'floating' && (
+        <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-soft)', background: 'var(--bg)', flexShrink: 0 }}>
+          <input
+            autoFocus
+            value={searchQ}
+            onChange={(e) => { setSearchQ(e.target.value); doSearch(e.target.value); }}
+            placeholder="Buscar en mensajes…"
+            style={{ ...inputStyle, width: '100%' }}
+          />
+          {searchLoading && <div style={{ fontSize: 12, color: 'var(--muted-2)', marginTop: 6 }}>Buscando…</div>}
+          {!searchLoading && searchQ.length >= 2 && searchResults.length === 0 && (
+            <div style={{ fontSize: 12, color: 'var(--muted-2)', marginTop: 6 }}>Sin resultados</div>
+          )}
+          {searchResults.length > 0 && (
+            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 220, overflowY: 'auto' }}>
+              {searchResults.map((m) => (
+                <div key={m.id} style={{ padding: '7px 10px', borderRadius: 7, background: '#fff', border: '1px solid var(--border-soft)', fontSize: 12 }}>
+                  <span style={{ fontWeight: 600, color: colorFromString(m.autor.nombre) }}>{m.autor.nombre}: </span>
+                  <span style={{ color: 'var(--text)' }}>{m.contenido}</span>
+                  <span style={{ color: 'var(--muted-3)', marginLeft: 8, fontSize: 11 }}>{new Date(m.createdAt).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -357,9 +465,26 @@ function MessageThread({ variant }: { variant: Variant }) {
         {loadingMessages && messages.length === 0 && (
           <div style={{ textAlign: 'center', color: 'var(--muted-2)', fontSize: 12, padding: 16 }}>Cargando…</div>
         )}
-        <MessageList messages={messages} myId={myId} grupo={conv.esGrupo} />
+        <MessageList messages={messages} myId={myId} grupo={conv.esGrupo} onReact={handleReact} onEdit={handleEdit} onDelete={handleDelete} onReply={handleReply} />
         <div ref={endRef} />
       </div>
+
+      {/* Preview de reply */}
+      {replyTo && (
+        <div style={{ padding: '6px 10px', margin: '0 10px', borderRadius: 7, background: 'var(--primary-soft)', border: '1px solid var(--primary-soft-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexShrink: 0 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', marginBottom: 2 }}>
+              ↩ Respondiendo a {replyTo.autorNombre}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {replyTo.contenido}
+            </div>
+          </div>
+          <button onClick={() => setReplyTo(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--muted)', flexShrink: 0, padding: 2, display: 'flex' }}>
+            <Icon name="close" size={13} />
+          </button>
+        </div>
+      )}
 
       {/* Composer */}
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, padding: 10, borderTop: '1px solid var(--border-soft)', flexShrink: 0 }}>
@@ -393,7 +518,17 @@ function MessageThread({ variant }: { variant: Variant }) {
   );
 }
 
-function MessageList({ messages, myId, grupo }: { messages: ChatMessage[]; myId: string | null; grupo: boolean }) {
+const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙌'];
+
+function MessageList({ messages, myId, grupo, onReact, onEdit, onDelete, onReply }: {
+  messages: ChatMessage[];
+  myId: string | null;
+  grupo: boolean;
+  onReact: (messageId: string, emoji: string) => void;
+  onEdit: (m: ChatMessage) => void;
+  onDelete: (messageId: string) => void;
+  onReply: (m: ChatMessage) => void;
+}) {
   const nodes: React.ReactNode[] = [];
   let lastDay = '';
   messages.forEach((m, i) => {
@@ -411,36 +546,184 @@ function MessageList({ messages, myId, grupo }: { messages: ChatMessage[]; myId:
     const mine = m.autor.id === myId;
     const prev = messages[i - 1];
     const agrupado = prev && prev.autor.id === m.autor.id && diaLabel(prev.createdAt) === day;
-    nodes.push(<Bubble key={m.id} m={m} mine={mine} grupo={grupo} agrupado={!!agrupado} />);
+    nodes.push(<Bubble key={m.id} m={m} mine={mine} grupo={grupo} agrupado={!!agrupado} myId={myId} onReact={onReact} onEdit={onEdit} onDelete={onDelete} onReply={onReply} />);
   });
   return <>{nodes}</>;
 }
 
-function Bubble({ m, mine, grupo, agrupado }: { m: ChatMessage; mine: boolean; grupo: boolean; agrupado: boolean }) {
+function Bubble({ m, mine, grupo, agrupado, myId, onReact, onEdit, onDelete, onReply }: {
+  m: ChatMessage; mine: boolean; grupo: boolean; agrupado: boolean;
+  myId: string | null;
+  onReact: (messageId: string, emoji: string) => void;
+  onEdit: (m: ChatMessage) => void;
+  onDelete: (messageId: string) => void;
+  onReply: (m: ChatMessage) => void;
+}) {
+  const [showPicker, setShowPicker] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editVal, setEditVal] = useState(m.contenido);
+  const [editSaving, setEditSaving] = useState(false);
+
+  const reactionGroups = useMemo(() => {
+    const map = new Map<string, { count: number; isMine: boolean }>();
+    (m.reactions ?? []).forEach((r) => {
+      const g = map.get(r.emoji) ?? { count: 0, isMine: false };
+      map.set(r.emoji, { count: g.count + 1, isMine: g.isMine || r.userId === myId });
+    });
+    return Array.from(map.entries());
+  }, [m.reactions, myId]);
+
+  const saveEdit = async () => {
+    if (!editVal.trim() || editVal === m.contenido) { setEditing(false); return; }
+    setEditSaving(true);
+    try {
+      await api.patch(`/chat/messages/${m.id}`, { contenido: editVal.trim() });
+      onEdit({ ...m, contenido: editVal.trim(), editedAt: new Date().toISOString() });
+      setEditing(false);
+    } catch { /* silencioso */ }
+    finally { setEditSaving(false); }
+  };
+
   return (
-    <div style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start', marginTop: agrupado ? 2 : 8 }}>
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
+      style={{ display: 'flex', justifyContent: mine ? 'flex-end' : 'flex-start', marginTop: agrupado ? 2 : 8 }}
+    >
       <div style={{ maxWidth: '78%' }}>
         {grupo && !mine && !agrupado && (
           <div style={{ fontSize: 11, fontWeight: 600, color: colorFromString(m.autor.nombre), margin: '0 0 2px 10px' }}>
             {m.autor.nombre}
           </div>
         )}
-        <div
-          style={{
-            padding: '7px 11px', borderRadius: 14,
-            borderBottomRightRadius: mine ? 4 : 14,
-            borderBottomLeftRadius: mine ? 14 : 4,
-            background: mine ? 'var(--primary)' : 'var(--surface)',
-            color: mine ? '#fff' : 'var(--text)',
-            border: mine ? 'none' : '1px solid var(--border-soft)',
-            fontSize: 13.5, lineHeight: 1.45, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-          }}
-        >
-          {m.contenido}
-          <span style={{ fontSize: 10, opacity: 0.65, marginLeft: 8, float: 'right', marginTop: 4 }}>
-            {hhmm(m.createdAt)}
-          </span>
+
+        {/* Bubble row: content + action buttons */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, flexDirection: mine ? 'row-reverse' : 'row' }}>
+          <div
+            style={{
+              padding: '7px 11px', borderRadius: 14,
+              borderBottomRightRadius: mine ? 4 : 14,
+              borderBottomLeftRadius: mine ? 14 : 4,
+              background: mine ? 'var(--primary)' : 'var(--surface)',
+              color: mine ? '#fff' : 'var(--text)',
+              border: mine ? 'none' : '1px solid var(--border-soft)',
+              fontSize: 13.5, lineHeight: 1.45, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            }}
+          >
+            {m.parent && (
+              <div style={{ padding: '4px 8px', marginBottom: 6, borderRadius: 6, background: mine ? 'rgba(255,255,255,0.2)' : 'var(--bg)', borderLeft: `2px solid ${mine ? 'rgba(255,255,255,0.5)' : 'var(--primary)'}`, fontSize: 12, color: mine ? 'rgba(255,255,255,0.85)' : 'var(--muted)' }}>
+                <div style={{ fontWeight: 600, marginBottom: 2 }}>{m.parent.autor.nombre}</div>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>{m.parent.contenido}</div>
+              </div>
+            )}
+            {editing ? (
+              <>
+                <textarea
+                  value={editVal}
+                  onChange={(e) => setEditVal(e.target.value)}
+                  autoFocus
+                  rows={2}
+                  style={{ width: '100%', resize: 'none', fontSize: 13.5, border: '1px solid var(--border)', borderRadius: 6, padding: '6px 8px', fontFamily: 'inherit', outline: 'none' }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); }
+                    if (e.key === 'Escape') { setEditing(false); setEditVal(m.contenido); }
+                  }}
+                />
+                <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                  <button onClick={saveEdit} disabled={editSaving} style={{ fontSize: 11.5, padding: '3px 10px', borderRadius: 6, border: 'none', background: 'var(--primary)', color: '#fff', cursor: 'pointer' }}>
+                    {editSaving ? '...' : 'Guardar'}
+                  </button>
+                  <button onClick={() => { setEditing(false); setEditVal(m.contenido); }} style={{ fontSize: 11.5, padding: '3px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--muted)' }}>
+                    Cancelar
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {m.contenido}
+                {m.editedAt && (
+                  <span style={{ fontSize: 9.5, opacity: 0.6, marginLeft: 6 }}>(editado)</span>
+                )}
+                <span style={{ fontSize: 10, opacity: 0.65, marginLeft: 8, float: 'right', marginTop: 4 }}>
+                  {hhmm(m.createdAt)}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Action buttons (visible on hover, hidden for optimistic messages) */}
+          {hovered && !m.id.startsWith('tmp-') && (
+            <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>
+              {/* Reply button */}
+              <button
+                onClick={() => onReply(m)}
+                title="Responder"
+                style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}
+              >
+                <Icon name="reply" size={12} style={{ color: 'var(--muted)' }} />
+              </button>
+              {/* Edit + Delete — solo para mensajes propios */}
+              {mine && (
+                <>
+                  <button onClick={() => { setEditing(true); setEditVal(m.contenido); }} title="Editar" style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
+                    <Icon name="edit" size={12} style={{ color: 'var(--muted)' }} />
+                  </button>
+                  <button onClick={() => onDelete(m.id)} title="Eliminar" style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
+                    <Icon name="trash" size={12} style={{ color: '#C04040' }} />
+                  </button>
+                </>
+              )}
+              {/* Emoji reaction */}
+              <button
+                onClick={() => setShowPicker((p) => !p)}
+                style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}
+              >
+                <Icon name="smile" size={13} style={{ color: 'var(--muted)' }} />
+              </button>
+              {showPicker && (
+                <div style={{
+                  position: 'absolute', bottom: 30,
+                  ...(mine ? { right: 0 } : { left: 0 }),
+                  background: '#fff', border: '1px solid var(--border)', borderRadius: 10,
+                  padding: 6, display: 'flex', gap: 2, boxShadow: '0 4px 16px rgba(0,0,0,.12)',
+                  zIndex: 10, whiteSpace: 'nowrap',
+                }}>
+                  {REACTION_EMOJIS.map((e) => (
+                    <button
+                      key={e}
+                      onClick={() => { onReact(m.id, e); setShowPicker(false); }}
+                      style={{ width: 30, height: 30, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 16 }}
+                      title={e}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Reactions bar */}
+        {reactionGroups.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 3, justifyContent: mine ? 'flex-end' : 'flex-start' }}>
+            {reactionGroups.map(([emoji, { count, isMine }]) => (
+              <button
+                key={emoji}
+                onClick={() => onReact(m.id, emoji)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 3,
+                  padding: '2px 7px', borderRadius: 99, border: `1px solid ${isMine ? 'var(--primary)' : 'var(--border)'}`,
+                  background: isMine ? 'var(--primary-soft)' : '#fff', cursor: 'pointer', fontSize: 13,
+                }}
+              >
+                <span>{emoji}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: isMine ? 'var(--primary)' : 'var(--muted)' }}>{count}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

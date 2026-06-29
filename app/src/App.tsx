@@ -6,6 +6,8 @@ import { Login } from './features/auth/Login';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Toast } from './components/Toast';
+import { GlobalSearch } from './components/GlobalSearch';
+import { useGlobalSearch } from './hooks/useGlobalSearch';
 
 import { Dashboard } from './features/Dashboard';
 import { Tareas } from './features/tareas/Tareas';
@@ -27,7 +29,9 @@ import { GiftCards } from './features/GiftCards';
 import { Consentimientos } from './features/Consentimientos';
 import { Faq } from './features/Faq';
 import { Reembolso } from './features/Reembolso';
+import { Reportes } from './features/Reportes';
 import { Usuarios } from './features/usuarios/Usuarios';
+import { AdminPanel } from './features/admin/AdminPanel';
 import type { ViewId } from './lib/nav';
 import { canView } from './lib/permissions';
 
@@ -50,7 +54,9 @@ const VIEWS: Record<ViewId, ComponentType> = {
   consentimientos: Consentimientos,
   faq: Faq,
   reembolso: Reembolso,
+  reportes: Reportes,
   usuarios: Usuarios,
+  admin: AdminPanel,
 };
 
 function Shell() {
@@ -58,6 +64,7 @@ function Shell() {
   const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { open: searchOpen, setOpen: setSearchOpen } = useGlobalSearch();
 
   const allowed = canView(user, view);
   const ViewComponent = VIEWS[view];
@@ -70,12 +77,13 @@ function Shell() {
         onToggleCollapse={() => setCollapsed((c) => !c)}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
+        onOpenSearch={() => setSearchOpen(true)}
       />
       <div
         className="main-area"
         style={{ flex: 1, display: 'flex', flexDirection: 'column', marginLeft, transition: 'margin-left .25s ease', overflow: 'hidden', minWidth: 0 }}
       >
-        <Header onOpenMobile={() => setMobileOpen(m => !m)} />
+        <Header onOpenMobile={() => setMobileOpen(m => !m)} onOpenSearch={() => setSearchOpen(true)} />
         <main style={{ flex: 1, overflowY: view === 'chat' ? 'hidden' : 'auto', padding: view === 'chat' ? 0 : 24, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {allowed
             ? <ViewComponent />
@@ -83,6 +91,7 @@ function Shell() {
         </main>
       </div>
       <Toast />
+      {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
     </div>
   );
 }

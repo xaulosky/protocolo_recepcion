@@ -45,6 +45,35 @@
   --sidebar-w-collapsed: 64px;
 }
 
+/* ===================== Dark mode ===================== */
+[data-theme="dark"] {
+  --bg: #1A1918;
+  --surface: #252220;
+  --surface-soft: #2A2825;
+
+  --text: #F0EBE3;
+  --text-2: #C8BDB3;
+  --muted: #9A8F84;
+  --muted-2: #7A7268;
+  --muted-3: #5A5248;
+  --muted-4: #4A4540;
+
+  --border: #3A3530;
+  --border-soft: #2E2B28;
+  --border-softer: #252220;
+  --border-hover: #5A5248;
+
+  --cream: #252220;
+  --cream-border: #3A3530;
+
+  --primary-soft: #2E2420;
+  --primary-soft-2: #3A2D22;
+
+  --green-bg: #1A2820;
+  --danger-soft: #2A1F1F;
+  --orange-soft: #2A1F18;
+}
+
 /* ===================== Reset ===================== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; }

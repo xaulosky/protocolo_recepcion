@@ -52,6 +52,10 @@ model User {
   signedConsents    SignedConsent[]    @relation("ConsentCreador")
   chatMemberships   ConversationMember[]
   mensajes          Message[]
+  reacciones        MessageReaction[]
+  quotes            Quote[]            @relation("QuoteCreador")
+  giftCards         GiftCard[]         @relation("GiftCardCreador")
+  reembolsos        SolicitudReembolso[] @relation("ReembolsoCreador")
   // Si el usuario es una estación Box, su buzón privado con Recepción.
   buzon             Conversation? @relation("BuzonBox")
 
@@ -177,12 +181,14 @@ model Task {
   etapa       Etapa     @default(PENDIENTE)
   prioridad   Prioridad @default(NORMAL)
   dueAt       DateTime?
+  tags        String[]  @default([])
 
   asignadas    User[]  @relation("TareaAsignadas")
   creadoPor    User?   @relation("TareaCreador", fields: [creadoPorId], references: [id])
   creadoPorId  String?
 
   activities TaskActivity[]
+  checklist  TaskChecklist[]
 
   // Vinculación opcional con un procedimiento/cirugía
   cirugiaId   String?
@@ -207,6 +213,96 @@ model TaskActivity {
   createdAt DateTime @default(now())
 
   @@index([taskId])
+}
+
+model TaskChecklist {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  contenido String
+  done      Boolean  @default(false)
+  orden     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+}
+
+// ───────────────────────────── Comercial ─────────────────────────────
+
+enum GiftCardEstado {
+  ACTIVA
+  CANJEADA
+  ANULADA
+}
+
+enum ReembolsoEstado {
+  PENDIENTE
+  EN_REVISION
+  APROBADO
+  RECHAZADO
+}
+
+// Presupuesto generado en la sección Comercial (no vinculado a cirugía).
+model Quote {
+  id          String   @id @default(cuid())
+  paciente    String
+  rut         String?
+  telefono    String?
+  email       String?
+  items       Json     @default("[]") // [{ nombre, cat, precio, cantidad }]
+  subtotal    Int      @default(0)
+  descuento   Int      @default(0) // porcentaje 0-100
+  total       Int      @default(0)
+  notas       String?
+  creadoPor   User?    @relation("QuoteCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([creadoPorId])
+  @@index([createdAt])
+}
+
+model GiftCard {
+  id          String          @id @default(cuid())
+  para        String
+  de          String?
+  monto       Int
+  codigo      String          @unique
+  mensaje     String?
+  estado      GiftCardEstado  @default(ACTIVA)
+  canjeoAt    DateTime?
+  notas       String?
+  creadoPor   User?           @relation("GiftCardCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([estado])
+  @@index([createdAt])
+}
+
+model SolicitudReembolso {
+  id          String          @id @default(cuid())
+  paciente    String
+  rut         String?
+  telefono    String?
+  fechaPago   String?         // texto libre para flexibilidad (ej. "12/06/2026")
+  monto       String?         // texto libre (ej. "$150.000")
+  motivo      String
+  banco       String?
+  cuenta      String?
+  urgente     Boolean         @default(false)
+  estado      ReembolsoEstado @default(PENDIENTE)
+  notas       String?         // notas internas del equipo
+  creadoPor   User?           @relation("ReembolsoCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([estado])
+  @@index([urgente])
+  @@index([createdAt])
 }
 
 // ───────────────────────────── Chat interno ─────────────────────────────
@@ -255,9 +351,29 @@ model Message {
   autor          User         @relation(fields: [autorId], references: [id], onDelete: Cascade)
   autorId        String
   contenido      String
+  editedAt       DateTime?
+  parent         Message?     @relation("MessageReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  parentId       String?
+  replies        Message[]    @relation("MessageReplies")
   createdAt      DateTime     @default(now())
 
+  reactions MessageReaction[]
+
   @@index([conversationId, createdAt])
+  @@index([parentId])
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
 }
 
 // ───────────────────────────── Data clínica ─────────────────────────────
@@ -476,9 +592,10 @@ model Cirugia {
   tipo           String        // texto libre: "Rinoplastia", "Blefaroplastia", etc.
   telefono       String?
   email          String?
-  etapa          EtapaCirugia  @default(EVALUACION)
-  notas          String?
-  fechaCirugia   DateTime?
+  etapa            EtapaCirugia  @default(EVALUACION)
+  etapaCambiadaAt  DateTime?
+  notas            String?
+  fechaCirugia     DateTime?
 
   professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
   professionalId String?

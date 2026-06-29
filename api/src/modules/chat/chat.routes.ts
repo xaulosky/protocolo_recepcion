@@ -6,7 +6,10 @@ import { sendPush } from '../../lib/notify.ts';
 
 const memberSelect = { id: true, nombre: true, role: true } as const;
 
-const sendSchema = z.object({ contenido: z.string().trim().min(1).max(4000) });
+const sendSchema = z.object({
+  contenido: z.string().trim().min(1).max(4000),
+  parentId:  z.string().optional().nullable(),
+});
 const dmSchema = z.object({ userId: z.string().min(1) });
 const groupSchema = z.object({
   nombre: z.string().trim().min(1).max(80),
@@ -207,7 +210,45 @@ export async function chatRoutes(app: FastifyInstance) {
       where: { conversationId: id, ...(after ? { createdAt: { gt: new Date(after) } } : {}) },
       orderBy: { createdAt: 'asc' },
       take: after ? undefined : 200,
-      include: { autor: { select: memberSelect } },
+      include: {
+        autor: { select: memberSelect },
+        reactions: { select: { id: true, emoji: true, userId: true } },
+        parent: { select: { id: true, contenido: true, autor: { select: { nombre: true } } } },
+      },
+    });
+    return { messages };
+  });
+
+  // GET /chat/search?q=<query>&conversationId=<id> — buscar mensajes
+  app.get('/search', async (req, reply) => {
+    const { q, conversationId } = req.query as { q?: string; conversationId?: string };
+    if (!q || q.trim().length < 2) return reply.code(400).send({ error: 'La búsqueda requiere al menos 2 caracteres' });
+    const userId = req.user.sub;
+
+    // Si se especifica conversación, verificar membresía
+    if (conversationId) {
+      const mem = await membership(conversationId, userId);
+      if (!mem) return reply.code(403).send({ error: 'Sin acceso' });
+    }
+
+    // Solo busca en conversaciones donde el usuario es miembro
+    const myConvIds = await prisma.conversationMember.findMany({
+      where: { userId },
+      select: { conversationId: true },
+    });
+    const convIds = myConvIds.map((m) => m.conversationId);
+
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId: conversationId ? conversationId : { in: convIds },
+        contenido: { contains: q, mode: 'insensitive' },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        autor: { select: memberSelect },
+        conversation: { select: { id: true, esGrupo: true, nombre: true, buzonBoxId: true } },
+      },
     });
     return { messages };
   });
@@ -221,8 +262,16 @@ export async function chatRoutes(app: FastifyInstance) {
     if (!mem) return reply.code(403).send({ error: 'Sin acceso a esta conversación' });
 
     const message = await prisma.message.create({
-      data: { conversationId: id, autorId: req.user.sub, contenido: parsed.data.contenido },
-      include: { autor: { select: memberSelect } },
+      data: {
+        conversationId: id,
+        autorId: req.user.sub,
+        contenido: parsed.data.contenido,
+        ...(parsed.data.parentId ? { parentId: parsed.data.parentId } : {}),
+      },
+      include: {
+        autor: { select: memberSelect },
+        parent: { select: { id: true, contenido: true, autor: { select: { nombre: true } } } },
+      },
     });
     // Tocar updatedAt (para ordenar) y marcar leído para el autor.
     const now = new Date();
@@ -266,6 +315,63 @@ export async function chatRoutes(app: FastifyInstance) {
     );
 
     return reply.code(201).send({ message });
+  });
+
+  // PATCH /chat/messages/:messageId — editar contenido (solo el autor)
+  app.patch('/messages/:messageId', async (req, reply) => {
+    const { messageId } = req.params as { messageId: string };
+    const { contenido } = req.body as { contenido?: string };
+    if (!contenido?.trim()) return reply.code(400).send({ error: 'Contenido vacío' });
+    const msg = await prisma.message.findUnique({ where: { id: messageId } });
+    if (!msg) return reply.code(404).send({ error: 'Mensaje no encontrado' });
+    if (msg.autorId !== req.user.sub) return reply.code(403).send({ error: 'Solo puedes editar tus propios mensajes' });
+    const updated = await prisma.message.update({
+      where: { id: messageId },
+      data: { contenido: contenido.trim(), editedAt: new Date() },
+      include: {
+        autor: { select: memberSelect },
+        reactions: { select: { id: true, emoji: true, userId: true } },
+        parent: { select: { id: true, contenido: true, autor: { select: { nombre: true } } } },
+      },
+    });
+    return { message: updated };
+  });
+
+  // DELETE /chat/messages/:messageId — eliminar (autor o admin)
+  app.delete('/messages/:messageId', async (req, reply) => {
+    const { messageId } = req.params as { messageId: string };
+    const msg = await prisma.message.findUnique({ where: { id: messageId } });
+    if (!msg) return reply.code(404).send({ error: 'Mensaje no encontrado' });
+    if (msg.autorId !== req.user.sub && req.user.role !== 'ADMIN') {
+      return reply.code(403).send({ error: 'Sin permiso para eliminar este mensaje' });
+    }
+    await prisma.message.delete({ where: { id: messageId } });
+    return { ok: true };
+  });
+
+  // POST /chat/messages/:messageId/react — agregar reacción (toggle)
+  app.post('/messages/:messageId/react', async (req, reply) => {
+    const { messageId } = req.params as { messageId: string };
+    const { emoji } = req.body as { emoji: string };
+    if (!emoji) return reply.code(400).send({ error: 'Falta emoji' });
+    const userId = req.user.sub;
+
+    // Verificar que el usuario es miembro de la conversación
+    const msg = await prisma.message.findUnique({ where: { id: messageId }, select: { conversationId: true } });
+    if (!msg) return reply.code(404).send({ error: 'Mensaje no encontrado' });
+    const mem = await membership(msg.conversationId, userId);
+    if (!mem) return reply.code(403).send({ error: 'Sin acceso' });
+
+    // Toggle: si ya existe, eliminar; si no, crear
+    const existing = await prisma.messageReaction.findUnique({
+      where: { messageId_userId_emoji: { messageId, userId, emoji } },
+    });
+    if (existing) {
+      await prisma.messageReaction.delete({ where: { id: existing.id } });
+      return { action: 'removed', emoji };
+    }
+    await prisma.messageReaction.create({ data: { messageId, userId, emoji } });
+    return reply.code(201).send({ action: 'added', emoji });
   });
 
   // POST /chat/conversations/:id/read — marcar como leída

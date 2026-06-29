@@ -3,6 +3,7 @@ import type { Prioridad } from '../../lib/types';
 import type { NewTarea, AssignableUser } from './useTareas';
 import { Modal } from '../../components/Modal';
 import { UserMultiSelect } from '../../components/UserMultiSelect';
+import { TagInput } from '../../components/TagInput';
 
 const TIPOS = [
   'Confirmación de cita', 'Mensaje sin responder', 'Reagendamiento',
@@ -22,6 +23,7 @@ const EMPTY = { tipo: '', descripcion: '', prioridad: 'NORMAL' as Prioridad, pac
 export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar }: Props) {
   const [draft, setDraft] = useState({ ...EMPTY });
   const [asignadasIds, setAsignadasIds] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,6 +31,7 @@ export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar 
     if (open) {
       setDraft({ ...EMPTY, dueAt: initialDueAt ?? '' });
       setAsignadasIds([]);
+      setTags([]);
       setError('');
     }
   }, [open, initialDueAt]);
@@ -47,6 +50,7 @@ export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar 
         tipo: draft.tipo,
         descripcion: draft.descripcion,
         asignadasIds,
+        tags,
         prioridad: draft.prioridad,
         paciente: draft.paciente || undefined,
         dueAt: draft.dueAt ? new Date(draft.dueAt).toISOString() : undefined,
@@ -101,6 +105,11 @@ export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar 
         <div>
           <label className="label">Asignar a</label>
           <UserMultiSelect users={users} selected={asignadasIds} onChange={setAsignadasIds} />
+        </div>
+
+        <div>
+          <label className="label">Etiquetas</label>
+          <TagInput tags={tags} onChange={setTags} placeholder="Ej: urgente, paciente-vip" />
         </div>
 
         <div>

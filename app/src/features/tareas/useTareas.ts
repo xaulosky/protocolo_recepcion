@@ -30,6 +30,7 @@ export interface NewTarea {
   paciente?: string;
   prioridad: Prioridad;
   asignadasIds?: string[];
+  tags?: string[];
 }
 
 export interface UpdateTarea {
@@ -40,6 +41,7 @@ export interface UpdateTarea {
   etapa?: Etapa;
   asignadasIds?: string[];
   dueAt?: string | null;
+  tags?: string[];
 }
 
 export function useTareas() {

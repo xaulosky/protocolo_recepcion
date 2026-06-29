@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
-import type { Task, Etapa, Prioridad, TaskActivity } from '../../lib/types';
+import { useEffect, useState, useRef } from 'react';
+import { api } from '../../lib/api';
+import type { Task, Etapa, Prioridad, TaskActivity, TaskChecklistItem } from '../../lib/types';
 import type { UpdateTarea, AssignableUser } from './useTareas';
 import { ETAPA_LABEL, ETAPAS, PRIORIDAD_LABEL } from './useTareas';
 import { Modal } from '../../components/Modal';
 import { Icon } from '../../lib/icons';
 import { colorFromString, fmtDateTime, toDateTimeLocal } from '../../lib/format';
 import { UserMultiSelect } from '../../components/UserMultiSelect';
+import { TagInput } from '../../components/TagInput';
 
 const PRIO_STYLE: Record<Prioridad, { bg: string; color: string }> = {
   URGENTE: { bg: '#FBF0EB', color: '#C97B4B' },
@@ -39,9 +41,13 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
   const [etapa, setEtapa]           = useState<Etapa>('PENDIENTE');
   const [prioridad, setPrioridad]   = useState<Prioridad>('NORMAL');
   const [asignadasIds, setAsignadasIds] = useState<string[]>([]);
+  const [tags, setTags]             = useState<string[]>([]);
   const [descripcion, setDescripcion] = useState('');
   const [paciente, setPaciente]     = useState('');
   const [dueAt, setDueAt]           = useState('');
+  const [checklist, setChecklist]   = useState<TaskChecklistItem[]>([]);
+  const [newItem, setNewItem]       = useState('');
+  const checkInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!taskId) { setTask(null); return; }
@@ -52,9 +58,11 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
       setEtapa(t.etapa);
       setPrioridad(t.prioridad);
       setAsignadasIds(t.asignadas.map((u) => u.id));
+      setTags(t.tags ?? []);
       setDescripcion(t.descripcion);
       setPaciente(t.paciente ?? '');
       setDueAt(t.dueAt ? toDateTimeLocal(t.dueAt) : '');
+      setChecklist(t.checklist ?? []);
     }).finally(() => setLoading(false));
   }, [taskId, onGetTask]);
 
@@ -66,6 +74,7 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
         etapa,
         prioridad,
         asignadasIds,
+        tags,
         descripcion,
         paciente: paciente || null,
         dueAt: dueAt ? new Date(dueAt).toISOString() : null,
@@ -144,6 +153,81 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
             <div>
               <label className="label">Asignada a</label>
               <UserMultiSelect users={users} selected={asignadasIds} onChange={setAsignadasIds} />
+            </div>
+
+            <div>
+              <label className="label">Etiquetas</label>
+              <TagInput tags={tags} onChange={setTags} />
+            </div>
+
+            {/* ── Checklist ── */}
+            <div>
+              <label className="label">
+                Checklist
+                {checklist.length > 0 && (
+                  <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--muted-2)', fontWeight: 400 }}>
+                    {checklist.filter(i => i.done).length}/{checklist.length}
+                  </span>
+                )}
+              </label>
+              {checklist.length > 0 && (
+                <div style={{ width: '100%', height: 4, background: 'var(--border-soft)', borderRadius: 99, marginBottom: 8, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', background: 'var(--primary)', borderRadius: 99, width: `${checklist.length ? Math.round(checklist.filter(i => i.done).length / checklist.length * 100) : 0}%`, transition: 'width .3s' }} />
+                </div>
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 8 }}>
+                {checklist.map(item => (
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={item.done}
+                      onChange={async () => {
+                        const updated = await api.patch<{ item: TaskChecklistItem }>(`/tasks/${task!.id}/checklist/${item.id}`, { done: !item.done });
+                        setChecklist(c => c.map(i => i.id === item.id ? updated.item : i));
+                      }}
+                      style={{ width: 14, height: 14, accentColor: 'var(--primary)', flexShrink: 0, cursor: 'pointer' }}
+                    />
+                    <span style={{ flex: 1, fontSize: 13, color: item.done ? 'var(--muted-3)' : 'var(--text)', textDecoration: item.done ? 'line-through' : 'none' }}>{item.contenido}</span>
+                    <button
+                      onClick={async () => {
+                        await api.del(`/tasks/${task!.id}/checklist/${item.id}`);
+                        setChecklist(c => c.filter(i => i.id !== item.id));
+                      }}
+                      style={{ background: 'none', border: 'none', color: 'var(--muted-3)', cursor: 'pointer', padding: '2px 4px', fontSize: 12 }}
+                    >✕</button>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input
+                  ref={checkInputRef}
+                  className="input"
+                  value={newItem}
+                  onChange={e => setNewItem(e.target.value)}
+                  placeholder="Agregar paso..."
+                  style={{ flex: 1, fontSize: 12.5 }}
+                  onKeyDown={async e => {
+                    if (e.key === 'Enter' && newItem.trim()) {
+                      const { item } = await api.post<{ item: TaskChecklistItem }>(`/tasks/${task!.id}/checklist`, { contenido: newItem.trim() });
+                      setChecklist(c => [...c, item]);
+                      setNewItem('');
+                    }
+                  }}
+                />
+                <button
+                  className="btn btn-soft"
+                  style={{ padding: '7px 12px', fontSize: 12 }}
+                  onClick={async () => {
+                    if (!newItem.trim()) return;
+                    const { item } = await api.post<{ item: TaskChecklistItem }>(`/tasks/${task!.id}/checklist`, { contenido: newItem.trim() });
+                    setChecklist(c => [...c, item]);
+                    setNewItem('');
+                    checkInputRef.current?.focus();
+                  }}
+                >
+                  <Icon name="plus" size={12} />
+                </button>
+              </div>
             </div>
 
             <div>

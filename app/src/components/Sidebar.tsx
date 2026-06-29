@@ -15,9 +15,10 @@ interface SidebarProps {
   onToggleCollapse: () => void;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  onOpenSearch?: () => void;
 }
 
-export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: SidebarProps) {
+export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile, onOpenSearch }: SidebarProps) {
   const { view, go } = useApp();
   const { user, logout } = useAuth();
   const width = collapsed ? 'var(--sidebar-w-collapsed)' : 'var(--sidebar-w)';
@@ -60,6 +61,28 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', letterSpacing: '-0.2px' }}>Cialo Hub</div>
               <div style={{ fontSize: 11, color: 'var(--muted-2)' }}>Clínica Cialo</div>
             </div>
+          )}
+          {!collapsed && onOpenSearch && (
+            <button
+              onClick={onOpenSearch}
+              title="Buscar (Ctrl+K)"
+              style={{
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '3px 7px',
+                borderRadius: 6,
+                border: '1px solid var(--border-soft, #eee)',
+                background: 'var(--bg, #f7f7f7)',
+                color: 'var(--muted-3)',
+                cursor: 'pointer',
+                outline: 'none',
+              }}
+            >
+              <Icon name="search" size={13} />
+              <span style={{ fontSize: 11, color: 'var(--muted-3)' }}>⌘K</span>
+            </button>
           )}
           <button
             onClick={onToggleCollapse}

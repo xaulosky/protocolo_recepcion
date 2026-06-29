@@ -6,9 +6,12 @@ import { Icon } from '../lib/icons';
 import { priceRange } from '../lib/format';
 import type { Treatment } from '../lib/types';
 
+type SortBy = 'nombre' | 'precio-asc' | 'precio-desc';
+
 export function Tratamientos() {
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState('Todas');
+  const [sortBy, setSortBy] = useState<SortBy>('nombre');
   const [selected, setSelected] = useState<Treatment | null>(null);
   const { data, loading, error, reload } = useResource<{ treatments: Treatment[] }>('/data/treatments');
   const treatments = useMemo(() => data?.treatments ?? [], [data]);
@@ -20,7 +23,7 @@ export function Tratamientos() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return treatments.filter((t) => {
+    const list = treatments.filter((t) => {
       if (cat !== 'Todas' && t.categoria !== cat) return false;
       if (!q) return true;
       return (
@@ -30,7 +33,12 @@ export function Tratamientos() {
         (t.subcategoria ?? '').toLowerCase().includes(q)
       );
     });
-  }, [search, cat, treatments]);
+    return [...list].sort((a, b) => {
+      if (sortBy === 'precio-asc') return (a.valorDesde ?? 0) - (b.valorDesde ?? 0);
+      if (sortBy === 'precio-desc') return (b.valorDesde ?? 0) - (a.valorDesde ?? 0);
+      return a.nombre.localeCompare(b.nombre, 'es');
+    });
+  }, [search, cat, sortBy, treatments]);
 
   return (
     <AsyncState loading={loading} error={error} onRetry={reload}>
@@ -44,6 +52,11 @@ export function Tratamientos() {
           </div>
           <select className="select" style={{ width: 'auto', minWidth: 180 }} value={cat} onChange={(e) => setCat(e.target.value)}>
             {categories.map((c) => <option key={c} value={c}>{c === 'Todas' ? 'Todas las categorías' : c}</option>)}
+          </select>
+          <select className="select" style={{ width: 'auto', minWidth: 150 }} value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
+            <option value="nombre">Nombre A-Z</option>
+            <option value="precio-asc">Precio menor primero</option>
+            <option value="precio-desc">Precio mayor primero</option>
           </select>
         </div>
 
@@ -94,6 +107,38 @@ export function Tratamientos() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--cream)', border: '1px solid var(--cream-border)', borderRadius: 8, padding: '12px 14px' }}>
                   <span style={{ color: 'var(--primary)', display: 'flex', flexShrink: 0 }}><Icon name="info" size={14} /></span>
                   <span style={{ fontSize: 13, color: '#5A4535' }}>Requiere evaluación previa.</span>
+                </div>
+              )}
+              {selected.indicaciones?.length > 0 && (
+                <div>
+                  <div className="eyebrow" style={{ marginBottom: 8 }}>Indicaciones</div>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {selected.indicaciones.map((ind, i) => <li key={i} style={{ fontSize: 13, color: 'var(--text-2)' }}>{ind}</li>)}
+                  </ul>
+                </div>
+              )}
+              {selected.contraindicaciones?.length > 0 && (
+                <div>
+                  <div className="eyebrow" style={{ marginBottom: 8 }}>Contraindicaciones</div>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {selected.contraindicaciones.map((c, i) => <li key={i} style={{ fontSize: 13, color: 'var(--orange)' }}>{c}</li>)}
+                  </ul>
+                </div>
+              )}
+              {selected.preTratamiento?.length > 0 && (
+                <div>
+                  <div className="eyebrow" style={{ marginBottom: 8 }}>Pre-tratamiento</div>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {selected.preTratamiento.map((p, i) => <li key={i} style={{ fontSize: 13, color: 'var(--text-2)' }}>{p}</li>)}
+                  </ul>
+                </div>
+              )}
+              {selected.postTratamiento?.length > 0 && (
+                <div>
+                  <div className="eyebrow" style={{ marginBottom: 8 }}>Post-tratamiento</div>
+                  <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {selected.postTratamiento.map((p, i) => <li key={i} style={{ fontSize: 13, color: 'var(--text-2)' }}>{p}</li>)}
+                  </ul>
                 </div>
               )}
             </>

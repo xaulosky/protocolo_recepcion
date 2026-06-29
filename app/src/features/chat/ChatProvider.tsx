@@ -27,6 +27,7 @@ interface ChatContextValue {
   newChatOpen: boolean;
   setNewChatOpen: (open: boolean) => void;
   refresh: () => void;
+  refreshMessages: () => void;
   alertsEnabled: boolean;
   enableAlerts: () => Promise<void>;
 }
@@ -215,6 +216,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     openConversation(conversationId);
   }, [refreshConversations, openConversation]);
 
+  const refreshMessages = useCallback(() => {
+    if (activeRef.current) fetchMessages(activeRef.current);
+  }, [fetchMessages]);
+
   /** Habilita sonido + notificaciones (push en background). Requiere gesto del usuario. */
   const enableAlerts = useCallback(async () => {
     try {
@@ -274,10 +279,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     conversations, unread, users, activeId, messages, loadingMessages, floatingOpen, myId,
     openConversation, closeConversation, send, startDm, createGroup, createChannel, setFloatingOpen,
     newChatOpen, setNewChatOpen,
-    refresh: refreshConversations, alertsEnabled, enableAlerts,
+    refresh: refreshConversations, refreshMessages, alertsEnabled, enableAlerts,
   }), [conversations, unread, users, activeId, messages, loadingMessages, floatingOpen, myId,
     openConversation, closeConversation, send, startDm, createGroup, createChannel, refreshConversations,
-    newChatOpen, alertsEnabled, enableAlerts]);
+    refreshMessages, newChatOpen, alertsEnabled, enableAlerts]);
 
   return <ChatContext value={value}>{children}</ChatContext>;
 }

@@ -38,6 +38,10 @@ export interface Treatment {
   sesiones: string | null;
   protocolo: string | null;
   requiereEvaluacion: boolean;
+  indicaciones: string[];
+  contraindicaciones: string[];
+  preTratamiento: string[];
+  postTratamiento: string[];
 }
 
 export interface Professional {
@@ -184,6 +188,8 @@ export interface PaymentPolicy {
 
 export type Etapa = 'PENDIENTE' | 'ASIGNADO' | 'EN_PROCESO' | 'REVISION' | 'CERRADO';
 export type Prioridad = 'BAJA' | 'NORMAL' | 'URGENTE';
+export type GiftCardEstado = 'ACTIVA' | 'CANJEADA' | 'ANULADA';
+export type ReembolsoEstado = 'PENDIENTE' | 'EN_REVISION' | 'APROBADO' | 'RECHAZADO';
 
 export interface TaskUserRef { id: string; nombre: string }
 
@@ -195,6 +201,14 @@ export interface TaskActivity {
   createdAt: string;
 }
 
+export interface TaskChecklistItem {
+  id: string;
+  contenido: string;
+  done: boolean;
+  orden: number;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   tipo: string;
@@ -203,11 +217,66 @@ export interface Task {
   etapa: Etapa;
   prioridad: Prioridad;
   dueAt: string | null;
+  tags: string[];
   asignadas: TaskUserRef[];
   creadoPor: TaskUserRef | null;
   cirugiaId: string | null;
   createdAt: string;
   activities?: TaskActivity[];
+  checklist?: TaskChecklistItem[];
+}
+
+// ── Comercial ──
+
+export interface QuoteItem { nombre: string; cat: string; precio: number; cantidad: number }
+
+export interface Quote {
+  id: string;
+  paciente: string;
+  rut: string | null;
+  telefono: string | null;
+  email: string | null;
+  items: QuoteItem[];
+  subtotal: number;
+  descuento: number;
+  total: number;
+  notas: string | null;
+  creadoPor: TaskUserRef | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GiftCard {
+  id: string;
+  para: string;
+  de: string | null;
+  monto: number;
+  codigo: string;
+  mensaje: string | null;
+  estado: GiftCardEstado;
+  canjeoAt: string | null;
+  notas: string | null;
+  creadoPor: TaskUserRef | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SolicitudReembolso {
+  id: string;
+  paciente: string;
+  rut: string | null;
+  telefono: string | null;
+  fechaPago: string | null;
+  monto: string | null;
+  motivo: string;
+  banco: string | null;
+  cuenta: string | null;
+  urgente: boolean;
+  estado: ReembolsoEstado;
+  notas: string | null;
+  creadoPor: TaskUserRef | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ── Cirugías / Procedimientos ──
@@ -262,6 +331,7 @@ export interface CirugiaListItem {
   paciente: string;
   tipo: string;
   etapa: EtapaCirugia;
+  etapaCambiadaAt: string | null;
   telefono: string | null;
   email: string | null;
   fechaCirugia: string | null;
@@ -300,11 +370,23 @@ export interface ChatUser {
   role: Role;
 }
 
+export interface MessageReaction { id: string; emoji: string; userId: string }
+
+export interface ChatMessageParent {
+  id: string;
+  contenido: string;
+  autor: { nombre: string };
+}
+
 export interface ChatMessage {
   id: string;
   contenido: string;
   createdAt: string;
+  editedAt?: string | null;
+  parentId?: string | null;
+  parent?: ChatMessageParent | null;
   autor: ChatUser;
+  reactions?: MessageReaction[];
 }
 
 export interface Conversation {

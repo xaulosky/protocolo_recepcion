@@ -11,6 +11,19 @@ import {
   ETAPA_LABEL, ETAPA_STYLE, ETAPAS_ORDEN, PRESUPUESTO_LABEL, PRESUPUESTO_STYLE,
 } from './cirugiasStyles';
 
+function tiempoEnEtapa(desde: string): string {
+  const ms = Date.now() - new Date(desde).getTime();
+  const days = Math.floor(ms / 86400000);
+  if (days === 0) return 'Hoy';
+  if (days === 1) return '1 día en etapa';
+  if (days < 7) return `${days} días en etapa`;
+  const weeks = Math.floor(days / 7);
+  if (weeks === 1) return '1 semana en etapa';
+  if (weeks < 5) return `${weeks} semanas en etapa`;
+  const months = Math.floor(days / 30);
+  return `${months} ${months === 1 ? 'mes' : 'meses'} en etapa`;
+}
+
 export function Cirugias() {
   const { user } = useAuth();
   const canWrite  = user?.role === 'ADMIN' || user?.role === 'RECEPCION';
@@ -132,7 +145,15 @@ export function Cirugias() {
                       {c.telefono && (
                         <InfoRow icon="phone" text={c.telefono} />
                       )}
-                      {/* Monto + contadores */}
+                      {/* Tiempo en etapa */}
+                      {(c.etapaCambiadaAt || c.createdAt) && (
+                        <div style={{ fontSize: 10.5, color: 'var(--muted-3)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Icon name="clock" size={10} />
+                          {tiempoEnEtapa(c.etapaCambiadaAt ?? c.createdAt)}
+                        </div>
+                      )}
+
+                    {/* Monto + contadores */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
                         {c.presupuesto && c.presupuesto.monto > 0
                           ? <span style={{ fontSize: 13, fontWeight: 600, color: presSt?.color }}>

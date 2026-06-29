@@ -379,9 +379,25 @@ const ESTADO_INFO: Record<string, { label: string; color: string; bg: string }> 
   ANULADO:   { label: 'Anulado',            color: 'var(--muted-2)', bg: 'var(--surface-soft)' },
 };
 
+function QrModal({ url, onClose }: { url: string; onClose: () => void }) {
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(url)}`;
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 800, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
+      <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 28, textAlign: 'center', maxWidth: 300, width: '100%', boxShadow: '0 16px 48px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>QR de firma</div>
+        <img src={qrSrc} alt="QR Code" width={220} height={220} style={{ display: 'block', margin: '0 auto', borderRadius: 8 }} />
+        <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 12, wordBreak: 'break-all' }}>{url}</div>
+        <button onClick={onClose} className="btn btn-soft" style={{ marginTop: 16, width: '100%' }}>Cerrar</button>
+      </div>
+    </div>
+  );
+}
+
 function Enviados({ refreshKey }: { refreshKey: number }) {
   const [items, setItems] = useState<SignedConsent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTE' | 'FIRMADO' | 'ANULADO'>('TODOS');
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const copy = useCopy();
 
   const cargar = () => {
@@ -404,6 +420,10 @@ function Enviados({ refreshKey }: { refreshKey: number }) {
 
   if (error) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--orange)', fontSize: 14 }}>{error}</div>;
   if (!items) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: 14 }}>Cargando…</div>;
+
+  const filtrados = filtroEstado === 'TODOS' ? items : items.filter(i => i.estado === filtroEstado);
+  const conteos = { PENDIENTE: items.filter(i => i.estado === 'PENDIENTE').length, FIRMADO: items.filter(i => i.estado === 'FIRMADO').length, ANULADO: items.filter(i => i.estado === 'ANULADO').length };
+
   if (items.length === 0) return (
     <div style={{ padding: 48, textAlign: 'center', color: 'var(--muted-2)' }}>
       <Icon name="pen" size={28} />
@@ -413,39 +433,53 @@ function Enviados({ refreshKey }: { refreshKey: number }) {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {items.map((it) => {
-        const est = ESTADO_INFO[it.estado];
-        const enlace = `${window.location.origin}/firma/${it.token}`;
-        return (
-          <div key={it.id} className="card" style={{ padding: 16, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{it.paciente}</span>
-                <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 20, color: est.color, background: est.bg, fontWeight: 600 }}>{est.label}</span>
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                {it.tratamiento} · {it.rut}
-                {it.estado === 'FIRMADO' && it.firmadoAt ? ` · firmado ${fmtFecha(it.firmadoAt)}` : ` · enviado ${fmtFecha(it.createdAt)}`}
-              </div>
-            </div>
+    <>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+        {(['TODOS', 'PENDIENTE', 'FIRMADO', 'ANULADO'] as const).map((e) => (
+          <button key={e} className={`chip${filtroEstado === e ? ' active' : ''}`} onClick={() => setFiltroEstado(e)}>
+            {e === 'TODOS' ? `Todos (${items.length})` : e === 'PENDIENTE' ? `Pendientes (${conteos.PENDIENTE})` : e === 'FIRMADO' ? `Firmados (${conteos.FIRMADO})` : `Anulados (${conteos.ANULADO})`}
+          </button>
+        ))}
+      </div>
 
-            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-              {it.estado === 'PENDIENTE' && (
-                <>
-                  <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" title="Copiar enlace" style={{ padding: '7px 10px' }}><Icon name="clip" size={15} /></button>
-                  <a href={waLink(it.telefono || '', mensajeWa(it.paciente, it.tratamiento, enlace))} target="_blank" rel="noreferrer" className="btn btn-soft" title="Enviar por WhatsApp" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center' }}><Icon name="msg" size={15} /></a>
-                  <button onClick={() => anular(it.id)} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}><Icon name="trash" size={15} /></button>
-                </>
-              )}
-              {it.estado === 'FIRMADO' && (
-                <button onClick={() => imprimir(it.id)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}><Icon name="print" size={14} /> Imprimir firmado</button>
-              )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {filtrados.length === 0 && <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted-2)', fontSize: 14 }}>Sin resultados para este filtro.</div>}
+        {filtrados.map((it) => {
+          const est = ESTADO_INFO[it.estado];
+          const enlace = `${window.location.origin}/firma/${it.token}`;
+          return (
+            <div key={it.id} className="card" style={{ padding: 16, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{it.paciente}</span>
+                  <span style={{ fontSize: 10.5, padding: '2px 8px', borderRadius: 20, color: est.color, background: est.bg, fontWeight: 600 }}>{est.label}</span>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                  {it.tratamiento} · {it.rut}
+                  {it.estado === 'FIRMADO' && it.firmadoAt ? ` · firmado ${fmtFecha(it.firmadoAt)}` : ` · enviado ${fmtFecha(it.createdAt)}`}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                {it.estado === 'PENDIENTE' && (
+                  <>
+                    <button onClick={() => setQrUrl(enlace)} className="btn btn-soft" title="Mostrar QR" style={{ padding: '7px 10px' }}><Icon name="grid" size={15} /></button>
+                    <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" title="Copiar enlace" style={{ padding: '7px 10px' }}><Icon name="clip" size={15} /></button>
+                    <a href={waLink(it.telefono || '', mensajeWa(it.paciente, it.tratamiento, enlace))} target="_blank" rel="noreferrer" className="btn btn-soft" title="Enviar por WhatsApp" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center' }}><Icon name="msg" size={15} /></a>
+                    <button onClick={() => anular(it.id)} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}><Icon name="trash" size={15} /></button>
+                  </>
+                )}
+                {it.estado === 'FIRMADO' && (
+                  <button onClick={() => imprimir(it.id)} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}><Icon name="print" size={14} /> Imprimir firmado</button>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+
+      {qrUrl && <QrModal url={qrUrl} onClose={() => setQrUrl(null)} />}
+    </>
   );
 }
 

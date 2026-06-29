@@ -17,6 +17,7 @@ const createSchema = z.object({
   asignadasIds: z.array(z.string()).optional().default([]),
   dueAt: z.string().datetime({ offset: true }).optional().nullable(),
   cirugiaId: z.string().optional().nullable(),
+  tags: z.array(z.string()).optional().default([]),
 });
 
 const updateSchema = z.object({
@@ -27,6 +28,7 @@ const updateSchema = z.object({
   etapa: z.nativeEnum(Etapa).optional(),
   asignadasIds: z.array(z.string()).optional(),
   dueAt: z.string().datetime({ offset: true }).nullable().optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 const includeBase = {
@@ -40,6 +42,7 @@ const includeWithHistory = {
     orderBy: { createdAt: 'asc' as const },
     include: { user: { select: { id: true, nombre: true } } },
   },
+  checklist: { orderBy: { orden: 'asc' as const } },
 } as const;
 
 async function recordActivity(taskId: string, userId: string, tipo: string, detalle?: string) {
@@ -53,12 +56,18 @@ export async function tasksRoutes(app: FastifyInstance) {
   app.get('/', { preHandler: app.authenticate }, async (req) => {
     const userId = req.user.sub;
     const isAdmin = req.user.role === Role.ADMIN;
+    const { q } = req.query as { q?: string };
+    const qFilter = q ? {
+      OR: [
+        { descripcion: { contains: q, mode: 'insensitive' as const } },
+        { paciente: { contains: q, mode: 'insensitive' as const } },
+        { tipo: { contains: q, mode: 'insensitive' as const } },
+      ],
+    } : undefined;
     const tasks = await prisma.task.findMany({
-      where: isAdmin ? undefined : {
-        OR: [
-          { asignadas: { some: { id: userId } } },
-          { creadoPorId: userId },
-        ],
+      where: {
+        ...(isAdmin ? {} : { OR: [{ asignadas: { some: { id: userId } } }, { creadoPorId: userId }] }),
+        ...(qFilter ?? {}),
       },
       include: includeBase,
       orderBy: { createdAt: 'asc' },
@@ -194,5 +203,32 @@ export async function tasksRoutes(app: FastifyInstance) {
     const { id } = req.params as { id: string };
     await prisma.task.delete({ where: { id } });
     return reply.code(204).send();
+  });
+
+  // ── Checklist endpoints ────────────────────────────────────────────────────
+
+  // POST /tasks/:id/checklist
+  app.post('/:id/checklist', canEdit, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const { contenido } = req.body as { contenido: string };
+    if (!contenido?.trim()) return reply.code(400).send({ error: 'contenido requerido' });
+    const count = await prisma.taskChecklist.count({ where: { taskId: id } });
+    const item = await prisma.taskChecklist.create({ data: { taskId: id, contenido: contenido.trim(), orden: count } });
+    return reply.code(201).send({ item });
+  });
+
+  // PATCH /tasks/:id/checklist/:itemId
+  app.patch('/:id/checklist/:itemId', canEdit, async (req) => {
+    const { itemId } = req.params as { id: string; itemId: string };
+    const body = req.body as { contenido?: string; done?: boolean };
+    const item = await prisma.taskChecklist.update({ where: { id: itemId }, data: body });
+    return { item };
+  });
+
+  // DELETE /tasks/:id/checklist/:itemId
+  app.delete('/:id/checklist/:itemId', canEdit, async (req) => {
+    const { itemId } = req.params as { id: string; itemId: string };
+    await prisma.taskChecklist.delete({ where: { id: itemId } });
+    return { ok: true };
   });
 }

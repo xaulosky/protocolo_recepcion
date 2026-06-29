@@ -7,7 +7,7 @@ export const PERMISSION_VIEWS: ViewId[] = [
   'protocolos', 'guiones', 'pagos', 'suspensiones',
   'tratamientos', 'profesionales', 'consultas', 'boxes', 'cirugias',
   'productos', 'presupuestos', 'giftcards', 'consentimientos',
-  'faq', 'reembolso',
+  'faq', 'reembolso', 'reportes',
 ];
 
 /** Permisos por defecto según el rol cuando el usuario no tiene permisos personalizados. */
@@ -26,7 +26,7 @@ const ROLE_DEFAULTS: Record<Role, ViewId[]> = {
 /** Conjunto efectivo de secciones que el usuario puede ver. */
 export function allowedViews(user: AuthUser | null): Set<ViewId> {
   if (!user) return new Set();
-  if (user.role === 'ADMIN') return new Set<ViewId>([...PERMISSION_VIEWS, 'usuarios']);
+  if (user.role === 'ADMIN') return new Set<ViewId>([...PERMISSION_VIEWS, 'usuarios', 'admin']);
   const base = user.permisos && user.permisos.length > 0
     ? (user.permisos as ViewId[]).filter((v) => PERMISSION_VIEWS.includes(v))
     : ROLE_DEFAULTS[user.role];

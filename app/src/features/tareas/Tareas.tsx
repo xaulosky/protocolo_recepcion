@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo, useCallback } from 'react';
 import { useTareas, ETAPAS, ETAPA_LABEL, PRIORIDAD_LABEL, NEXT } from './useTareas';
 import type { Task, Etapa } from '../../lib/types';
 import { Icon } from '../../lib/icons';
@@ -11,6 +11,25 @@ import { TaskDetailModal } from './TaskDetailModal';
 import { TaskCreateModal } from './TaskCreateModal';
 import { TareasCalendario } from './TareasCalendario';
 
+function exportarCSV(tasks: Task[]) {
+  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const rows = [
+    ['ID', 'Tipo', 'Descripción', 'Paciente', 'Etapa', 'Prioridad', 'Vencimiento', 'Asignadas', 'Tags', 'Creada el'].map(esc).join(','),
+    ...tasks.map(t => [
+      t.id, t.tipo, t.descripcion, t.paciente ?? '', ETAPA_LABEL[t.etapa], t.prioridad,
+      t.dueAt ? new Date(t.dueAt).toLocaleDateString('es-CL') : '',
+      t.asignadas.map(u => u.nombre).join(' / '),
+      t.tags.join(' / '),
+      new Date(t.createdAt).toLocaleDateString('es-CL'),
+    ].map(String).map(esc).join(',')),
+  ];
+  const blob = new Blob(['﻿' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'tareas.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
 type ViewMode = 'kanban' | 'tabla' | 'calendario';
 
 export function Tareas() {
@@ -18,18 +37,59 @@ export function Tareas() {
   const { hasRole } = useAuth();
   const { tasks, users, loading, error, reload, crear, mover, actualizar, getTask, eliminar } = useTareas();
 
-  const [viewMode, setViewMode]     = useState<ViewMode>('kanban');
-  const [filter, setFilter]         = useState('Todas');
-  const [createOpen, setCreateOpen] = useState(false);
+  const [viewMode, setViewMode]       = useState<ViewMode>('kanban');
+  const [filter, setFilter]           = useState('Todas');
+  const [busqueda, setBusqueda]       = useState('');
+  const [createOpen, setCreateOpen]   = useState(false);
   const [createDueAt, setCreateDueAt] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId]   = useState<string | null>(null);
+  const [bulkSel, setBulkSel]         = useState<Set<string>>(new Set());
 
   const isAdmin = hasRole('ADMIN');
   const canEdit = !hasRole('LECTURA');
 
-  const filtered = isAdmin && filter !== 'Todas'
-    ? tasks.filter((t) => t.asignadas.some((u) => u.id === filter))
-    : tasks;
+  const filtered = useMemo(() => {
+    let base = isAdmin && filter !== 'Todas'
+      ? tasks.filter((t) => t.asignadas.some((u) => u.id === filter))
+      : tasks;
+    if (busqueda.trim()) {
+      const q = busqueda.toLowerCase();
+      base = base.filter((t) =>
+        t.descripcion.toLowerCase().includes(q) ||
+        (t.paciente ?? '').toLowerCase().includes(q) ||
+        t.tipo.toLowerCase().includes(q) ||
+        t.tags.some((tag) => tag.toLowerCase().includes(q))
+      );
+    }
+    return base;
+  }, [tasks, isAdmin, filter, busqueda]);
+
+  const handleExportar = useCallback(() => exportarCSV(filtered), [filtered]);
+
+  const toggleBulk = useCallback((id: string) => {
+    setBulkSel(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setBulkSel(prev => prev.size === filtered.length ? new Set() : new Set(filtered.map(t => t.id)));
+  }, [filtered]);
+
+  const bulkMover = useCallback(async (etapa: Etapa) => {
+    await Promise.allSettled([...bulkSel].map(id => mover(id, etapa)));
+    setBulkSel(new Set());
+    toast(`${bulkSel.size} tarea${bulkSel.size !== 1 ? 's' : ''} movidas a ${ETAPA_LABEL[etapa]}`);
+  }, [bulkSel, mover, toast]);
+
+  const bulkEliminar = useCallback(async () => {
+    if (!confirm(`¿Eliminar ${bulkSel.size} tarea${bulkSel.size !== 1 ? 's' : ''}?`)) return;
+    await Promise.allSettled([...bulkSel].map(id => eliminar(id)));
+    setBulkSel(new Set());
+    toast('Tareas eliminadas');
+  }, [bulkSel, eliminar, toast]);
 
   const handleCrear = async (data: Parameters<typeof crear>[0]) => {
     await crear(data);
@@ -89,19 +149,51 @@ export function Tareas() {
             )}
           </div>
 
-          {canEdit && (
-            <button className="btn btn-primary" onClick={() => openCreate()}>
-              <Icon name="plus" size={12} strokeWidth={2.5} /> Nueva tarea
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <input
+              className="input"
+              style={{ width: 200, fontSize: 12.5 }}
+              placeholder="Buscar tarea..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+            {(() => {
+              const vencidas = tasks.filter(t => !!t.dueAt && new Date(t.dueAt) < new Date() && t.etapa !== 'CERRADO').length;
+              return vencidas > 0 ? (
+                <span style={{ fontSize: 11.5, fontWeight: 700, background: '#FBF0F0', color: '#C04040', padding: '4px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+                  {vencidas} vencida{vencidas !== 1 ? 's' : ''}
+                </span>
+              ) : null;
+            })()}
+            <button className="btn btn-soft" onClick={handleExportar} title="Exportar a CSV" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Icon name="download" size={13} /> CSV
             </button>
-          )}
+            {canEdit && (
+              <button className="btn btn-primary" onClick={() => openCreate()}>
+                <Icon name="plus" size={12} strokeWidth={2.5} /> Nueva tarea
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* ── Bulk action bar ── */}
+        {bulkSel.size > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', marginBottom: 10, background: 'var(--primary-soft)', borderRadius: 8, border: '1px solid var(--primary)', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', marginRight: 4 }}>{bulkSel.size} seleccionada{bulkSel.size !== 1 ? 's' : ''}</span>
+            {ETAPAS.map(e => (
+              <button key={e} className="btn btn-soft" style={{ fontSize: 11.5, padding: '5px 10px' }} onClick={() => bulkMover(e)}>{ETAPA_LABEL[e]}</button>
+            ))}
+            <button className="btn" style={{ fontSize: 11.5, padding: '5px 10px', background: 'var(--danger-soft)', color: 'var(--orange)', border: 'none' }} onClick={bulkEliminar}>Eliminar</button>
+            <button className="btn btn-soft" style={{ fontSize: 11.5, padding: '5px 10px', marginLeft: 'auto' }} onClick={() => setBulkSel(new Set())}>Cancelar</button>
+          </div>
+        )}
 
         {/* ── Vistas ── */}
         {viewMode === 'kanban' && (
-          <KanbanView tasks={filtered} onMover={mover} onEliminar={handleEliminar} onClickTask={setSelectedId} />
+          <KanbanView tasks={filtered} onMover={mover} onEliminar={handleEliminar} onClickTask={setSelectedId} bulkSel={bulkSel} onToggleBulk={toggleBulk} />
         )}
         {viewMode === 'tabla' && (
-          <TablaView tasks={filtered} onMover={mover} onEliminar={handleEliminar} onClickTask={setSelectedId} />
+          <TablaView tasks={filtered} onMover={mover} onEliminar={handleEliminar} onClickTask={setSelectedId} bulkSel={bulkSel} onToggleBulk={toggleBulk} onSelectAll={selectAll} />
         )}
         {viewMode === 'calendario' && (
           <TareasCalendario
@@ -138,11 +230,13 @@ export function Tareas() {
    Vista Kanban con Drag & Drop
 ═══════════════════════════════════════ */
 
-function KanbanView({ tasks, onMover, onEliminar, onClickTask }: {
+function KanbanView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggleBulk }: {
   tasks: Task[];
   onMover: (id: string, etapa: Etapa) => void;
   onEliminar: (id: string) => void;
   onClickTask: (id: string) => void;
+  bulkSel: Set<string>;
+  onToggleBulk: (id: string) => void;
 }) {
   const [dragId, setDragId]     = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Etapa | null>(null);
@@ -199,11 +293,13 @@ function KanbanView({ tasks, onMover, onEliminar, onClickTask }: {
                   key={t.id}
                   t={t}
                   isDragging={dragId === t.id}
+                  isSelected={bulkSel.has(t.id)}
                   onDragStart={() => handleDragStart(t.id)}
                   onDragEnd={handleDragEnd}
                   onMover={() => onMover(t.id, NEXT[t.etapa])}
                   onEliminar={() => onEliminar(t.id)}
                   onClick={() => onClickTask(t.id)}
+                  onToggleBulk={() => onToggleBulk(t.id)}
                 />
               ))}
             </div>
@@ -254,12 +350,13 @@ function AvatarStack({ users }: { users: { id: string; nombre: string }[] }) {
   );
 }
 
-function KanbanCard({ t, isDragging, onDragStart, onDragEnd, onMover, onEliminar, onClick }: {
-  t: Task; isDragging: boolean;
+function KanbanCard({ t, isDragging, isSelected, onDragStart, onDragEnd, onMover, onEliminar, onClick, onToggleBulk }: {
+  t: Task; isDragging: boolean; isSelected: boolean;
   onDragStart: () => void; onDragEnd: () => void;
-  onMover: () => void; onEliminar: () => void; onClick: () => void;
+  onMover: () => void; onEliminar: () => void; onClick: () => void; onToggleBulk: () => void;
 }) {
   const prio = PRIO_STYLE[t.prioridad];
+  const isOverdue = !!t.dueAt && new Date(t.dueAt) < new Date() && t.etapa !== 'CERRADO';
   return (
     <div
       draggable
@@ -267,7 +364,9 @@ function KanbanCard({ t, isDragging, onDragStart, onDragEnd, onMover, onEliminar
       onDragEnd={onDragEnd}
       onClick={onClick}
       style={{
-        background: '#fff', border: '1px solid var(--border)', borderRadius: 9, padding: 13,
+        background: isSelected ? 'var(--primary-soft)' : '#fff',
+        border: isSelected ? '1.5px solid var(--primary)' : isOverdue ? '1.5px solid #C04040' : '1px solid var(--border)',
+        borderRadius: 9, padding: 13,
         cursor: 'grab', opacity: isDragging ? 0.45 : 1,
         transform: isDragging ? 'rotate(1.5deg)' : 'none',
         transition: 'opacity .15s, transform .15s, box-shadow .15s',
@@ -277,6 +376,7 @@ function KanbanCard({ t, isDragging, onDragStart, onDragEnd, onMover, onEliminar
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 7 }}>
+        <input type="checkbox" checked={isSelected} onChange={onToggleBulk} onClick={e => e.stopPropagation()} style={{ width: 13, height: 13, flexShrink: 0, accentColor: 'var(--primary)', cursor: 'pointer' }} />
         <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 4, background: 'var(--primary-soft)', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130 }}>{t.tipo}</span>
         <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 4, background: prio.bg, color: prio.color }}>{PRIORIDAD_LABEL[t.prioridad]}</span>
       </div>
@@ -287,11 +387,21 @@ function KanbanCard({ t, isDragging, onDragStart, onDragEnd, onMover, onEliminar
         </div>
       )}
       {t.dueAt && (
-        <div style={{ fontSize: 10.5, color: '#3B78AF', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ fontSize: 10.5, color: isOverdue ? '#C04040' : '#3B78AF', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
           <Icon name="calendar" size={10} />
           {new Date(t.dueAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
           {' '}
           {new Date(t.dueAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+        </div>
+      )}
+      {t.tags && t.tags.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
+          {t.tags.slice(0, 3).map((tag) => (
+            <span key={tag} style={{ fontSize: 10, padding: '1px 6px', borderRadius: 10, background: 'var(--primary-soft)', color: 'var(--primary)', fontWeight: 500 }}>
+              {tag}
+            </span>
+          ))}
+          {t.tags.length > 3 && <span style={{ fontSize: 10, color: 'var(--muted-2)' }}>+{t.tags.length - 3}</span>}
         </div>
       )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-softer)', paddingTop: 8 }}>
@@ -317,12 +427,37 @@ const TH: React.CSSProperties = {
   borderBottom: '1px solid var(--border)',
 };
 
-function TablaView({ tasks, onMover, onEliminar, onClickTask }: {
+function TablaView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggleBulk, onSelectAll }: {
   tasks: Task[];
   onMover: (id: string, etapa: Etapa) => void;
   onEliminar: (id: string) => void;
   onClickTask: (id: string) => void;
+  bulkSel: Set<string>;
+  onToggleBulk: (id: string) => void;
+  onSelectAll: () => void;
 }) {
+  const [sortField, setSortField] = useState<'fecha' | 'prioridad' | 'creacion'>('creacion');
+  const [sortDir, setSortDir]     = useState<'asc' | 'desc'>('desc');
+
+  const sorted = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      if (sortField === 'fecha') {
+        const da = a.dueAt ? new Date(a.dueAt).getTime() : Infinity;
+        const db = b.dueAt ? new Date(b.dueAt).getTime() : Infinity;
+        return sortDir === 'asc' ? da - db : db - da;
+      }
+      if (sortField === 'prioridad') {
+        const order: Record<string, number> = { URGENTE: 0, NORMAL: 1, BAJA: 2 };
+        const pa = order[a.prioridad] ?? 1;
+        const pb = order[b.prioridad] ?? 1;
+        return sortDir === 'asc' ? pa - pb : pb - pa;
+      }
+      return sortDir === 'asc'
+        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [tasks, sortField, sortDir]);
+
   if (tasks.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
@@ -333,10 +468,27 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask }: {
   }
 
   return (
-    <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
+    <>
+      <div style={{ display: 'flex', gap: 6, marginBottom: 10, alignItems: 'center' }}>
+        <span style={{ fontSize: 12, color: 'var(--muted)' }}>Ordenar por:</span>
+        {(['creacion', 'fecha', 'prioridad'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => { if (sortField === f) setSortDir(d => d === 'asc' ? 'desc' : 'asc'); else { setSortField(f); setSortDir('asc'); } }}
+            style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${sortField === f ? 'var(--primary)' : 'var(--border)'}`, background: sortField === f ? 'var(--primary-soft)' : 'transparent', color: sortField === f ? 'var(--primary)' : 'var(--muted)', fontSize: 11.5, fontWeight: 500, cursor: 'pointer' }}
+          >
+            {f === 'creacion' ? 'Fecha creación' : f === 'fecha' ? 'Fecha límite' : 'Prioridad'}
+            {sortField === f ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+          </button>
+        ))}
+      </div>
+      <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead style={{ background: 'var(--border-softer)' }}>
           <tr>
+            <th style={{ ...TH, width: 36, paddingRight: 0 }}>
+              <input type="checkbox" checked={bulkSel.size === tasks.length && tasks.length > 0} onChange={onSelectAll} style={{ width: 13, height: 13, accentColor: 'var(--primary)', cursor: 'pointer' }} />
+            </th>
             <th style={TH}>Tipo</th>
             <th style={TH}>Descripción</th>
             <th style={TH}>Paciente</th>
@@ -349,23 +501,37 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask }: {
           </tr>
         </thead>
         <tbody>
-          {tasks.map((t, i) => {
+          {sorted.map((t, i) => {
             const prio      = PRIO_STYLE[t.prioridad];
             const estilo    = ETAPA_STYLE[t.etapa];
             const creadoPor = t.creadoPor?.nombre ?? '—';
+            const rowOverdue = !!t.dueAt && new Date(t.dueAt) < new Date() && t.etapa !== 'CERRADO';
             return (
               <tr
                 key={t.id}
                 onClick={() => onClickTask(t.id)}
-                style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? '#fff' : 'var(--bg)', cursor: 'pointer' }}
+                style={{ borderBottom: '1px solid var(--border-soft)', background: bulkSel.has(t.id) ? 'var(--primary-soft)' : rowOverdue ? '#FFF5F5' : (i % 2 === 0 ? '#fff' : 'var(--bg)'), cursor: 'pointer' }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--primary-soft)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = i % 2 === 0 ? '#fff' : 'var(--bg)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = bulkSel.has(t.id) ? 'var(--primary-soft)' : rowOverdue ? '#FFF5F5' : (i % 2 === 0 ? '#fff' : 'var(--bg)'); }}
               >
+                <td style={{ padding: '10px 8px 10px 14px', width: 36 }} onClick={e => e.stopPropagation()}>
+                  <input type="checkbox" checked={bulkSel.has(t.id)} onChange={() => onToggleBulk(t.id)} style={{ width: 13, height: 13, accentColor: 'var(--primary)', cursor: 'pointer' }} />
+                </td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
                   <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 4, background: 'var(--primary-soft)', color: 'var(--primary)' }}>{t.tipo}</span>
                 </td>
                 <td style={{ padding: '10px 14px', color: 'var(--text)', maxWidth: 240 }}>
                   <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.descripcion}</div>
+                  {t.tags && t.tags.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 3 }}>
+                      {t.tags.slice(0, 2).map((tag) => (
+                        <span key={tag} style={{ fontSize: 9.5, padding: '1px 5px', borderRadius: 10, background: 'var(--primary-soft)', color: 'var(--primary)', fontWeight: 500 }}>
+                          {tag}
+                        </span>
+                      ))}
+                      {t.tags.length > 2 && <span style={{ fontSize: 9.5, color: 'var(--muted-2)' }}>+{t.tags.length - 2}</span>}
+                    </div>
+                  )}
                 </td>
                 <td style={{ padding: '10px 14px', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
                   {t.paciente ?? <span style={{ color: 'var(--muted-4)' }}>—</span>}
@@ -399,5 +565,6 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask }: {
         </tbody>
       </table>
     </div>
+    </>
   );
 }

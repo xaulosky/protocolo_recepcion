@@ -74,7 +74,7 @@ const incluyeDetalle = {
   },
   tareas: {
     include: {
-      asignada:  { select: { id: true, nombre: true } },
+      asignadas: { select: { id: true, nombre: true } },
       creadoPor: { select: { id: true, nombre: true } },
     },
     orderBy: { createdAt: 'asc' as const },
@@ -158,18 +158,20 @@ export async function cirugiasRoutes(app: FastifyInstance) {
 
     const anterior = await prisma.cirugia.findUnique({ where: { id }, select: { etapa: true } });
 
+    const etapaCambio = anterior && parsed.data.etapa && parsed.data.etapa !== anterior.etapa;
     const data = {
       ...parsed.data,
       fechaCirugia: parsed.data.fechaCirugia !== undefined
         ? (parsed.data.fechaCirugia ? new Date(parsed.data.fechaCirugia) : null)
         : undefined,
+      ...(etapaCambio ? { etapaCambiadaAt: new Date() } : {}),
     };
 
     const cirugia = await prisma.cirugia.update({ where: { id }, data, include: incluyeListado });
 
-    if (anterior && parsed.data.etapa && parsed.data.etapa !== anterior.etapa) {
+    if (etapaCambio) {
       await logActividad(id, req.user.sub, 'ETAPA',
-        `Etapa: ${ETAPA_ES[anterior.etapa]} → ${ETAPA_ES[parsed.data.etapa]}`,
+        `Etapa: ${ETAPA_ES[anterior.etapa]} → ${ETAPA_ES[parsed.data.etapa!]}`,
         { de: anterior.etapa, a: parsed.data.etapa },
       );
     }
