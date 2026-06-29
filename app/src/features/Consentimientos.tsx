@@ -106,7 +106,7 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string, firma?: FirmaPr
     .sign-rut{font-size:10px;color:#666;margin-top:1px;}
     .audit{margin-top:16px;font-size:9.5px;color:#888;text-align:center;font-family:Arial,sans-serif;}
     .legal{margin-top:14px;font-size:9px;color:#bbb;text-align:center;}
-    @media print{body{margin:0;} @page{margin:15mm 18mm;size:letter;}}
+    @media print{@page{margin:0;size:letter;}body{padding:15mm 18mm;}}
   </style></head><body>
 
   <div class="header">
@@ -836,7 +836,7 @@ function buildCuidadoPrintHtml(c: CuidadoPost, paciente: string, fecha: string):
     .sign-line{flex:1;}
     .sign-line .line{border-bottom:1px solid #555;height:36px;margin-bottom:5px;}
     .sign-line .lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;}
-    @media print{body{padding:0;}@page{margin:15mm 12mm;size:A4;}}
+    @media print{@page{margin:0;size:A4;}body{padding:15mm 12mm;}}
   </style>
   </head><body>
   <div class="header">

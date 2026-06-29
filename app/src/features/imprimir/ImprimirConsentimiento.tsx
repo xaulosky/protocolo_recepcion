@@ -223,6 +223,12 @@ export function ImprimirConsentimiento() {
       .catch((e) => setError(e.message));
   }, [token]);
 
+  // Ajustar título de la pestaña con datos del paciente para que no aparezca el token en los márgenes
+  useEffect(() => {
+    if (!data) return;
+    document.title = `Consentimiento — ${data.paciente}`;
+  }, [data]);
+
   // Auto-imprimir cuando los datos estén listos
   useEffect(() => {
     if (!data) return;
@@ -254,10 +260,11 @@ export function ImprimirConsentimiento() {
           .no-print { display: block; }
         }
         @media print {
-          body { padding: 0; background: #fff; }
+          /* margin:0 elimina el área donde el navegador imprime encabezados/pies (URL, fecha, título) */
+          @page { margin: 0; size: letter; }
+          body { padding: 15mm 18mm; background: #fff; }
           .print-doc { padding: 0; box-shadow: none; }
           .no-print { display: none !important; }
-          @page { margin: 15mm 18mm; size: letter; }
         }
       `}</style>
 
