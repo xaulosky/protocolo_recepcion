@@ -175,30 +175,21 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string, firma?: FirmaPr
   </body></html>`;
 }
 
+/** Abre el HTML en una nueva pestaña usando Blob URL (evita document.write obsoleto). */
 function abrirImpresion(html: string) {
-  const win = window.open('', '_blank', 'width=860,height=960');
-  if (!win) return;
-  win.document.write(html);
-  win.document.close();
-  win.focus();
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (win) setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
 function printWithData(c: Consent, f: FillData) {
   abrirImpresion(buildPrintHtml(c, f, window.location.origin));
 }
 
+/** Abre la página de impresión React para un consentimiento firmado. */
 function printSigned(d: SignedConsentDetail) {
-  const c: Consent = {
-    id: d.consentId ?? '', title: d.titulo, treatment: d.tratamiento,
-    introduction: d.snapshot.introduction, beneficios: d.snapshot.beneficios,
-    efectosSecundarios: d.snapshot.efectosSecundarios, contraindicaciones: d.snapshot.contraindicaciones,
-    cuidados: d.snapshot.cuidados,
-  };
-  const f: FillData = { nombre: d.paciente, rut: d.rut, profesional: d.profesional, procedimiento: d.procedimiento, fecha: d.fecha, telefono: '', email: '' };
-  const firma: FirmaPrint | undefined = d.firmaImagen
-    ? { imagen: d.firmaImagen, firmante: d.firmanteNombre || d.paciente, firmadoAt: fmtFecha(d.firmadoAt), fotoAuth: !!d.fotoAuth }
-    : undefined;
-  abrirImpresion(buildPrintHtml(c, f, window.location.origin, firma));
+  window.open(`/imprimir/${d.token}`, '_blank');
 }
 
 // ── Utilidades ──
@@ -871,11 +862,7 @@ function CuidadoPrintModal({ cuidado, onClose }: { cuidado: CuidadoPost; onClose
   const [fecha, setFecha] = useState(todayStr());
 
   const imprimir = () => {
-    const html = buildCuidadoPrintHtml(cuidado, paciente, fecha);
-    const w = window.open('', '_blank', 'width=820,height=700');
-    if (!w) return;
-    w.document.write(html);
-    w.document.close();
+    abrirImpresion(buildCuidadoPrintHtml(cuidado, paciente, fecha));
   };
 
   return (

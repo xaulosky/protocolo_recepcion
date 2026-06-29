@@ -32,6 +32,21 @@ function vistaPublica(f: {
 }
 
 export async function firmaRoutes(app: FastifyInstance) {
+  // GET /firma/:token/imprimir — datos completos para la página de impresión (incluye firma)
+  app.get('/:token/imprimir', async (req, reply) => {
+    const { token } = req.params as { token: string };
+    const firma = await prisma.signedConsent.findUnique({ where: { token } });
+    if (!firma) return reply.code(404).send({ error: 'No encontrado' });
+    return {
+      firma: {
+        ...vistaPublica(firma),
+        firmaImagen:    firma.firmaImagen,
+        fotoAuth:       firma.fotoAuth,
+        firmaManual:    firma.firmaManual,
+      },
+    };
+  });
+
   // GET /firma/:token — cargar el consentimiento para revisar/firmar
   app.get('/:token', async (req, reply) => {
     const { token } = req.params as { token: string };

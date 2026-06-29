@@ -5,13 +5,15 @@ import App from './App.tsx'
 import Mensajeria from './Mensajeria.tsx'
 import { ResetPassword } from './features/auth/ResetPassword.tsx'
 import { FirmaPublica } from './features/firma/FirmaPublica.tsx'
+import { ImprimirConsentimiento } from './features/imprimir/ImprimirConsentimiento.tsx'
 
-// Rutas especiales: /mensajeria (PWA kiosko), /reset (restablecer contraseña)
-// y /firma/:token (firma pública del paciente, sin sesión).
+// Rutas especiales: /mensajeria (PWA kiosko), /reset (restablecer contraseña),
+// /firma/:token (firma pública del paciente) e /imprimir/:token (impresión del consentimiento).
 const path = window.location.pathname
 const isMensajeria = path.startsWith('/mensajeria')
 const isReset = path.startsWith('/reset')
 const isFirma = path.startsWith('/firma')
+const isImprimir = path.startsWith('/imprimir')
 
 if (isMensajeria) {
   const link = document.createElement('link')
@@ -30,6 +32,6 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {isFirma ? <FirmaPublica /> : isReset ? <ResetPassword /> : isMensajeria ? <Mensajeria /> : <App />}
+    {isImprimir ? <ImprimirConsentimiento /> : isFirma ? <FirmaPublica /> : isReset ? <ResetPassword /> : isMensajeria ? <Mensajeria /> : <App />}
   </StrictMode>,
 )
