@@ -42,3 +42,69 @@ export function welcomeEmail(nombre: string, email: string, appUrl: string): { s
     text: `Se creó tu cuenta en Cialo Hub. Usuario: ${email}. Ingresa en ${appUrl}. Si no tienes contraseña, usa "¿Olvidaste tu contraseña?".`,
   };
 }
+
+export function consentimientoEmail(opts: {
+  paciente: string;
+  tratamiento: string;
+  profesional: string;
+  fecha: string;
+  enlace: string;
+}): { subject: string; html: string; text: string } {
+  const { paciente, tratamiento, profesional, fecha, enlace } = opts;
+  const primerNombre = paciente.split(' ')[0];
+
+  const cuerpo = `
+    <p style="font-size:14px;line-height:1.7;color:#4A4540;margin:0 0 6px;">Hola <strong>${primerNombre}</strong>,</p>
+    <p style="font-size:14px;line-height:1.7;color:#4A4540;margin:0 0 20px;">
+      Clínica Cialo te envía el consentimiento informado para tu procedimiento. Por favor léelo con calma y fírmalo desde tu teléfono o computador antes de la atención.
+    </p>
+
+    <div style="background:#F8F7F5;border:1px solid #E5E0D8;border-radius:10px;padding:16px 20px;margin:0 0 24px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="font-size:11px;color:#9A8F84;text-transform:uppercase;letter-spacing:.8px;padding-bottom:2px;">Procedimiento</td>
+        </tr>
+        <tr>
+          <td style="font-size:15px;font-weight:700;color:#1A1918;padding-bottom:12px;">${tratamiento}</td>
+        </tr>
+        <tr>
+          <td style="font-size:11px;color:#9A8F84;text-transform:uppercase;letter-spacing:.8px;padding-bottom:2px;">Profesional tratante</td>
+        </tr>
+        <tr>
+          <td style="font-size:14px;color:#4A4540;padding-bottom:12px;">${profesional}</td>
+        </tr>
+        <tr>
+          <td style="font-size:11px;color:#9A8F84;text-transform:uppercase;letter-spacing:.8px;padding-bottom:2px;">Fecha</td>
+        </tr>
+        <tr>
+          <td style="font-size:14px;color:#4A4540;">${fecha}</td>
+        </tr>
+      </table>
+    </div>
+
+    <p style="margin:0 0 22px;text-align:center;">${boton(enlace, '✍️  Revisar y firmar consentimiento')}</p>
+
+    <p style="font-size:12px;color:#9A8F84;line-height:1.6;margin:0 0 10px;text-align:center;">
+      O copia este enlace en tu navegador:
+    </p>
+    <p style="font-size:11.5px;color:#7C6247;word-break:break-all;text-align:center;margin:0 0 22px;background:#F8F7F5;padding:10px;border-radius:6px;">${enlace}</p>
+
+    <p style="font-size:12.5px;color:#9A8F84;line-height:1.6;margin:0;border-top:1px solid #E5E0D8;padding-top:16px;">
+      Si tienes dudas sobre el procedimiento o el consentimiento, no dudes en contactarnos antes de firmarlo. El enlace es de uso personal — no lo compartas con otras personas.
+    </p>`;
+
+  return {
+    subject: `Tu consentimiento informado — ${tratamiento} · Clínica Cialo`,
+    html: layout(`Consentimiento informado`, cuerpo),
+    text: [
+      `Hola ${primerNombre},`,
+      ``,
+      `Clínica Cialo te envía el consentimiento informado para tu procedimiento de ${tratamiento} con ${profesional}.`,
+      ``,
+      `Por favor revísalo y fírmalo antes de tu atención del ${fecha}:`,
+      enlace,
+      ``,
+      `Si tienes dudas, contáctanos antes de firmar.`,
+    ].join('\n'),
+  };
+}

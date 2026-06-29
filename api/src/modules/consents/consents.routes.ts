@@ -5,6 +5,7 @@ import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
 import { env } from '../../env.ts';
 import { sendMail } from '../../lib/notify.ts';
+import { consentimientoEmail } from '../../lib/emails.ts';
 
 /** Genera el token secreto del enlace público (urlsafe, ~32 chars). */
 function nuevoToken() {
@@ -111,23 +112,14 @@ export async function consentsRoutes(app: FastifyInstance) {
     if (!destino) return reply.code(400).send({ error: 'Falta el correo del paciente' });
 
     const enlace = enlaceFirma(firma.token);
-    const sent = await sendMail({
-      to: destino,
-      subject: `Consentimiento informado — ${firma.tratamiento}`,
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1A1918">
-          <h2 style="color:#7C6247">Clínica Cialo</h2>
-          <p>Hola ${firma.paciente},</p>
-          <p>Tienes un consentimiento informado para <strong>${firma.tratamiento}</strong> pendiente de revisar y firmar.</p>
-          <p style="margin:24px 0">
-            <a href="${enlace}" style="background:#7C6247;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600">
-              Revisar y firmar
-            </a>
-          </p>
-          <p style="font-size:13px;color:#888">O copia este enlace en tu navegador:<br>${enlace}</p>
-        </div>`,
-      text: `Hola ${firma.paciente}, revisa y firma tu consentimiento para ${firma.tratamiento}: ${enlace}`,
+    const tpl = consentimientoEmail({
+      paciente:    firma.paciente,
+      tratamiento: firma.tratamiento,
+      profesional: firma.profesional,
+      fecha:       firma.fecha,
+      enlace,
     });
+    const sent = await sendMail({ to: destino, ...tpl });
 
     // Guarda el correo usado para futuros reenvíos.
     if (destino !== firma.email) await prisma.signedConsent.update({ where: { id }, data: { email: destino } });
