@@ -1,20 +1,20 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { InventarioItem, InventarioDashboard, MovimientoTipo } from '../../lib/types';
 
-const API = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:4000';
+import { api, setTokens, clearTokens, hasSession } from '../../lib/api';
 
-// ── auth & api ───────────────────────────────────────────────────────────────
-
-function authHeaders(): Record<string, string> {
-  const token = localStorage.getItem('accessToken');
-  return token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-}
-
+// ── helpers wrapper ──────────────────────────────────────────────────────────
+// La PWA reutiliza el cliente api.ts (cialo_access/cialo_refresh) para ser
+// consistente con el resto de la app y beneficiarse del refresh automático.
 async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}${path}`, { ...opts, headers: { ...authHeaders(), ...(opts?.headers ?? {}) } });
-  const body = await res.json();
-  if (!res.ok) throw new Error(body?.error ?? `Error ${res.status}`);
-  return body as T;
+  if (opts?.method && opts.method !== 'GET') {
+    const body = opts.body ? JSON.parse(opts.body as string) : undefined;
+    const m = opts.method.toUpperCase();
+    if (m === 'POST') return api.post<T>(path, body);
+    if (m === 'PATCH') return api.patch<T>(path, body);
+    if (m === 'DELETE') return api.del<T>(path);
+  }
+  return api.get<T>(path);
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -43,10 +43,15 @@ function LoginForm({ onLogin }: { onLogin: (token: string) => void }) {
     e.preventDefault();
     setLoading(true); setErr('');
     try {
-      const data = await apiFetch<{ accessToken: string }>('/auth/login', {
-        method: 'POST', body: JSON.stringify({ email, password: pass }),
+      const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:4000';
+      const res = await fetch(`${BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass }),
       });
-      localStorage.setItem('accessToken', data.accessToken);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Error al iniciar sesión');
+      setTokens(data.accessToken, data.refreshToken);
       onLogin(data.accessToken);
     } catch (e) { setErr((e as Error).message); }
     finally { setLoading(false); }
@@ -99,7 +104,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function InventarioPWA() {
-  const [authed, setAuthed] = useState(!!localStorage.getItem('accessToken'));
+  const [authed, setAuthed] = useState(hasSession());
   const [screen, setScreen] = useState<Screen>('home');
   const [dashboard, setDashboard] = useState<InventarioDashboard | null>(null);
   const [items, setItems] = useState<InventarioItem[]>([]);
@@ -400,7 +405,7 @@ export function InventarioPWA() {
         )}
 
         {/* Logout */}
-        <button onClick={() => { localStorage.removeItem('accessToken'); setAuthed(false); }}
+        <button onClick={() => { clearTokens(); setAuthed(false); }}
           style={{ ...CARD, border: '1px solid #e0e0e0', textAlign: 'center', color: '#888', fontSize: 13, cursor: 'pointer', padding: '12px', background: '#fff' }}>
           Cerrar sesión
         </button>
