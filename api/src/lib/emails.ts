@@ -1,12 +1,15 @@
 /** Plantillas HTML simples y consistentes para los correos del sistema. */
 
+import { env } from '../env.ts';
+
 const BRAND = '#7C6247';
 
 function layout(titulo: string, cuerpo: string): string {
+  const logoUrl = `${env.APP_URL.replace(/\/$/, '')}/logo-cialo.png`;
   return `<!doctype html><html><body style="margin:0;background:#F8F7F5;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1A1918;">
   <div style="max-width:480px;margin:0 auto;padding:28px 20px;">
-    <div style="text-align:center;margin-bottom:22px;">
-      <div style="display:inline-block;background:${BRAND};color:#fff;font-weight:700;font-size:18px;padding:10px 16px;border-radius:10px;">Cialo Hub</div>
+    <div style="text-align:center;margin-bottom:24px;">
+      <img src="${logoUrl}" alt="Clínica Cialo" style="height:52px;width:auto;display:block;margin:0 auto;" />
     </div>
     <div style="background:#fff;border:1px solid #E5E0D8;border-radius:12px;padding:28px;">
       <h1 style="font-size:18px;margin:0 0 14px;color:#1A1918;">${titulo}</h1>
