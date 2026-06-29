@@ -420,11 +420,54 @@ function QrModal({ url, onClose }: { url: string; onClose: () => void }) {
   );
 }
 
+function DetalleConsentModal({ item, onClose }: { item: SignedConsent; onClose: () => void }) {
+  const est = ESTADO_INFO[item.estado];
+  const row = (label: string, value?: string | null) => value ? (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div style={{ fontSize: 10.5, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</div>
+      <div style={{ fontSize: 13.5, color: 'var(--text)' }}>{value}</div>
+    </div>
+  ) : null;
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 480, boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+          <div>
+            <div style={{ fontSize: 10.5, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Detalle del consentimiento</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{item.paciente}</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 20, color: est.color, background: est.bg, fontWeight: 600 }}>{est.label}</span>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2 }}><Icon name="close" size={17} /></button>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
+          {row('RUT', item.rut)}
+          {row('Fecha', item.fecha)}
+          {row('Tratamiento', item.titulo)}
+          {row('Procedimiento', item.procedimiento !== item.tratamiento ? item.procedimiento : undefined)}
+          {row('Profesional', item.profesional)}
+          {row('Email', item.email)}
+          {row('Teléfono', item.telefono)}
+          {row('Creado por', item.creadoPor?.nombre)}
+          {row('Creado el', fmtFecha(item.createdAt))}
+          {item.firmadoAt && row('Firmado el', fmtFecha(item.firmadoAt))}
+        </div>
+
+        <button onClick={onClose} className="btn btn-soft" style={{ width: '100%' }}>Cerrar</button>
+      </div>
+    </div>
+  );
+}
+
 function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string) => void }) {
   const [items, setItems] = useState<SignedConsent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTE' | 'FIRMADO' | 'ANULADO'>('TODOS');
   const [emailEstados, setEmailEstados] = useState<Map<string, 'sending' | 'ok' | 'error'>>(new Map());
+  const [detalle, setDetalle] = useState<SignedConsent | null>(null);
   const copy = useCopy();
 
   const cargar = () => {
@@ -498,6 +541,7 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
               </div>
 
               <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                <button onClick={() => setDetalle(it)} className="btn btn-soft" title="Ver detalles" style={{ padding: '7px 10px' }}><Icon name="eye" size={15} /></button>
                 {it.estado === 'PENDIENTE' && (
                   <>
                     <a href={enlace} target="_blank" rel="noreferrer" className="btn btn-primary" title="Abrir para firmar en este dispositivo" style={{ padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, textDecoration: 'none' }}>
@@ -533,6 +577,7 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
         })}
       </div>
 
+      {detalle && <DetalleConsentModal item={detalle} onClose={() => setDetalle(null)} />}
     </>
   );
 }
