@@ -36,7 +36,8 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
   const [task, setTask] = useState<Task | null>(null);
   const [activities, setActivities] = useState<TaskActivity[]>([]);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving]       = useState(false);
+  const [savingMeta, setSavingMeta] = useState(false);
 
   const [etapa, setEtapa]           = useState<Etapa>('PENDIENTE');
   const [prioridad, setPrioridad]   = useState<Prioridad>('NORMAL');
@@ -65,6 +66,32 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
       setChecklist(t.checklist ?? []);
     }).finally(() => setLoading(false));
   }, [taskId, onGetTask]);
+
+  const cambiarEtapa = async (nueva: Etapa) => {
+    if (!task || nueva === etapa || savingMeta) return;
+    setSavingMeta(true);
+    try {
+      const updated = await onActualizar(task.id, { etapa: nueva });
+      setEtapa(nueva);
+      setTask(updated);
+      const fresh = await onGetTask(task.id);
+      setActivities(fresh.activities ?? []);
+    } finally {
+      setSavingMeta(false);
+    }
+  };
+
+  const cambiarPrioridad = async (nueva: Prioridad) => {
+    if (!task || nueva === prioridad || savingMeta) return;
+    setSavingMeta(true);
+    try {
+      const updated = await onActualizar(task.id, { prioridad: nueva });
+      setPrioridad(nueva);
+      setTask(updated);
+    } finally {
+      setSavingMeta(false);
+    }
+  };
 
   const guardar = async () => {
     if (!task) return;
@@ -133,21 +160,48 @@ export function TaskDetailModal({ taskId, users, onClose, onGetTask, onActualiza
               <input className="input" value={paciente} onChange={(e) => setPaciente(e.target.value)} placeholder="Nombre del paciente (opcional)" />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <div>
-                <label className="label">Etapa</label>
-                <select className="select" value={etapa} onChange={(e) => setEtapa(e.target.value as Etapa)}>
-                  {ETAPAS.map((e) => <option key={e} value={e}>{ETAPA_LABEL[e]}</option>)}
-                </select>
+            {/* ── Stepper de etapa (auto-guarda al hacer clic) ── */}
+            <div>
+              <label className="label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                Etapa
+                {savingMeta && <span style={{ fontSize: 10, color: 'var(--muted-3)', fontWeight: 400 }}>Guardando…</span>}
+              </label>
+              <div style={{ display: 'flex', borderRadius: 7, overflow: 'hidden', border: '1.5px solid var(--border)' }}>
+                {ETAPAS.map((e, i) => {
+                  const active = etapa === e;
+                  const past   = ETAPAS.indexOf(etapa) > i;
+                  return (
+                    <button
+                      key={e}
+                      onClick={() => cambiarEtapa(e)}
+                      disabled={savingMeta || active}
+                      title={ETAPA_LABEL[e]}
+                      style={{
+                        flex: 1, padding: '8px 4px', border: 'none',
+                        borderLeft: i > 0 ? '1px solid var(--border)' : 'none',
+                        background: active ? 'var(--primary)' : past ? 'var(--primary-soft)' : '#fff',
+                        color: active ? '#fff' : past ? 'var(--primary)' : 'var(--muted)',
+                        fontSize: 11, fontWeight: active ? 700 : 500,
+                        cursor: active || savingMeta ? 'default' : 'pointer',
+                        transition: 'background .15s, color .15s',
+                        opacity: savingMeta && !active ? 0.6 : 1,
+                      }}
+                    >
+                      {ETAPA_LABEL[e]}
+                    </button>
+                  );
+                })}
               </div>
-              <div>
-                <label className="label">Prioridad</label>
-                <select className="select" value={prioridad} onChange={(e) => setPrioridad(e.target.value as Prioridad)}>
-                  <option value="BAJA">Baja</option>
-                  <option value="NORMAL">Normal</option>
-                  <option value="URGENTE">Urgente</option>
-                </select>
-              </div>
+            </div>
+
+            {/* ── Prioridad (auto-guarda al cambiar) ── */}
+            <div>
+              <label className="label">Prioridad</label>
+              <select className="select" value={prioridad} onChange={(e) => cambiarPrioridad(e.target.value as Prioridad)} style={{ width: 150 }}>
+                <option value="BAJA">Baja</option>
+                <option value="NORMAL">Normal</option>
+                <option value="URGENTE">Urgente</option>
+              </select>
             </div>
 
             <div>

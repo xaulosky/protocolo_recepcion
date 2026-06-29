@@ -34,6 +34,7 @@ const updateSchema = z.object({
 const includeBase = {
   asignadas:  { select: { id: true, nombre: true } },
   creadoPor:  { select: { id: true, nombre: true } },
+  checklist:  { orderBy: { orden: 'asc' as const } },
 } as const;
 
 const includeWithHistory = {
@@ -42,7 +43,6 @@ const includeWithHistory = {
     orderBy: { createdAt: 'asc' as const },
     include: { user: { select: { id: true, nombre: true } } },
   },
-  checklist: { orderBy: { orden: 'asc' as const } },
 } as const;
 
 async function recordActivity(taskId: string, userId: string, tipo: string, detalle?: string) {

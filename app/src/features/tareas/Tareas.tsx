@@ -39,6 +39,7 @@ export function Tareas() {
 
   const [viewMode, setViewMode]       = useState<ViewMode>('kanban');
   const [filter, setFilter]           = useState('Todas');
+  const [quickFilter, setQuickFilter] = useState<'vencidas' | null>(null);
   const [busqueda, setBusqueda]       = useState('');
   const [createOpen, setCreateOpen]   = useState(false);
   const [createDueAt, setCreateDueAt] = useState('');
@@ -52,6 +53,9 @@ export function Tareas() {
     let base = isAdmin && filter !== 'Todas'
       ? tasks.filter((t) => t.asignadas.some((u) => u.id === filter))
       : tasks;
+    if (quickFilter === 'vencidas') {
+      base = base.filter(t => !!t.dueAt && new Date(t.dueAt) < new Date() && t.etapa !== 'CERRADO');
+    }
     if (busqueda.trim()) {
       const q = busqueda.toLowerCase();
       base = base.filter((t) =>
@@ -62,7 +66,7 @@ export function Tareas() {
       );
     }
     return base;
-  }, [tasks, isAdmin, filter, busqueda]);
+  }, [tasks, isAdmin, filter, quickFilter, busqueda]);
 
   const handleExportar = useCallback(() => exportarCSV(filtered), [filtered]);
 
@@ -160,9 +164,20 @@ export function Tareas() {
             {(() => {
               const vencidas = tasks.filter(t => !!t.dueAt && new Date(t.dueAt) < new Date() && t.etapa !== 'CERRADO').length;
               return vencidas > 0 ? (
-                <span style={{ fontSize: 11.5, fontWeight: 700, background: '#FBF0F0', color: '#C04040', padding: '4px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+                <button
+                  onClick={() => setQuickFilter(prev => prev === 'vencidas' ? null : 'vencidas')}
+                  title={quickFilter === 'vencidas' ? 'Quitar filtro' : 'Filtrar solo vencidas'}
+                  style={{
+                    fontSize: 11.5, fontWeight: 700, border: 'none', cursor: 'pointer',
+                    background: quickFilter === 'vencidas' ? '#C04040' : '#FBF0F0',
+                    color: quickFilter === 'vencidas' ? '#fff' : '#C04040',
+                    padding: '4px 10px', borderRadius: 20, whiteSpace: 'nowrap',
+                    transition: 'background .15s, color .15s',
+                  }}
+                >
                   {vencidas} vencida{vencidas !== 1 ? 's' : ''}
-                </span>
+                  {quickFilter === 'vencidas' && ' ✕'}
+                </button>
               ) : null;
             })()}
             <button className="btn btn-soft" onClick={handleExportar} title="Exportar a CSV" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -404,11 +419,27 @@ function KanbanCard({ t, isDragging, isSelected, onDragStart, onDragEnd, onMover
           {t.tags.length > 3 && <span style={{ fontSize: 10, color: 'var(--muted-2)' }}>+{t.tags.length - 3}</span>}
         </div>
       )}
+      {t.checklist && t.checklist.length > 0 && (() => {
+        const done  = t.checklist.filter(i => i.done).length;
+        const total = t.checklist.length;
+        const pct   = Math.round(done / total * 100);
+        const all   = done === total;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <div style={{ flex: 1, height: 3, background: 'var(--border-soft)', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{ height: '100%', background: all ? '#4A7A5A' : 'var(--primary)', borderRadius: 99, width: `${pct}%`, transition: 'width .3s' }} />
+            </div>
+            <span style={{ fontSize: 10, color: all ? '#4A7A5A' : 'var(--muted-2)', fontWeight: all ? 700 : 400, whiteSpace: 'nowrap' }}>
+              {done}/{total}
+            </span>
+          </div>
+        );
+      })()}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-softer)', paddingTop: 8 }}>
         <AvatarStack users={t.asignadas} />
         <div style={{ display: 'flex', gap: 4 }} onClick={(e) => e.stopPropagation()}>
           {t.etapa !== 'CERRADO' && (
-            <button onClick={onMover} title="Avanzar etapa" style={{ fontSize: 11.5, padding: '3px 8px', background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 4, border: 'none', fontWeight: 600 }}>→</button>
+            <button onClick={onMover} title={`Mover a ${ETAPA_LABEL[NEXT[t.etapa]]}`} style={{ fontSize: 11, padding: '3px 8px', background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 4, border: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>→ {ETAPA_LABEL[NEXT[t.etapa]]}</button>
           )}
           <button onClick={onEliminar} title="Eliminar" style={{ fontSize: 11, padding: '3px 7px', background: 'var(--danger-soft)', color: 'var(--orange)', borderRadius: 4, border: 'none' }}>✕</button>
         </div>
@@ -541,8 +572,22 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggleB
                     ? new Date(t.dueAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
                     : '—'}
                 </td>
-                <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 4, background: estilo.bg, color: estilo.color }}>{ETAPA_LABEL[t.etapa]}</span>
+                <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
+                  <select
+                    value={t.etapa}
+                    onChange={(e) => onMover(t.id, e.target.value as Etapa)}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      fontSize: 11, fontWeight: 600, padding: '3px 24px 3px 8px', borderRadius: 4,
+                      background: estilo.bg, color: estilo.color,
+                      border: `1px solid ${estilo.color}55`,
+                      cursor: 'pointer', appearance: 'none' as const,
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23777' stroke-width='1.5'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center', backgroundSize: '8px',
+                    }}
+                  >
+                    {ETAPAS.map(ep => <option key={ep} value={ep}>{ETAPA_LABEL[ep]}</option>)}
+                  </select>
                 </td>
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
                   <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 4, background: prio.bg, color: prio.color }}>{PRIORIDAD_LABEL[t.prioridad]}</span>
@@ -554,7 +599,7 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggleB
                 <td style={{ padding: '10px 14px', whiteSpace: 'nowrap', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                   <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
                     {t.etapa !== 'CERRADO' && (
-                      <button onClick={() => onMover(t.id, NEXT[t.etapa])} title="Avanzar etapa" style={{ fontSize: 11, padding: '3px 9px', background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 4, border: 'none', fontWeight: 600 }}>→</button>
+                      <button onClick={() => onMover(t.id, NEXT[t.etapa])} title={`Avanzar a ${ETAPA_LABEL[NEXT[t.etapa]]}`} style={{ fontSize: 11, padding: '3px 9px', background: 'var(--primary-soft)', color: 'var(--primary)', borderRadius: 4, border: 'none', fontWeight: 600, whiteSpace: 'nowrap' }}>→ {ETAPA_LABEL[NEXT[t.etapa]]}</button>
                     )}
                     <button onClick={() => onEliminar(t.id)} title="Eliminar" style={{ fontSize: 11, padding: '3px 7px', background: 'var(--danger-soft)', color: 'var(--orange)', borderRadius: 4, border: 'none' }}>✕</button>
                   </div>
