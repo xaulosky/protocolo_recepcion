@@ -355,6 +355,55 @@ export interface Cirugia extends Omit<CirugiaListItem, 'presupuesto' | '_count'>
   tareas: Task[];
 }
 
+// ── Inventario ──
+
+export type MovimientoTipo = 'ENTRADA' | 'SALIDA' | 'AJUSTE';
+
+export interface InventarioItem {
+  id: string;
+  nombre: string;
+  sku: string | null;
+  codigoBarras: string | null;
+  descripcion: string | null;
+  stock: number;
+  stockMinimo: number;
+  unidad: string;
+  categoria: string | null;
+  costo: number;
+  activo: boolean;
+  notas: string | null;
+  creadoPor: TaskUserRef | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InventarioMovimiento {
+  id: string;
+  itemId: string;
+  tipo: MovimientoTipo;
+  cantidad: number;
+  stockAntes: number;
+  stockDespues: number;
+  codigoMotivo: string | null;
+  notas: string | null;
+  profesional: { id: string; nombreCompleto: string } | null;
+  realizadoPor: TaskUserRef | null;
+  fechaMovimiento: string;
+  createdAt: string;
+}
+
+export interface InventarioItemDetail extends InventarioItem {
+  movimientos: InventarioMovimiento[];
+}
+
+export interface InventarioDashboard {
+  totalItems: number;
+  bajoStock: number;
+  sinStock: number;
+  valorTotal: number;
+  ultimosMovimientos: (InventarioMovimiento & { item: { nombre: string; unidad: string } })[];
+}
+
 export interface Notification {
   id: string;
   type: string;

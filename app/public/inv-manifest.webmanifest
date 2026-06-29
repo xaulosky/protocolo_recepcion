@@ -1,0 +1,15 @@
+{
+  "name": "Cialo Inventario",
+  "short_name": "Inventario",
+  "description": "Control de stock e inventario de Clínica Cialo",
+  "start_url": "/inv",
+  "scope": "/inv",
+  "display": "standalone",
+  "background_color": "#F8F7F5",
+  "theme_color": "#7C6247",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/chat-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/chat-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

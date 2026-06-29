@@ -56,6 +56,8 @@ model User {
   quotes            Quote[]            @relation("QuoteCreador")
   giftCards         GiftCard[]         @relation("GiftCardCreador")
   reembolsos        SolicitudReembolso[] @relation("ReembolsoCreador")
+  inventarioItems       InventarioItem[]       @relation("InventarioCreadoPor")
+  inventarioMovimientos InventarioMovimiento[] @relation("InventarioMovUsuario")
   // Si el usuario es una estación Box, su buzón privado con Recepción.
   buzon             Conversation? @relation("BuzonBox")
 
@@ -417,6 +419,7 @@ model Professional {
   tratamientos TreatmentProfessional[]
   usuarios     User[]
   cirugias     Cirugia[]
+  inventarioMovimientos InventarioMovimiento[] @relation("InventarioMovProfesional")
 
   @@index([especialidad])
 }
@@ -674,4 +677,55 @@ model CirugiaActividad {
   createdAt   DateTime @default(now())
 
   @@index([cirugiaId])
+}
+
+// ─────────────────────────────── Inventario ─────────────────────────────────
+
+model InventarioItem {
+  id           String   @id @default(cuid())
+  nombre       String
+  sku          String?  @unique
+  codigoBarras String?
+  descripcion  String?
+  stock        Int      @default(0)
+  stockMinimo  Int      @default(0)
+  unidad       String   @default("unidad")
+  categoria    String?
+  costo        Decimal  @default(0) @db.Decimal(10, 2)
+  activo       Boolean  @default(true)
+  notas        String?
+
+  movimientos  InventarioMovimiento[]
+
+  creadoPor    User?    @relation("InventarioCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId  String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([categoria])
+  @@index([activo])
+  @@index([stock])
+}
+
+model InventarioMovimiento {
+  id             String   @id @default(cuid())
+  item           InventarioItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId         String
+  tipo           String   // 'ENTRADA' | 'SALIDA' | 'AJUSTE'
+  cantidad       Int
+  stockAntes     Int
+  stockDespues   Int
+  codigoMotivo   String?  // 'compra' | 'consumo' | 'vencimiento' | 'perdida' | 'devolucion' | 'ajuste'
+  notas          String?
+  profesional    Professional? @relation("InventarioMovProfesional", fields: [profesionalId], references: [id], onDelete: SetNull)
+  profesionalId  String?
+  realizadoPor   User?    @relation("InventarioMovUsuario", fields: [realizadoPorId], references: [id], onDelete: SetNull)
+  realizadoPorId String?
+  fechaMovimiento DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([itemId, fechaMovimiento])
+  @@index([fechaMovimiento])
+  @@index([tipo])
 }

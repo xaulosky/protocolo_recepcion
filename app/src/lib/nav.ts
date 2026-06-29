@@ -4,6 +4,7 @@ export type ViewId =
   | 'dashboard' | 'tareas' | 'chat'
   | 'protocolos' | 'guiones' | 'pagos' | 'suspensiones'
   | 'tratamientos' | 'profesionales' | 'consultas' | 'boxes' | 'cirugias'
+  | 'inventario'
   | 'productos' | 'presupuestos' | 'giftcards' | 'consentimientos'
   | 'faq' | 'reembolso' | 'reportes'
   | 'usuarios' | 'admin';
@@ -29,6 +30,7 @@ export const NAV: NavSection[] = [
     { id: 'consultas', label: 'Consultas', icon: 'clip' },
     { id: 'boxes', label: 'Boxes & Pabellón', icon: 'grid' },
     { id: 'cirugias', label: 'Cirugías', icon: 'doc' },
+    { id: 'inventario', label: 'Inventario', icon: 'box' },
   ]},
   { section: 'Comercial', items: [
     { id: 'productos', label: 'Productos', icon: 'pkg' },
@@ -60,6 +62,7 @@ export const VIEW_LABELS: Record<ViewId, string> = {
   consultas: 'Consultas & Evaluaciones',
   boxes: 'Boxes & Pabellón',
   cirugias: 'Cirugías',
+  inventario: 'Inventario',
   productos: 'Productos',
   presupuestos: 'Presupuestos',
   giftcards: 'Gift Cards',

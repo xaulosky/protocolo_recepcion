@@ -6,6 +6,7 @@ export const PERMISSION_VIEWS: ViewId[] = [
   'dashboard', 'tareas', 'chat',
   'protocolos', 'guiones', 'pagos', 'suspensiones',
   'tratamientos', 'profesionales', 'consultas', 'boxes', 'cirugias',
+  'inventario',
   'productos', 'presupuestos', 'giftcards', 'consentimientos',
   'faq', 'reembolso', 'reportes',
 ];
