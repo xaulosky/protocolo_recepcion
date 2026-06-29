@@ -6,7 +6,7 @@ const BRAND = '#7C6247';
 
 function layout(titulo: string, cuerpo: string): string {
   const logoUrl = `${env.APP_URL.replace(/\/$/, '')}/logo-cialo.png`;
-  return `<!doctype html><html><body style="margin:0;background:#F8F7F5;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1A1918;">
+  return `<!doctype html><html lang="es"><body style="margin:0;background:#F8F7F5;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1A1918;">
   <div style="max-width:480px;margin:0 auto;padding:28px 20px;">
     <div style="text-align:center;margin-bottom:24px;">
       <img src="${logoUrl}" alt="Clínica Cialo" style="height:52px;width:auto;display:block;margin:0 auto;" />
