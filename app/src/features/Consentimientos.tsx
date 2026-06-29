@@ -424,6 +424,7 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
   const [items, setItems] = useState<SignedConsent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTE' | 'FIRMADO' | 'ANULADO'>('TODOS');
+  const [emailEstados, setEmailEstados] = useState<Map<string, 'sending' | 'ok' | 'error'>>(new Map());
   const copy = useCopy();
 
   const cargar = () => {
@@ -442,6 +443,16 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
   const imprimir = async (id: string) => {
     const { firma } = await api.get<{ firma: SignedConsentDetail }>(`/consentimientos/${id}`);
     printSigned(firma);
+  };
+
+  const reenviarEmail = async (id: string, email: string) => {
+    setEmailEstados((m) => new Map(m).set(id, 'sending'));
+    try {
+      await api.post(`/consentimientos/${id}/email`, { email });
+      setEmailEstados((m) => new Map(m).set(id, 'ok'));
+    } catch {
+      setEmailEstados((m) => new Map(m).set(id, 'error'));
+    }
   };
 
   if (error) return <div style={{ padding: 32, textAlign: 'center', color: 'var(--orange)', fontSize: 14 }}>{error}</div>;
@@ -495,6 +506,21 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
                     <button onClick={() => onQr(enlace)} className="btn btn-soft" title="Mostrar QR" style={{ padding: '7px 10px' }}><Icon name="grid" size={15} /></button>
                     <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" title="Copiar enlace" style={{ padding: '7px 10px' }}><Icon name="clip" size={15} /></button>
                     <a href={waLink(it.telefono || '', mensajeWa(it.paciente, it.tratamiento, enlace))} target="_blank" rel="noreferrer" className="btn btn-soft" title="Enviar por WhatsApp" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center' }}><Icon name="msg" size={15} /></a>
+                    {(() => {
+                      const est = emailEstados.get(it.id);
+                      const tieneEmail = !!it.email;
+                      return (
+                        <button
+                          onClick={() => tieneEmail && est !== 'sending' && est !== 'ok' && reenviarEmail(it.id, it.email!)}
+                          className="btn btn-soft"
+                          title={tieneEmail ? `Reenviar por email a ${it.email}` : 'Sin email registrado'}
+                          disabled={!tieneEmail || est === 'sending' || est === 'ok'}
+                          style={{ padding: '7px 10px', color: est === 'ok' ? 'var(--green)' : est === 'error' ? 'var(--orange)' : tieneEmail ? 'inherit' : 'var(--muted-2)', opacity: tieneEmail ? 1 : 0.4 }}
+                        >
+                          <Icon name={est === 'ok' ? 'check' : 'mail'} size={15} />
+                        </button>
+                      );
+                    })()}
                     <button onClick={() => anular(it.id)} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}><Icon name="trash" size={15} /></button>
                   </>
                 )}
