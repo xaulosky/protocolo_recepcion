@@ -489,6 +489,9 @@ function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string
               <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                 {it.estado === 'PENDIENTE' && (
                   <>
+                    <a href={enlace} target="_blank" rel="noreferrer" className="btn btn-primary" title="Abrir para firmar en este dispositivo" style={{ padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, textDecoration: 'none' }}>
+                      <Icon name="pen" size={14} /> Firmar aquí
+                    </a>
                     <button onClick={() => onQr(enlace)} className="btn btn-soft" title="Mostrar QR" style={{ padding: '7px 10px' }}><Icon name="grid" size={15} /></button>
                     <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" title="Copiar enlace" style={{ padding: '7px 10px' }}><Icon name="clip" size={15} /></button>
                     <a href={waLink(it.telefono || '', mensajeWa(it.paciente, it.tratamiento, enlace))} target="_blank" rel="noreferrer" className="btn btn-soft" title="Enviar por WhatsApp" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center' }}><Icon name="msg" size={15} /></a>
