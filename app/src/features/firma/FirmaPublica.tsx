@@ -236,7 +236,7 @@ export function FirmaPublica() {
           <div style={{ flex: 1 }}>
             <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>Hola {data.paciente} 👋</h1>
             <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.65, marginBottom: 18 }}>
-              Vas a revisar tu consentimiento informado paso a paso. Léelo con calma; al final podrás firmarlo desde tu teléfono.
+              Vas a revisar tu consentimiento informado paso a paso. Léelo con calma; al final podrás firmarlo digitalmente.
             </p>
             <div style={{ background: 'var(--surface-soft)', borderRadius: 10, padding: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               {[['Paciente', data.paciente], ['RUT', data.rut], ['Profesional', data.profesional], ['Fecha', data.fecha]].map(([l, v]) => (

@@ -330,31 +330,58 @@ function FillModal({ consent, onClose, onCreated }: { consent: Consent; onClose:
         ) : (
           // ── Panel de compartir ──
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--green)', fontSize: 14, fontWeight: 600, marginBottom: 14 }}>
-              <Icon name="check" size={18} /> Enlace listo para enviar a {data.nombre}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--green)', fontSize: 14, fontWeight: 600, marginBottom: 18 }}>
+              <Icon name="check" size={18} /> Enlace listo para {data.nombre}
             </div>
 
-            <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
-              <input readOnly value={enlace} style={{ ...inp, color: 'var(--muted)' }} onFocus={(e) => e.target.select()} />
+            {/* Firma presencial — primera opción porque es la más usada en clínica */}
+            <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
+                Firma presencial en clínica
+              </div>
+              <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=6&data=${encodeURIComponent(enlace)}`}
+                  alt="QR de firma"
+                  width={100} height={100}
+                  style={{ borderRadius: 8, flexShrink: 0, background: '#fff', padding: 4 }}
+                />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <a href={enlace} target="_blank" rel="noreferrer"
+                    className="btn btn-primary"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, textDecoration: 'none', fontSize: 13.5 }}>
+                    <Icon name="pen" size={15} /> Abrir en este dispositivo
+                  </a>
+                  <p style={{ fontSize: 12, color: 'var(--muted-2)', lineHeight: 1.5, margin: 0 }}>
+                    O escanea el QR con el teléfono del paciente.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Enviar al paciente */}
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
+              Enviar al paciente
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              <input readOnly value={enlace} style={{ ...inp, color: 'var(--muted)', fontSize: 12 }} onFocus={(e) => e.target.select()} />
               <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Icon name="clip" size={15} /> Copiar
+                <Icon name="clip" size={15} />
               </button>
             </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
               <a href={waLink(data.telefono, mensajeWa(data.nombre, consent.treatment, enlace))} target="_blank" rel="noreferrer"
-                className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none', background: '#25D366', border: 'none' }}>
-                <Icon name="msg" size={16} /> Enviar por WhatsApp{data.telefono ? '' : ' (elegir contacto)'}
+                className="btn btn-soft" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, textDecoration: 'none', color: '#128C7E', fontWeight: 600 }}>
+                <Icon name="msg" size={16} /> WhatsApp{data.telefono ? '' : ' (sin número — elegir contacto)'}
               </a>
-
               <button onClick={enviarEmail} disabled={!data.email.trim() || emailEstado === 'enviando' || emailEstado === 'ok'}
                 className="btn btn-soft" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: data.email.trim() ? 1 : 0.5 }}>
                 <Icon name="mail" size={16} />
-                {emailEstado === 'enviando' ? 'Enviando…' : emailEstado === 'ok' ? 'Correo enviado ✓' : emailEstado === 'error' ? 'No se pudo enviar (reintentar)' : data.email.trim() ? `Enviar por email a ${data.email.trim()}` : 'Sin email (agrégalo arriba)'}
+                {emailEstado === 'enviando' ? 'Enviando…' : emailEstado === 'ok' ? 'Correo enviado ✓' : emailEstado === 'error' ? 'No se pudo enviar (reintentar)' : data.email.trim() ? `Email a ${data.email.trim()}` : 'Sin email'}
               </button>
             </div>
 
-            <button onClick={onClose} className="btn btn-soft" style={{ width: '100%', marginTop: 18 }}>Listo</button>
+            <button onClick={onClose} className="btn btn-soft" style={{ width: '100%' }}>Listo</button>
           </div>
         )}
       </div>
