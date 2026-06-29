@@ -393,11 +393,10 @@ function QrModal({ url, onClose }: { url: string; onClose: () => void }) {
   );
 }
 
-function Enviados({ refreshKey }: { refreshKey: number }) {
+function Enviados({ refreshKey, onQr }: { refreshKey: number; onQr: (url: string) => void }) {
   const [items, setItems] = useState<SignedConsent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTE' | 'FIRMADO' | 'ANULADO'>('TODOS');
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const copy = useCopy();
 
   const cargar = () => {
@@ -463,7 +462,7 @@ function Enviados({ refreshKey }: { refreshKey: number }) {
               <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                 {it.estado === 'PENDIENTE' && (
                   <>
-                    <button onClick={() => setQrUrl(enlace)} className="btn btn-soft" title="Mostrar QR" style={{ padding: '7px 10px' }}><Icon name="grid" size={15} /></button>
+                    <button onClick={() => onQr(enlace)} className="btn btn-soft" title="Mostrar QR" style={{ padding: '7px 10px' }}><Icon name="grid" size={15} /></button>
                     <button onClick={() => copy(enlace, 'Enlace copiado')} className="btn btn-soft" title="Copiar enlace" style={{ padding: '7px 10px' }}><Icon name="clip" size={15} /></button>
                     <a href={waLink(it.telefono || '', mensajeWa(it.paciente, it.tratamiento, enlace))} target="_blank" rel="noreferrer" className="btn btn-soft" title="Enviar por WhatsApp" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center' }}><Icon name="msg" size={15} /></a>
                     <button onClick={() => anular(it.id)} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}><Icon name="trash" size={15} /></button>
@@ -478,7 +477,6 @@ function Enviados({ refreshKey }: { refreshKey: number }) {
         })}
       </div>
 
-      {qrUrl && <QrModal url={qrUrl} onClose={() => setQrUrl(null)} />}
     </>
   );
 }
@@ -575,27 +573,23 @@ function CuidadoPrintModal({ cuidado, onClose }: { cuidado: CuidadoPost; onClose
   );
 }
 
-function CuidadosTab() {
-  const [printing, setPrinting] = useState<CuidadoPost | null>(null);
+function CuidadosTab({ onPrint }: { onPrint: (c: CuidadoPost) => void }) {
   return (
-    <>
-      <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
-        {cuidadosPostData.map((c) => (
-          <div key={c.id} className="card" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Cuidados post-tratamiento</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12 }}>{c.tratamiento}</div>
-            <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
-            <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 16, flex: 1 }}>
-              {c.secciones.length} secciones · {c.secciones.reduce((n, s) => n + s.items.length, 0)} indicaciones
-            </div>
-            <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }} onClick={() => setPrinting(c)}>
-              <Icon name="print" size={13} /> Imprimir
-            </button>
+    <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
+      {cuidadosPostData.map((c) => (
+        <div key={c.id} className="card" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Cuidados post-tratamiento</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12 }}>{c.tratamiento}</div>
+          <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
+          <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 16, flex: 1 }}>
+            {c.secciones.length} secciones · {c.secciones.reduce((n, s) => n + s.items.length, 0)} indicaciones
           </div>
-        ))}
-      </div>
-      {printing && <CuidadoPrintModal cuidado={printing} onClose={() => setPrinting(null)} />}
-    </>
+          <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }} onClick={() => onPrint(c)}>
+            <Icon name="print" size={13} /> Imprimir
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -606,6 +600,8 @@ export function Consentimientos() {
   const [filling, setFilling] = useState<Consent | null>(null);
   const [preview, setPreview] = useState<Consent | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [printingCuidado, setPrintingCuidado] = useState<CuidadoPost | null>(null);
 
   const { data, loading, error, reload } = useResource<{ consents: Consent[] }>('/data/consents');
   const consents = data?.consents ?? [];
@@ -617,50 +613,52 @@ export function Consentimientos() {
   });
 
   return (
-    <div className="fade-up">
-      {/* Pestañas */}
-      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
-        <button style={tabBtn('plantillas')} onClick={() => setTab('plantillas')}>Consentimientos</button>
-        <button style={tabBtn('cuidados')} onClick={() => setTab('cuidados')}>Post-Tratamiento</button>
-        <button style={tabBtn('enviados')} onClick={() => setTab('enviados')}>Enviados a firma</button>
+    <>
+      <div className="fade-up">
+        {/* Pestañas */}
+        <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
+          <button style={tabBtn('plantillas')} onClick={() => setTab('plantillas')}>Consentimientos</button>
+          <button style={tabBtn('cuidados')} onClick={() => setTab('cuidados')}>Post-Tratamiento</button>
+          <button style={tabBtn('enviados')} onClick={() => setTab('enviados')}>Enviados a firma</button>
+        </div>
+
+        {tab === 'enviados' ? (
+          <Enviados refreshKey={refreshKey} onQr={setQrUrl} />
+        ) : tab === 'cuidados' ? (
+          <CuidadosTab onPrint={setPrintingCuidado} />
+        ) : (
+          <AsyncState loading={loading} error={error} onRetry={reload}>
+            <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
+              {consents.map((c) => {
+                const counts = SECTIONS
+                  .map((s) => ({ label: s.label, n: (c[s.key] as string[] | undefined)?.length ?? 0 }))
+                  .filter((x) => x.n > 0);
+                return (
+                  <div key={c.id} className="card" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Consentimiento informado</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12 }}>{c.treatment}</div>
+                    <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
+                    <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 16, flex: 1 }}>
+                      {counts.length > 0 ? counts.map((x) => `${x.n} ${x.label}`).join(' · ') : <span style={{ fontStyle: 'italic' }}>Formulario general</span>}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }} onClick={() => setFilling(c)}>
+                        <Icon name="pen" size={13} /> Enviar a firmar
+                      </button>
+                      <button className="btn btn-soft" style={{ flex: 1, fontSize: 13 }} onClick={() => setPreview(c)}>Ver</button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </AsyncState>
+        )}
       </div>
 
-      {tab === 'enviados' ? (
-        <Enviados refreshKey={refreshKey} />
-      ) : tab === 'cuidados' ? (
-        <CuidadosTab />
-      ) : (
-        <AsyncState loading={loading} error={error} onRetry={reload}>
-          <div className="grid-cards" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))' }}>
-            {consents.map((c) => {
-              const counts = SECTIONS
-                .map((s) => ({ label: s.label, n: (c[s.key] as string[] | undefined)?.length ?? 0 }))
-                .filter((x) => x.n > 0);
-              return (
-                <div key={c.id} className="card" style={{ padding: '22px 24px', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Consentimiento informado</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, marginBottom: 12 }}>{c.treatment}</div>
-                  <div style={{ height: 1, background: 'var(--border)', marginBottom: 12 }} />
-                  <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 16, flex: 1 }}>
-                    {counts.length > 0 ? counts.map((x) => `${x.n} ${x.label}`).join(' · ') : <span style={{ fontStyle: 'italic' }}>Formulario general</span>}
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }} onClick={() => setFilling(c)}>
-                      <Icon name="pen" size={13} /> Enviar a firmar
-                    </button>
-                    <button className="btn btn-soft" style={{ flex: 1, fontSize: 13 }} onClick={() => setPreview(c)}>Ver</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </AsyncState>
-      )}
-
-      {/* Modal de llenado / compartir */}
+      {/* Modales fuera del fade-up para evitar que el transform de la animación
+          rompa position:fixed (los modales quedarían anclados al div en vez de al viewport) */}
       {filling && <FillModal consent={filling} onClose={() => setFilling(null)} onCreated={() => setRefreshKey((k) => k + 1)} />}
 
-      {/* Modal vista previa */}
       {preview && (
         <div onClick={() => setPreview(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 12, padding: '28px 32px', width: '100%', maxWidth: 580, maxHeight: '88vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,.14)' }}>
@@ -695,6 +693,9 @@ export function Consentimientos() {
           </div>
         </div>
       )}
-    </div>
+
+      {qrUrl && <QrModal url={qrUrl} onClose={() => setQrUrl(null)} />}
+      {printingCuidado && <CuidadoPrintModal cuidado={printingCuidado} onClose={() => setPrintingCuidado(null)} />}
+    </>
   );
 }
