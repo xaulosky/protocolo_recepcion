@@ -91,15 +91,15 @@ function ItemFormModal({ item, categorias, onSave, onClose }: {
 
 // ── MovimientoModal ───────────────────────────────────────────────────────────
 
-function MovimientoModal({ item, ubicaciones, onSave, onClose }: {
-  item: InventarioItem; ubicaciones: StorageLocation[];
+function MovimientoModal({ item, ubicaciones, initialUbicacionId, onSave, onClose }: {
+  item: InventarioItem; ubicaciones: StorageLocation[]; initialUbicacionId?: string;
   onSave: (input: MovimientoInput) => Promise<void>; onClose: () => void;
 }) {
   const [tipo,        setTipo]        = useState<MovimientoTipo>('ENTRADA');
   const [cantidad,    setCantidad]    = useState('');
   const [motivo,      setMotivo]      = useState('');
   const [notas,       setNotas]       = useState('');
-  const [ubicacionId, setUbicacionId] = useState('');
+  const [ubicacionId, setUbicacionId] = useState(initialUbicacionId ?? '');
   const [destId,      setDestId]      = useState('');
   const [saving,      setSaving]      = useState(false);
   const [err,         setErr]         = useState('');
@@ -136,7 +136,7 @@ function MovimientoModal({ item, ubicaciones, onSave, onClose }: {
           {/* Tipo */}
           <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1.5px solid var(--border)', marginBottom: 16 }}>
             {TIPOS.map((t, i) => (
-              <button key={t} type="button" onClick={() => { setTipo(t); setMotivo(''); setUbicacionId(''); setDestId(''); }}
+              <button key={t} type="button" onClick={() => { setTipo(t); setMotivo(''); setDestId(''); }}
                 style={{ flex: 1, padding: '9px 4px', border: 'none', borderLeft: i > 0 ? '1px solid var(--border)' : 'none', background: tipo === t ? TIPO_COLOR[t] : 'var(--bg)', color: tipo === t ? '#fff' : 'var(--muted)', fontSize: 12, fontWeight: tipo === t ? 700 : 500, cursor: 'pointer' }}>
                 {TIPO_LABEL[t]}
               </button>
@@ -353,6 +353,7 @@ export function Inventario() {
   const [modalNuevo, setModalNuevo] = useState(false);
   const [editando, setEditando]     = useState<InventarioItem | null>(null);
   const [movimientoItem, setMovimientoItem] = useState<InventarioItem | null>(null);
+  const [movimientoUbic, setMovimientoUbic] = useState('');
   const [historialItem, setHistorialItem]   = useState<InventarioItemDetail | null>(null);
   const [loadingHistorial, setLoadingHistorial] = useState<string | null>(null);
   const [modalLocation, setModalLocation]   = useState(false);
@@ -407,6 +408,32 @@ export function Inventario() {
   const handleDelete = async (item: InventarioItem) => {
     if (!window.confirm(`¿Dar de baja "${item.nombre}"?`)) return;
     await inv.deleteItem(item.id); showToast('Dado de baja'); inv.loadDashboard();
+  };
+
+  const abrirMovimiento = (item: InventarioItem, ubicacionId = '') => {
+    setMovimientoUbic(ubicacionId);
+    setMovimientoItem(item);
+  };
+
+  const exportarCSV = () => {
+    const esc = (v: unknown) => {
+      const s = String(v ?? '');
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const headers = ['Nombre', 'SKU', 'Categoría', 'Stock', 'Mínimo', 'Unidad', 'Costo', 'Estado', 'Ubicaciones'];
+    const rows = filtered.map(i => {
+      const ubic = (i.locationInventario ?? []).filter(li => li.quantity > 0).map(li => `${li.location.codigo}:${li.quantity}`).join('; ');
+      return [i.nombre, i.sku ?? '', i.categoria ?? '', i.stock, i.stockMinimo, i.unidad, i.costo, stockColor(i).label, ubic].map(esc).join(',');
+    });
+    const csv = '﻿' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `inventario_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(`${filtered.length} productos exportados`);
   };
 
   const handleVerHistorial = async (item: InventarioItem) => {
@@ -506,6 +533,10 @@ export function Inventario() {
               style={{ padding: '8px 12px', border: `1px solid ${soloAlerta ? '#e67e22' : 'var(--border)'}`, borderRadius: 8, background: soloAlerta ? '#fef3e2' : 'var(--bg)', color: soloAlerta ? '#e67e22' : 'var(--muted)', fontSize: 13, fontWeight: soloAlerta ? 700 : 400, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
               <Icon name="bell" size={14} /> Alertas{soloAlerta ? ' ✕' : ''}
             </button>
+            <button onClick={exportarCSV} disabled={filtered.length === 0} title="Exportar a CSV"
+              style={{ padding: '8px 12px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg)', color: 'var(--muted)', fontSize: 13, cursor: filtered.length === 0 ? 'default' : 'pointer', opacity: filtered.length === 0 ? .5 : 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Icon name="download" size={14} /> Exportar
+            </button>
           </div>
 
           {inv.loading ? (
@@ -557,7 +588,7 @@ export function Inventario() {
                             </div>
                           </td>
                           <td style={{ padding: '11px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                            <button title="Registrar movimiento" onClick={() => setMovimientoItem(item)} style={{ ...btnIcon, marginRight: 4 }}><Icon name="plus" size={13} /></button>
+                            <button title="Registrar movimiento" onClick={() => abrirMovimiento(item)} style={{ ...btnIcon, marginRight: 4 }}><Icon name="plus" size={13} /></button>
                             <button title="Ver historial" onClick={() => handleVerHistorial(item)} disabled={loadingHistorial === item.id} style={{ ...btnIcon, marginRight: 4 }}>
                               {loadingHistorial === item.id ? '…' : <Icon name="clock" size={13} />}
                             </button>
@@ -617,6 +648,11 @@ export function Inventario() {
                               <td style={{ padding: '9px 16px', textAlign: 'right' }}>
                                 <span style={{ padding: '3px 10px', borderRadius: 20, background: sc.bg, color: sc.color, fontSize: 13, fontWeight: 700 }}>{li.quantity} {li.item.unidad}</span>
                               </td>
+                              <td style={{ padding: '9px 16px', textAlign: 'right', width: 1, whiteSpace: 'nowrap' }}>
+                                <button title="Registrar movimiento en esta ubicación"
+                                  onClick={() => { const full = inv.items.find(it => it.id === li.item.id); if (full) abrirMovimiento(full, loc.id); else showToast('Abre la pestaña Productos primero'); }}
+                                  style={btnIcon}><Icon name="plus" size={13} /></button>
+                              </td>
                             </tr>
                           );
                         })}
@@ -670,7 +706,7 @@ export function Inventario() {
 
       {/* Modals */}
       {modalNuevo && <ItemFormModal item={editando} categorias={inv.categorias} onSave={handleSaveItem} onClose={() => { setModalNuevo(false); setEditando(null); }} />}
-      {movimientoItem && <MovimientoModal item={movimientoItem} ubicaciones={inv.ubicaciones} onSave={input => handleMovimiento(movimientoItem.id, input)} onClose={() => setMovimientoItem(null)} />}
+      {movimientoItem && <MovimientoModal item={movimientoItem} ubicaciones={inv.ubicaciones} initialUbicacionId={movimientoUbic} onSave={async input => { await handleMovimiento(movimientoItem.id, input); if (tab === 'por-ubicacion') loadPorUbicacion(); }} onClose={() => { setMovimientoItem(null); setMovimientoUbic(''); }} />}
       {historialItem && <HistorialModal item={historialItem} onClose={() => setHistorialItem(null)} />}
       {modalLocation && <LocationFormModal location={editLocation} allLocations={inv.ubicaciones} onSave={handleSaveLocation} onClose={() => { setModalLocation(false); setEditLocation(null); }} />}
 

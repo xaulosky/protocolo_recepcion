@@ -574,9 +574,10 @@ function DetalleScreen({ item, onBack, onMovimiento, onEditar, onBaja }: {
 }
 
 // ── MovimientoScreen ───────────────────────────────────────────────────────────
-function MovimientoScreen({ item, initialTipo, ubicaciones, onBack, onSave }: {
+function MovimientoScreen({ item, initialTipo, initialUbicacionId, ubicaciones, onBack, onSave }: {
   item: InventarioItem;
   initialTipo: MovimientoTipo;
+  initialUbicacionId?: string;
   ubicaciones: StorageLocation[];
   onBack: () => void;
   onSave: (tipo: MovimientoTipo, cantidad: number, codigoMotivo: string | null, notas: string | null, ubicacionId: string | null, ubicacionDestinoId: string | null) => Promise<void>;
@@ -585,7 +586,7 @@ function MovimientoScreen({ item, initialTipo, ubicaciones, onBack, onSave }: {
   const [cantidad, setCantidad] = useState(1);
   const [motivo,  setMotivo]  = useState('');
   const [notas,   setNotas]   = useState('');
-  const [ubicId,  setUbicId]  = useState('');
+  const [ubicId,  setUbicId]  = useState(initialUbicacionId ?? '');
   const [destId,  setDestId]  = useState('');
   const [saving,  setSaving]  = useState(false);
   const [err,     setErr]     = useState('');
@@ -600,7 +601,7 @@ function MovimientoScreen({ item, initialTipo, ubicaciones, onBack, onSave }: {
     TRASLADO: { border: `${BR}40`,  bg: BRL,      color: BR },
   };
 
-  const handleTipo = (t: MovimientoTipo) => { setTipo(t); setMotivo(''); setUbicId(''); setDestId(''); };
+  const handleTipo = (t: MovimientoTipo) => { setTipo(t); setMotivo(''); setDestId(''); };
 
   const submit = async () => {
     if (!cantidad || cantidad <= 0) { setErr('Ingresa una cantidad válida'); return; }
@@ -797,11 +798,12 @@ interface LocInvEntry {
   item: { id: string; nombre: string; sku: string | null; unidad: string; categoria: string | null; costo: number; stockMinimo: number };
 }
 
-function AlmacenDetalleScreen({ almacen, allItems, onBack, onDetalle, onAdd }: {
+function AlmacenDetalleScreen({ almacen, allItems, onBack, onDetalle, onMovimiento, onAdd }: {
   almacen: StorageLocation;
   allItems: InventarioItem[];
   onBack: () => void;
   onDetalle: (item: InventarioItem) => void;
+  onMovimiento: (item: InventarioItem, tipo: MovimientoTipo) => void;
   onAdd: (itemId: string, cantidad: number, ubicacionId: string) => Promise<void>;
 }) {
   const [entries, setEntries] = useState<LocInvEntry[]>([]);
@@ -830,6 +832,11 @@ function AlmacenDetalleScreen({ almacen, allItems, onBack, onDetalle, onAdd }: {
     const lq = q.toLowerCase();
     return entries.filter(e => e.item.nombre.toLowerCase().includes(lq) || (e.item.sku ?? '').toLowerCase().includes(lq));
   }, [entries, q]);
+
+  const bajoStock = useMemo(
+    () => entries.filter(e => e.item.stockMinimo > 0 && e.quantity <= e.item.stockMinimo).length,
+    [entries],
+  );
 
   const addResults = useMemo(() => {
     if (!addSearch.trim()) return [];
@@ -867,11 +874,10 @@ function AlmacenDetalleScreen({ almacen, allItems, onBack, onDetalle, onAdd }: {
             <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: BR }}>{entries.length}</p>
             <p style={{ margin: 0, fontSize: 10, color: '#9ca3af', textTransform: 'uppercase' }}>Insumos</p>
           </div>
-          {almacen.tipo && (
-            <div style={{ borderLeft: '1px solid #e5e7eb', paddingLeft: 14 }}>
-              <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>{almacen.tipo}</p>
-            </div>
-          )}
+          <div style={{ textAlign: 'center', borderLeft: '1px solid #e5e7eb', paddingLeft: 16 }}>
+            <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: bajoStock > 0 ? '#d97706' : '#16a34a' }}>{bajoStock}</p>
+            <p style={{ margin: 0, fontSize: 10, color: '#9ca3af', textTransform: 'uppercase' }}>Stock bajo</p>
+          </div>
           {almacen.descripcion && (
             <div style={{ borderLeft: '1px solid #e5e7eb', paddingLeft: 14, flex: 1, minWidth: 0 }}>
               <p style={{ margin: 0, fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{almacen.descripcion}</p>
@@ -903,28 +909,37 @@ function AlmacenDetalleScreen({ almacen, allItems, onBack, onDetalle, onAdd }: {
         )}
         {!loading && filtered.map(entry => {
           const full = allItems.find(i => i.id === entry.itemId);
-          const minStock = full?.stockMinimo ?? entry.item.stockMinimo;
-          const totalStock = full?.stock ?? entry.quantity;
-          const ratio = minStock > 0 ? totalStock / minStock : 999;
+          const minStock = entry.item.stockMinimo;
+          const ratio = minStock > 0 ? entry.quantity / minStock : 999;
           const chipBg    = ratio <= 1 ? '#fef2f2' : ratio <= 1.5 ? '#fffbeb' : '#f0fdf4';
           const chipColor = ratio <= 1 ? '#dc2626' : ratio <= 1.5 ? '#d97706' : '#16a34a';
+          const ACT: React.CSSProperties = { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '8px 4px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600 };
           return (
-            <button key={entry.id} onClick={() => full && onDetalle(full)}
-              style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', cursor: full ? 'pointer' : 'default', textAlign: 'left', width: '100%' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f9fafb', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#d1d5db' }}>
-                {IC.pkg}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.item.nombre}</p>
-                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9ca3af' }}>
-                  {entry.item.sku ? `SKU: ${entry.item.sku}` : 'Sin SKU'}
-                  {full ? ` · Total: ${full.stock} ${entry.item.unidad}` : ''}
-                </p>
-              </div>
-              <span style={{ padding: '5px 10px', borderRadius: 8, fontSize: 13, fontWeight: 700, background: chipBg, color: chipColor, flexShrink: 0 }}>
-                {entry.quantity} {entry.item.unidad}
-              </span>
-            </button>
+            <div key={entry.id} style={{ ...CARD, overflow: 'hidden' }}>
+              <button onClick={() => full && onDetalle(full)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', cursor: full ? 'pointer' : 'default', textAlign: 'left', width: '100%', background: 'none', border: 'none' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f9fafb', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#d1d5db' }}>
+                  {IC.pkg}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.item.nombre}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9ca3af' }}>
+                    {entry.item.sku ? `SKU: ${entry.item.sku}` : 'Sin SKU'}
+                    {full ? ` · Total: ${full.stock} ${entry.item.unidad}` : ''}
+                  </p>
+                </div>
+                <span style={{ padding: '5px 10px', borderRadius: 8, fontSize: 13, fontWeight: 700, background: chipBg, color: chipColor, flexShrink: 0 }}>
+                  {entry.quantity} {entry.item.unidad}
+                </span>
+              </button>
+              {full && (
+                <div style={{ display: 'flex', borderTop: '1px solid #f3f4f6' }}>
+                  <button onClick={() => onMovimiento(full, 'ENTRADA')} style={{ ...ACT, color: '#16a34a', borderRight: '1px solid #f3f4f6' }}>{IC.down} Entrada</button>
+                  <button onClick={() => onMovimiento(full, 'SALIDA')}  style={{ ...ACT, color: '#dc2626', borderRight: '1px solid #f3f4f6' }}>{IC.up} Salida</button>
+                  <button onClick={() => onMovimiento(full, 'TRASLADO')} style={{ ...ACT, color: BR }}>{IC.transfer} Trasladar</button>
+                </div>
+              )}
+            </div>
           );
         })}
         {!loading && filtered.length > 0 && (
@@ -1153,6 +1168,8 @@ export function InventarioPWA() {
   const [detalleItem,     setDetalleItem]     = useState<InventarioItemDetail | null>(null);
   const [movItem,         setMovItem]         = useState<InventarioItem | null>(null);
   const [movTipo,         setMovTipo]         = useState<MovimientoTipo>('SALIDA');
+  const [movUbic,         setMovUbic]         = useState('');
+  const [movReturn,       setMovReturn]       = useState<Screen>('productos');
   const [formItem,        setFormItem]        = useState<InventarioItem | null | undefined>(undefined);
   const [selectedAlmacen, setSelectedAlmacen] = useState<StorageLocation | null>(null);
 
@@ -1193,6 +1210,13 @@ export function InventarioPWA() {
     finally { setLoadingList(false); }
   }, []);
 
+  const loadUbicaciones = useCallback(async () => {
+    try {
+      const locs = await api.get<{ locations: StorageLocation[] }>('/inventario/ubicaciones');
+      setUbicaciones(locs.locations);
+    } catch { /* silent */ }
+  }, []);
+
   useEffect(() => { if (authed) { loadHome(); loadProductos(); } }, [authed]);
 
   const handleNavTab = (tab: NavTab) => {
@@ -1223,13 +1247,14 @@ export function InventarioPWA() {
       setDetalleItem(prev => prev ? { ...prev, stock: nuevoStock } : prev);
     }
     loadHome();
+    loadUbicaciones();
     showToast('Movimiento registrado ✓');
-    if (detalleItem?.id === movItem.id) {
+    if (movReturn === 'detalle' && detalleItem?.id === movItem.id) {
       const updated = await api.get<{ item: InventarioItemDetail }>(`/inventario/${movItem.id}`);
       setDetalleItem(updated.item);
       setScreen('detalle');
     } else {
-      setScreen(navTab);
+      setScreen(movReturn);
     }
   };
 
@@ -1259,6 +1284,7 @@ export function InventarioPWA() {
     );
     setItems(prev => prev.map(i => i.id === itemId ? { ...i, stock: data.movimiento.stockDespues } : i));
     loadHome();
+    loadUbicaciones();
     showToast('Entrada registrada ✓');
   };
 
@@ -1288,8 +1314,8 @@ export function InventarioPWA() {
 
   if (screen === 'movimiento' && movItem) return (
     <>
-      <MovimientoScreen item={movItem} initialTipo={movTipo} ubicaciones={ubicaciones}
-        onBack={() => { if (detalleItem?.id === movItem.id) setScreen('detalle'); else setScreen(navTab); }}
+      <MovimientoScreen item={movItem} initialTipo={movTipo} initialUbicacionId={movUbic} ubicaciones={ubicaciones}
+        onBack={() => { if (movReturn === 'detalle' && detalleItem?.id === movItem.id) setScreen('detalle'); else setScreen(movReturn); }}
         onSave={submitMovimiento} />
       {toast && <Toast msg={toast} />}
     </>
@@ -1302,6 +1328,7 @@ export function InventarioPWA() {
         allItems={items}
         onBack={() => { setScreen('almacenes'); setNavTab('almacenes'); }}
         onDetalle={async (item) => { await openDetalle(item); }}
+        onMovimiento={(item, tipo) => { setMovItem(item); setMovTipo(tipo); setMovUbic(selectedAlmacen?.id ?? ''); setMovReturn('almacen-detalle'); setScreen('movimiento'); }}
         onAdd={submitEntradaAlmacen}
       />
       {toast && <Toast msg={toast} />}
@@ -1311,7 +1338,7 @@ export function InventarioPWA() {
   if (screen === 'detalle' && detalleItem) return (
     <>
       <DetalleScreen item={detalleItem} onBack={() => setScreen(navTab)}
-        onMovimiento={(tipo = 'SALIDA') => { setMovItem(detalleItem); setMovTipo(tipo); setScreen('movimiento'); }}
+        onMovimiento={(tipo = 'SALIDA') => { setMovItem(detalleItem); setMovTipo(tipo); setMovUbic(''); setMovReturn('detalle'); setScreen('movimiento'); }}
         onEditar={() => { setFormItem(detalleItem); setScreen('form'); }}
         onBaja={darDeBaja} />
       {toast && <Toast msg={toast} />}

@@ -11,25 +11,6 @@ import { TaskDetailModal } from './TaskDetailModal';
 import { TaskCreateModal } from './TaskCreateModal';
 import { TareasCalendario } from './TareasCalendario';
 
-function exportarCSV(tasks: Task[]) {
-  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
-  const rows = [
-    ['ID', 'Tipo', 'Descripción', 'Paciente', 'Etapa', 'Prioridad', 'Vencimiento', 'Asignadas', 'Tags', 'Creada el'].map(esc).join(','),
-    ...tasks.map(t => [
-      t.id, t.tipo, t.descripcion, t.paciente ?? '', ETAPA_LABEL[t.etapa], t.prioridad,
-      t.dueAt ? new Date(t.dueAt).toLocaleDateString('es-CL') : '',
-      t.asignadas.map(u => u.nombre).join(' / '),
-      t.tags.join(' / '),
-      new Date(t.createdAt).toLocaleDateString('es-CL'),
-    ].map(String).map(esc).join(',')),
-  ];
-  const blob = new Blob(['﻿' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'tareas.csv'; a.click();
-  URL.revokeObjectURL(url);
-}
-
 type ViewMode = 'kanban' | 'tabla' | 'calendario';
 
 export function Tareas() {
@@ -67,8 +48,6 @@ export function Tareas() {
     }
     return base;
   }, [tasks, isAdmin, filter, quickFilter, busqueda]);
-
-  const handleExportar = useCallback(() => exportarCSV(filtered), [filtered]);
 
   const toggleBulk = useCallback((id: string) => {
     setBulkSel(prev => {
@@ -180,9 +159,6 @@ export function Tareas() {
                 </button>
               ) : null;
             })()}
-            <button className="btn btn-soft" onClick={handleExportar} title="Exportar a CSV" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Icon name="download" size={13} /> CSV
-            </button>
             {canEdit && (
               <button className="btn btn-primary" onClick={() => openCreate()}>
                 <Icon name="plus" size={12} strokeWidth={2.5} /> Nueva tarea
