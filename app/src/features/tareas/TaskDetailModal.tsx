@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { api } from '../../lib/api';
 import type { Task, Etapa, Prioridad, TaskActivity, TaskChecklistItem } from '../../lib/types';
 import type { UpdateTarea, AssignableUser } from './useTareas';
-import { ETAPA_LABEL, ETAPAS, PRIORIDAD_LABEL } from './useTareas';
+import { ETAPA_LABEL, ETAPAS } from './useTareas';
 import { Modal } from '../../components/Modal';
 import { Icon } from '../../lib/icons';
 import { colorFromString, fmtDateTime, toDateTimeLocal } from '../../lib/format';

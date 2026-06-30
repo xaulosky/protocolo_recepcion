@@ -394,7 +394,7 @@ function FillModal({ consent, onClose, onCreated }: { consent: Consent; onClose:
 // ── Contrato de prestación de servicios (aparece en todos los consentimientos) ──
 
 function ContratoServiciosBox() {
-  const clauses: [string, string | JSX.Element][] = [
+  const clauses: [string, string | React.ReactNode][] = [
     ['1.A)', <span>Ningún plan, servicio individual o abono dará derecho a cambio de tratamiento una vez realizado el pago, si las modificaciones, cancelaciones o reprogramaciones no se efectúan con al menos 24 horas de anticipación, a través de los canales oficiales de la clínica. La inasistencia sin aviso previo se considerará como sesión realizada. <strong>No se realizan devoluciones de dinero.</strong></span>],
     ['1.B)', 'Cualquier reclamo relacionado con pagos deberá ser informado directamente en recepción y posteriormente formalizado mediante una solicitud escrita enviada al correo electrónico: contacto@cialo.cl, para su revisión por parte de la administración de la clínica.'],
     ['1.C.1)', 'El paciente entiende y acepta que los resultados de los tratamientos pueden variar entre individuos, y reconoce que es imposible predecir la respuesta específica de su organismo, así como el número exacto de sesiones necesarias. Todos los tratamientos ofrecidos son complementarios, y su efectividad dependerá del cumplimiento de las sesiones, la dieta, las recomendaciones y los cuidados indicados por el profesional tratante. Ningún tratamiento es garantizado al 100%, ya que cada paciente puede reaccionar de manera distinta. Por lo anterior, algunos tratamientos pueden requerir ser complementados con otros procedimientos, modificados o incluso suspendidos, según criterio del profesional clínico.'],
