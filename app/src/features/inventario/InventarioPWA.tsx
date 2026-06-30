@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { api, setTokens, clearTokens, hasSession } from '../../lib/api';
 import type { InventarioItem, InventarioItemDetail, InventarioDashboard, MovimientoTipo, StorageLocation } from '../../lib/types';
 import type { ItemInput } from './useInventario';
@@ -8,7 +8,7 @@ import {
 } from './inventarioShared';
 
 // ── types ──────────────────────────────────────────────────────────────────────
-type Screen   = 'home' | 'productos' | 'detalle' | 'movimiento' | 'form' | 'almacenes' | 'mas';
+type Screen   = 'home' | 'productos' | 'detalle' | 'movimiento' | 'form' | 'almacenes' | 'almacen-detalle' | 'mas';
 type NavTab   = 'home' | 'productos' | 'almacenes' | 'mas';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -723,9 +723,18 @@ function MovimientoScreen({ item, initialTipo, ubicaciones, onBack, onSave }: {
 }
 
 // ── AlmacenesScreen ────────────────────────────────────────────────────────────
-function AlmacenesScreen({ ubicaciones, loading }: { ubicaciones: StorageLocation[]; loading: boolean }) {
+function AlmacenesScreen({ ubicaciones, loading, onOpen }: {
+  ubicaciones: StorageLocation[];
+  loading: boolean;
+  onOpen: (loc: StorageLocation) => void;
+}) {
   const roots = ubicaciones.filter(u => !u.parentId);
   const kids  = ubicaciones.filter(u => u.parentId);
+
+  const ROW: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+    background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+  };
 
   return (
     <div style={{ paddingBottom: 80 }}>
@@ -742,22 +751,29 @@ function AlmacenesScreen({ ubicaciones, loading }: { ubicaciones: StorageLocatio
           const sub = kids.filter(c => c.parentId === root.id);
           return (
             <div key={root.id} style={{ ...CARD }}>
-              <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button onClick={() => onOpen(root)} style={{ ...ROW, padding: '12px 14px' }}>
                 <span style={{ color: BR }}>{IC.warehouse}</span>
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#111827' }}>{root.nombre}</p>
                   {root.codigo && <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9ca3af' }}>Código: {root.codigo}</p>}
                 </div>
-                <span style={{ fontSize: 12, color: '#9ca3af' }}>{root._count?.locationInventario ?? 0} items</span>
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#9ca3af' }}>
+                  <span style={{ fontSize: 12 }}>{root._count?.locationInventario ?? 0} items</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </button>
               {sub.length > 0 && (
                 <div style={{ borderTop: '1px solid #f3f4f6' }}>
                   {sub.map((kid, idx) => (
-                    <div key={kid.id} style={{ padding: '9px 14px 9px 44px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: idx < sub.length - 1 ? '1px solid #f9fafb' : 'none' }}>
+                    <button key={kid.id} onClick={() => onOpen(kid)}
+                      style={{ ...ROW, padding: '9px 14px 9px 44px', borderBottom: idx < sub.length - 1 ? '1px solid #f9fafb' : 'none' }}>
                       <span style={{ color: '#9ca3af' }}>{IC.mapPin}</span>
                       <span style={{ flex: 1, fontSize: 13, color: '#374151' }}>{kid.nombre}</span>
-                      <span style={{ fontSize: 12, color: '#9ca3af' }}>{kid._count?.locationInventario ?? 0} items</span>
-                    </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#9ca3af' }}>
+                        <span style={{ fontSize: 12 }}>{kid._count?.locationInventario ?? 0} items</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -768,6 +784,246 @@ function AlmacenesScreen({ ubicaciones, loading }: { ubicaciones: StorageLocatio
           {ubicaciones.length} almacén{ubicaciones.length !== 1 ? 'es' : ''} en total
         </p>
       </div>
+    </div>
+  );
+}
+
+// ── AlmacenDetalleScreen ───────────────────────────────────────────────────────
+interface LocInvEntry {
+  id: string;
+  itemId: string;
+  quantity: number;
+  stockMinimo: number | null;
+  item: { id: string; nombre: string; sku: string | null; unidad: string; categoria: string | null; costo: number; stockMinimo: number };
+}
+
+function AlmacenDetalleScreen({ almacen, allItems, onBack, onDetalle, onAdd }: {
+  almacen: StorageLocation;
+  allItems: InventarioItem[];
+  onBack: () => void;
+  onDetalle: (item: InventarioItem) => void;
+  onAdd: (itemId: string, cantidad: number, ubicacionId: string) => Promise<void>;
+}) {
+  const [entries, setEntries] = useState<LocInvEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState('');
+  const [addOpen, setAddOpen] = useState(false);
+  const [addSearch, setAddSearch] = useState('');
+  const [picked, setPicked] = useState<InventarioItem | null>(null);
+  const [qty, setQty] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [lastAdded, setLastAdded] = useState<string | null>(null);
+
+  const loadEntries = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api.get<{ location: { locationInventario: LocInvEntry[] } }>(`/inventario/ubicaciones/${almacen.id}`);
+      setEntries(data.location.locationInventario);
+    } catch { /* silent */ }
+    finally { setLoading(false); }
+  }, [almacen.id]);
+
+  useEffect(() => { loadEntries(); }, [loadEntries]);
+
+  const filtered = useMemo(() => {
+    if (!q.trim()) return entries;
+    const lq = q.toLowerCase();
+    return entries.filter(e => e.item.nombre.toLowerCase().includes(lq) || (e.item.sku ?? '').toLowerCase().includes(lq));
+  }, [entries, q]);
+
+  const addResults = useMemo(() => {
+    if (!addSearch.trim()) return [];
+    const lq = addSearch.toLowerCase();
+    return allItems.filter(i => i.activo && (
+      i.nombre.toLowerCase().includes(lq) || (i.sku ?? '').toLowerCase().includes(lq)
+    )).slice(0, 20);
+  }, [allItems, addSearch]);
+
+  function openAdd() { setAddOpen(true); setPicked(null); setAddSearch(''); }
+  function closeAdd() { setAddOpen(false); setPicked(null); setAddSearch(''); }
+
+  async function handleAdd() {
+    if (!picked) return;
+    setSaving(true);
+    try {
+      await onAdd(picked.id, qty, almacen.id);
+      setLastAdded(`+${qty} ${picked.unidad} · ${picked.nombre}`);
+      setPicked(null); setAddSearch(''); setQty(1);
+      loadEntries();
+    } catch { /* error handled by parent */ }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div style={{ paddingBottom: 100 }}>
+      <TopBar title={almacen.nombre} onBack={onBack} right={
+        almacen.codigo ? <span style={{ fontSize: 12, color: '#9ca3af', paddingRight: 4 }}>{almacen.codigo}</span> : undefined
+      } />
+
+      {/* Stats bar */}
+      <div style={{ background: BRL, borderBottom: '1px solid #e5e7eb', padding: '10px 16px' }}>
+        <div style={{ maxWidth: 430, margin: '0 auto', display: 'flex', gap: 16, alignItems: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: BR }}>{entries.length}</p>
+            <p style={{ margin: 0, fontSize: 10, color: '#9ca3af', textTransform: 'uppercase' }}>Insumos</p>
+          </div>
+          {almacen.tipo && (
+            <div style={{ borderLeft: '1px solid #e5e7eb', paddingLeft: 14 }}>
+              <p style={{ margin: 0, fontSize: 12, color: '#6b7280' }}>{almacen.tipo}</p>
+            </div>
+          )}
+          {almacen.descripcion && (
+            <div style={{ borderLeft: '1px solid #e5e7eb', paddingLeft: 14, flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 12, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{almacen.descripcion}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Search */}
+        <div style={{ position: 'relative' }}>
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', display: 'flex' }}>{IC.search}</span>
+          <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar en este almacén…"
+            style={{ width: '100%', paddingLeft: 36, paddingRight: 12, paddingTop: 10, paddingBottom: 10, border: '1px solid #e5e7eb', borderRadius: 12, fontSize: 15, outline: 'none', background: '#fff', boxSizing: 'border-box' }} />
+        </div>
+
+        {/* Items list */}
+        {loading && [...Array(4)].map((_, i) => (
+          <div key={i} style={{ height: 64, borderRadius: 12, background: '#f3f4f6' }} />
+        ))}
+        {!loading && filtered.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 0', color: '#9ca3af' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8, color: '#d1d5db' }}>{IC.warehouse}</div>
+            <p style={{ margin: 0, fontSize: 14 }}>Sin insumos en este almacén</p>
+            <button onClick={openAdd} style={{ marginTop: 16, padding: '10px 20px', background: BR, color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              {IC.plus} Agregar insumo
+            </button>
+          </div>
+        )}
+        {!loading && filtered.map(entry => {
+          const full = allItems.find(i => i.id === entry.itemId);
+          const minStock = full?.stockMinimo ?? entry.item.stockMinimo;
+          const totalStock = full?.stock ?? entry.quantity;
+          const ratio = minStock > 0 ? totalStock / minStock : 999;
+          const chipBg    = ratio <= 1 ? '#fef2f2' : ratio <= 1.5 ? '#fffbeb' : '#f0fdf4';
+          const chipColor = ratio <= 1 ? '#dc2626' : ratio <= 1.5 ? '#d97706' : '#16a34a';
+          return (
+            <button key={entry.id} onClick={() => full && onDetalle(full)}
+              style={{ ...CARD, display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', cursor: full ? 'pointer' : 'default', textAlign: 'left', width: '100%' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f9fafb', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#d1d5db' }}>
+                {IC.pkg}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.item.nombre}</p>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9ca3af' }}>
+                  {entry.item.sku ? `SKU: ${entry.item.sku}` : 'Sin SKU'}
+                  {full ? ` · Total: ${full.stock} ${entry.item.unidad}` : ''}
+                </p>
+              </div>
+              <span style={{ padding: '5px 10px', borderRadius: 8, fontSize: 13, fontWeight: 700, background: chipBg, color: chipColor, flexShrink: 0 }}>
+                {entry.quantity} {entry.item.unidad}
+              </span>
+            </button>
+          );
+        })}
+        {!loading && filtered.length > 0 && (
+          <p style={{ textAlign: 'center', fontSize: 12, color: '#9ca3af' }}>
+            {filtered.length} insumo{filtered.length !== 1 ? 's' : ''}
+          </p>
+        )}
+      </div>
+
+      {/* FAB */}
+      {!addOpen && (
+        <button onClick={openAdd} style={{ position: 'fixed', bottom: 24, right: 'max(16px, calc((100vw - 430px) / 2 + 16px))', height: 56, padding: '0 20px', borderRadius: 28, background: BR, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 700, boxShadow: `0 4px 20px ${BR}50`, zIndex: 30 }}>
+          {IC.plus} Agregar
+        </button>
+      )}
+
+      {/* Add bottom sheet */}
+      {addOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <div onClick={closeAdd} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.5)' }} />
+          <div style={{ position: 'relative', background: '#fff', borderRadius: '20px 20px 0 0', maxHeight: '85vh', display: 'flex', flexDirection: 'column', paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 16px 12px', borderBottom: '1px solid #f3f4f6' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {picked && (
+                  <button onClick={() => { setPicked(null); setAddSearch(''); }}
+                    style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: '#9ca3af', display: 'flex' }}>{IC.back}</button>
+                )}
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#111827' }}>
+                  {picked ? 'Cantidad a recibir' : `Agregar a ${almacen.nombre}`}
+                </h3>
+              </div>
+              <button onClick={closeAdd} style={{ background: 'none', border: 'none', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#9ca3af', fontSize: 20, lineHeight: '1' }}>✕</button>
+            </div>
+            <div style={{ overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {!picked ? (
+                <>
+                  {lastAdded && (
+                    <div style={{ padding: '10px 14px', borderRadius: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 13, color: '#16a34a' }}>
+                      ✓ Recibido: {lastAdded}. Agrega otro o cierra.
+                    </div>
+                  )}
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', display: 'flex' }}>{IC.search}</span>
+                    <input value={addSearch} onChange={e => setAddSearch(e.target.value)}
+                      placeholder="Buscar insumo por nombre o SKU…" autoFocus
+                      style={{ width: '100%', paddingLeft: 36, paddingRight: 12, paddingTop: 12, paddingBottom: 12, border: '1px solid #e5e7eb', borderRadius: 12, fontSize: 15, outline: 'none', background: '#f9fafb', boxSizing: 'border-box' }} />
+                  </div>
+                  {addSearch ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {addResults.length === 0 ? (
+                        <p style={{ textAlign: 'center', padding: '16px 0', color: '#9ca3af', fontSize: 14 }}>Sin resultados</p>
+                      ) : addResults.map(item => (
+                        <button key={item.id} onClick={() => { setPicked(item); setQty(1); }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid #f3f4f6', background: '#fff', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 8, background: '#f9fafb', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#d1d5db' }}>{IC.pkg}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nombre}</p>
+                            <p style={{ margin: 0, fontSize: 11, color: '#9ca3af' }}>{item.sku ?? 'Sin SKU'} · Stock: {item.stock} {item.unidad}</p>
+                          </div>
+                          <span style={{ color: BR, flexShrink: 0 }}>{IC.plus}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ textAlign: 'center', color: '#9ca3af', fontSize: 13, padding: '16px 0' }}>
+                      Escribe el nombre o SKU para buscar en el catálogo
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ ...CARD, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 10, background: '#f9fafb', border: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#d1d5db' }}>{IC.pkg}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{picked.nombre}</p>
+                      <p style={{ margin: 0, fontSize: 12, color: '#9ca3af' }}>Stock total: {picked.stock} {picked.unidad}</p>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'center', padding: '8px 0' }}>
+                    <button onClick={() => setQty(prev => Math.max(1, prev - 1))}
+                      style={{ width: 56, height: 56, borderRadius: 16, background: '#f3f4f6', border: 'none', fontSize: 28, fontWeight: 700, cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+                    <div style={{ textAlign: 'center' }}>
+                      <input type="number" min={1} value={qty} onChange={e => setQty(Math.max(1, parseInt(e.target.value) || 1))}
+                        style={{ width: 80, textAlign: 'center', fontSize: 36, fontWeight: 800, border: '1px solid #e5e7eb', borderRadius: 12, padding: '8px', outline: 'none', color: BR, boxSizing: 'border-box' }} />
+                      <p style={{ margin: '4px 0 0', fontSize: 11, color: '#9ca3af', textTransform: 'uppercase' }}>{picked.unidad}</p>
+                    </div>
+                    <button onClick={() => setQty(prev => prev + 1)}
+                      style={{ width: 56, height: 56, borderRadius: 16, background: '#f3f4f6', border: 'none', fontSize: 28, fontWeight: 700, cursor: 'pointer', color: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                  </div>
+                  <button onClick={handleAdd} disabled={saving}
+                    style={{ padding: '14px', borderRadius: 12, border: 'none', background: '#16a34a', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', opacity: saving ? .7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    {IC.down} {saving ? 'Registrando…' : `Recibir ${qty} ${picked.unidad} en ${almacen.nombre}`}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -894,10 +1150,11 @@ export function InventarioPWA() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [bajoStockFilter, setBajoStockFilter] = useState(false);
 
-  const [detalleItem, setDetalleItem] = useState<InventarioItemDetail | null>(null);
-  const [movItem,     setMovItem]     = useState<InventarioItem | null>(null);
-  const [movTipo,     setMovTipo]     = useState<MovimientoTipo>('SALIDA');
-  const [formItem,    setFormItem]    = useState<InventarioItem | null | undefined>(undefined);
+  const [detalleItem,     setDetalleItem]     = useState<InventarioItemDetail | null>(null);
+  const [movItem,         setMovItem]         = useState<InventarioItem | null>(null);
+  const [movTipo,         setMovTipo]         = useState<MovimientoTipo>('SALIDA');
+  const [formItem,        setFormItem]        = useState<InventarioItem | null | undefined>(undefined);
+  const [selectedAlmacen, setSelectedAlmacen] = useState<StorageLocation | null>(null);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = (msg: string) => {
@@ -995,6 +1252,16 @@ export function InventarioPWA() {
     setFormItem(undefined);
   };
 
+  const submitEntradaAlmacen = async (itemId: string, cantidad: number, ubicacionId: string) => {
+    const data = await api.post<{ movimiento: { stockDespues: number } }>(
+      `/inventario/${itemId}/movimiento`,
+      { tipo: 'ENTRADA', cantidad, codigoMotivo: null, notas: null, ubicacionId, ubicacionDestinoId: null },
+    );
+    setItems(prev => prev.map(i => i.id === itemId ? { ...i, stock: data.movimiento.stockDespues } : i));
+    loadHome();
+    showToast('Entrada registrada ✓');
+  };
+
   const darDeBaja = async () => {
     if (!detalleItem) return;
     if (!window.confirm(`¿Dar de baja "${detalleItem.nombre}"? Se ocultará del inventario activo.`)) return;
@@ -1024,6 +1291,19 @@ export function InventarioPWA() {
       <MovimientoScreen item={movItem} initialTipo={movTipo} ubicaciones={ubicaciones}
         onBack={() => { if (detalleItem?.id === movItem.id) setScreen('detalle'); else setScreen(navTab); }}
         onSave={submitMovimiento} />
+      {toast && <Toast msg={toast} />}
+    </>
+  );
+
+  if (screen === 'almacen-detalle' && selectedAlmacen) return (
+    <>
+      <AlmacenDetalleScreen
+        almacen={selectedAlmacen}
+        allItems={items}
+        onBack={() => { setScreen('almacenes'); setNavTab('almacenes'); }}
+        onDetalle={async (item) => { await openDetalle(item); }}
+        onAdd={submitEntradaAlmacen}
+      />
       {toast && <Toast msg={toast} />}
     </>
   );
@@ -1069,7 +1349,8 @@ export function InventarioPWA() {
           />
         )}
         {navTab === 'almacenes' && (
-          <AlmacenesScreen ubicaciones={ubicaciones} loading={loadingList} />
+          <AlmacenesScreen ubicaciones={ubicaciones} loading={loadingList}
+            onOpen={(loc) => { setSelectedAlmacen(loc); setScreen('almacen-detalle'); }} />
         )}
         {navTab === 'mas' && (
           <MasScreen
