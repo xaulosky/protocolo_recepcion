@@ -357,7 +357,31 @@ export interface Cirugia extends Omit<CirugiaListItem, 'presupuesto' | '_count'>
 
 // ── Inventario ──
 
-export type MovimientoTipo = 'ENTRADA' | 'SALIDA' | 'AJUSTE';
+export type MovimientoTipo = 'ENTRADA' | 'SALIDA' | 'AJUSTE' | 'TRASLADO';
+
+export interface StorageLocation {
+  id: string;
+  nombre: string;
+  codigo: string;
+  descripcion: string | null;
+  tipo: string;
+  activo: boolean;
+  parentId: string | null;
+  parent: { id: string; nombre: string; codigo: string } | null;
+  children?: { id: string; nombre: string; codigo: string; activo: boolean }[];
+  _count?: { locationInventario: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LocationInventario {
+  id: string;
+  locationId: string;
+  itemId: string;
+  quantity: number;
+  stockMinimo: number | null;
+  location: { id: string; nombre: string; codigo: string };
+}
 
 export interface InventarioItem {
   id: string;
@@ -373,6 +397,7 @@ export interface InventarioItem {
   activo: boolean;
   notas: string | null;
   creadoPor: TaskUserRef | null;
+  locationInventario?: LocationInventario[];
   createdAt: string;
   updatedAt: string;
 }
@@ -388,12 +413,15 @@ export interface InventarioMovimiento {
   notas: string | null;
   profesional: { id: string; nombreCompleto: string } | null;
   realizadoPor: TaskUserRef | null;
+  ubicacion: { id: string; nombre: string; codigo: string } | null;
+  ubicacionDestino: { id: string; nombre: string; codigo: string } | null;
   fechaMovimiento: string;
   createdAt: string;
 }
 
 export interface InventarioItemDetail extends InventarioItem {
   movimientos: InventarioMovimiento[];
+  locationInventario: LocationInventario[];
 }
 
 export interface InventarioDashboard {
@@ -401,6 +429,7 @@ export interface InventarioDashboard {
   bajoStock: number;
   sinStock: number;
   valorTotal: number;
+  totalUbicaciones: number;
   ultimosMovimientos: (InventarioMovimiento & { item: { nombre: string; unidad: string } })[];
 }
 

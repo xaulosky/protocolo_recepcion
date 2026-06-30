@@ -681,6 +681,45 @@ model CirugiaActividad {
 
 // ─────────────────────────────── Inventario ─────────────────────────────────
 
+model StorageLocation {
+  id           String   @id @default(cuid())
+  nombre       String
+  codigo       String   @unique
+  descripcion  String?
+  tipo         String   @default("storage")
+  activo       Boolean  @default(true)
+  parentId     String?
+  parent       StorageLocation?  @relation("UbicacionHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     StorageLocation[] @relation("UbicacionHierarchy")
+
+  locationInventario     LocationInventario[]
+  movimientosOrigen      InventarioMovimiento[] @relation("MovimientoUbicacion")
+  movimientosDestino     InventarioMovimiento[] @relation("MovimientoDestino")
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([activo])
+  @@index([parentId])
+}
+
+model LocationInventario {
+  id           String          @id @default(cuid())
+  locationId   String
+  location     StorageLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  itemId       String
+  item         InventarioItem  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  quantity     Int             @default(0)
+  stockMinimo  Int?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([locationId, itemId])
+  @@index([itemId])
+  @@index([quantity])
+}
+
 model InventarioItem {
   id           String   @id @default(cuid())
   nombre       String
@@ -695,7 +734,8 @@ model InventarioItem {
   activo       Boolean  @default(true)
   notas        String?
 
-  movimientos  InventarioMovimiento[]
+  movimientos        InventarioMovimiento[]
+  locationInventario LocationInventario[]
 
   creadoPor    User?    @relation("InventarioCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
   creadoPorId  String?
@@ -712,12 +752,18 @@ model InventarioMovimiento {
   id             String   @id @default(cuid())
   item           InventarioItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId         String
-  tipo           String   // 'ENTRADA' | 'SALIDA' | 'AJUSTE'
+  tipo           String   // 'ENTRADA' | 'SALIDA' | 'AJUSTE' | 'TRASLADO'
   cantidad       Int
   stockAntes     Int
   stockDespues   Int
-  codigoMotivo   String?  // 'compra' | 'consumo' | 'vencimiento' | 'perdida' | 'devolucion' | 'ajuste'
+  codigoMotivo   String?  // 'compra' | 'consumo' | 'vencimiento' | 'perdida' | 'devolucion' | 'ajuste' | 'traslado'
   notas          String?
+
+  ubicacion              StorageLocation? @relation("MovimientoUbicacion", fields: [ubicacionId], references: [id], onDelete: SetNull)
+  ubicacionId            String?
+  ubicacionDestino       StorageLocation? @relation("MovimientoDestino", fields: [ubicacionDestinoId], references: [id], onDelete: SetNull)
+  ubicacionDestinoId     String?
+
   profesional    Professional? @relation("InventarioMovProfesional", fields: [profesionalId], references: [id], onDelete: SetNull)
   profesionalId  String?
   realizadoPor   User?    @relation("InventarioMovUsuario", fields: [realizadoPorId], references: [id], onDelete: SetNull)
@@ -728,4 +774,5 @@ model InventarioMovimiento {
   @@index([itemId, fechaMovimiento])
   @@index([fechaMovimiento])
   @@index([tipo])
+  @@index([ubicacionId])
 }
