@@ -43,7 +43,7 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
       <aside
         style={{
           position: 'fixed', top: 0, left: 0, height: '100vh', width,
-          background: '#fff', borderRight: '1px solid var(--border)',
+          background: 'var(--surface)', borderRight: '1px solid var(--border)',
           display: 'flex', flexDirection: 'column', zIndex: 50, overflow: 'hidden',
           transition: 'transform .25s ease, width .25s ease',
           ...(mobileOpen ? { transform: 'translateX(0)' } : {}),

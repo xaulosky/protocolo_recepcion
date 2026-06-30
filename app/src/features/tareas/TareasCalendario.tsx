@@ -71,7 +71,7 @@ export function TareasCalendario({ tasks, onClickTask, onClickDay }: Props) {
       </div>
 
       {/* ── Grid del calendario ── */}
-      <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
         {/* Cabecera días */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--border)' }}>
           {DIAS.map((d) => (
@@ -118,7 +118,7 @@ export function TareasCalendario({ tasks, onClickTask, onClickDay }: Props) {
                 onClick={() => onClickTask(t.id)}
                 style={{
                   fontSize: 12, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)',
-                  background: '#fff', color: 'var(--text-2)', cursor: 'pointer',
+                  background: 'var(--bg)', color: 'var(--text-2)', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}
               >
@@ -159,7 +159,7 @@ function DayCell({ date, current, isToday, isWeekend, dayTasks, idx, onClickTask
         borderBottom: idx < 35 ? '1px solid var(--border-soft)' : 'none',
         background: hovered
           ? 'var(--primary-soft)'
-          : !current ? 'var(--bg)' : isWeekend ? 'var(--border-softer)' : '#fff',
+          : !current ? 'var(--bg)' : isWeekend ? 'var(--border-softer)' : 'var(--surface)',
         transition: 'background .12s',
       }}
     >

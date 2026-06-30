@@ -55,7 +55,7 @@ function HistoryList({
               padding: '10px 12px',
               borderRadius: 8,
               border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
-              background: isSelected ? 'var(--primary-soft)' : '#fff',
+              background: isSelected ? 'var(--primary-soft)' : 'var(--bg)',
               cursor: 'pointer',
               transition: 'border-color 0.15s, background 0.15s',
             }}
@@ -309,7 +309,7 @@ export function Presupuestos() {
                   border: '1px solid var(--border)',
                   borderRadius: 7,
                   textAlign: 'left',
-                  background: '#fff',
+                  background: 'var(--bg)',
                 }}
               >
                 <div>

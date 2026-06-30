@@ -1,13 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Chips } from '../components/Chips';
 import { AsyncState } from '../components/AsyncState';
+import { Pagination } from '../components/Pagination';
 import { useResource } from '../lib/useResource';
 import { useCopy } from '../store/app-context';
 import type { Script } from '../lib/types';
 
+const PAGE_SIZE = 10;
+
 export function Guiones() {
   const copy = useCopy();
   const [cat, setCat] = useState('Todos');
+  const [page, setPage] = useState(1);
   const { data, loading, error, reload } = useResource<{ scripts: Script[] }>('/data/scripts');
   const scripts = useMemo(() => data?.scripts ?? [], [data]);
 
@@ -17,12 +21,17 @@ export function Guiones() {
   );
   const filtered = cat === 'Todos' ? scripts : scripts.filter((g) => g.categoria === cat);
 
+  useEffect(() => { setPage(1); }, [cat]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <AsyncState loading={loading} error={error} onRetry={reload}>
       <div className="fade-up">
-        <Chips options={categories} value={cat} onChange={setCat} />
+        <Chips options={categories} value={cat} onChange={(v) => { setCat(v); }} />
         <div className="stack">
-          {filtered.map((g) => (
+          {paged.map((g) => (
             <div key={g.id} className="card" style={{ padding: '16px 18px' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
                 <div>
@@ -44,6 +53,7 @@ export function Guiones() {
             </div>
           ))}
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </AsyncState>
   );

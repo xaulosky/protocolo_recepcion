@@ -241,7 +241,7 @@ export function GiftCards() {
       {/* Canjear confirmation modal */}
       {canjearModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 360, boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }}>
+          <div style={{ background: 'var(--surface)', borderRadius: 12, padding: 24, width: 360, boxShadow: '0 8px 40px rgba(0,0,0,0.15)' }}>
             <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>Confirmar canje</h3>
             <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 14 }}>¿Confirmas que se canjeó esta Gift Card?</p>
             <div style={{ marginBottom: 14 }}>

@@ -1,8 +1,9 @@
-import { useRef, useState, useMemo, useCallback } from 'react';
+import { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTareas, ETAPAS, ETAPA_LABEL, PRIORIDAD_LABEL, NEXT } from './useTareas';
 import type { Task, Etapa } from '../../lib/types';
 import { Icon } from '../../lib/icons';
 import { AsyncState } from '../../components/AsyncState';
+import { Pagination } from '../../components/Pagination';
 import { useApp } from '../../store/app-context';
 import { useAuth } from '../../store/auth-context';
 import { colorFromString } from '../../lib/format';
@@ -10,6 +11,8 @@ import { PRIO_STYLE, ETAPA_STYLE } from './tareasStyles';
 import { TaskDetailModal } from './TaskDetailModal';
 import { TaskCreateModal } from './TaskCreateModal';
 import { TareasCalendario } from './TareasCalendario';
+
+const TABLE_PAGE_SIZE = 20;
 
 type ViewMode = 'kanban' | 'tabla' | 'calendario';
 
@@ -26,6 +29,7 @@ export function Tareas() {
   const [createDueAt, setCreateDueAt] = useState('');
   const [selectedId, setSelectedId]   = useState<string | null>(null);
   const [bulkSel, setBulkSel]         = useState<Set<string>>(new Set());
+  const [tablePage, setTablePage]     = useState(1);
 
   const isAdmin = hasRole('ADMIN');
   const canEdit = !hasRole('LECTURA');
@@ -48,6 +52,10 @@ export function Tareas() {
     }
     return base;
   }, [tasks, isAdmin, filter, quickFilter, busqueda]);
+
+  useEffect(() => { setTablePage(1); }, [filtered]);
+  const totalTablePages = Math.ceil(filtered.length / TABLE_PAGE_SIZE);
+  const pagedFiltered = filtered.slice((tablePage - 1) * TABLE_PAGE_SIZE, tablePage * TABLE_PAGE_SIZE);
 
   const toggleBulk = useCallback((id: string) => {
     setBulkSel(prev => {
@@ -108,7 +116,7 @@ export function Tareas() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '5px 11px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer',
-                    background: viewMode === mode ? '#fff' : 'transparent',
+                    background: viewMode === mode ? 'var(--surface)' : 'transparent',
                     color: viewMode === mode ? 'var(--text)' : 'var(--muted)',
                     boxShadow: viewMode === mode ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                     transition: 'all .15s',
@@ -184,7 +192,10 @@ export function Tareas() {
           <KanbanView tasks={filtered} onMover={mover} onEliminar={handleEliminar} onClickTask={setSelectedId} bulkSel={bulkSel} onToggleBulk={toggleBulk} />
         )}
         {viewMode === 'tabla' && (
-          <TablaView tasks={filtered} onMover={mover} onEliminar={handleEliminar} onClickTask={setSelectedId} bulkSel={bulkSel} onToggleBulk={toggleBulk} onSelectAll={selectAll} />
+          <>
+            <TablaView tasks={pagedFiltered} onMover={mover} onEliminar={handleEliminar} onClickTask={setSelectedId} bulkSel={bulkSel} onToggleBulk={toggleBulk} onSelectAll={selectAll} />
+            <Pagination page={tablePage} totalPages={totalTablePages} onChange={setTablePage} />
+          </>
         )}
         {viewMode === 'calendario' && (
           <TareasCalendario
@@ -355,7 +366,7 @@ function KanbanCard({ t, isDragging, isSelected, onDragStart, onDragEnd, onMover
       onDragEnd={onDragEnd}
       onClick={onClick}
       style={{
-        background: isSelected ? 'var(--primary-soft)' : '#fff',
+        background: isSelected ? 'var(--primary-soft)' : 'var(--surface)',
         border: isSelected ? '1.5px solid var(--primary)' : isOverdue ? '1.5px solid #C04040' : '1px solid var(--border)',
         borderRadius: 9, padding: 13,
         cursor: 'grab', opacity: isDragging ? 0.45 : 1,
@@ -489,7 +500,7 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggleB
           </button>
         ))}
       </div>
-      <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead style={{ background: 'var(--border-softer)' }}>
           <tr>
@@ -517,9 +528,9 @@ function TablaView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggleB
               <tr
                 key={t.id}
                 onClick={() => onClickTask(t.id)}
-                style={{ borderBottom: '1px solid var(--border-soft)', background: bulkSel.has(t.id) ? 'var(--primary-soft)' : rowOverdue ? '#FFF5F5' : (i % 2 === 0 ? '#fff' : 'var(--bg)'), cursor: 'pointer' }}
+                style={{ borderBottom: '1px solid var(--border-soft)', background: bulkSel.has(t.id) ? 'var(--primary-soft)' : rowOverdue ? 'var(--danger-soft)' : (i % 2 === 0 ? 'var(--surface-soft)' : 'var(--bg)'), cursor: 'pointer' }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--primary-soft)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = bulkSel.has(t.id) ? 'var(--primary-soft)' : rowOverdue ? '#FFF5F5' : (i % 2 === 0 ? '#fff' : 'var(--bg)'); }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = bulkSel.has(t.id) ? 'var(--primary-soft)' : rowOverdue ? 'var(--danger-soft)' : (i % 2 === 0 ? 'var(--surface-soft)' : 'var(--bg)'); }}
               >
                 <td style={{ padding: '10px 8px 10px 14px', width: 36 }} onClick={e => e.stopPropagation()}>
                   <input type="checkbox" checked={bulkSel.has(t.id)} onChange={() => onToggleBulk(t.id)} style={{ width: 13, height: 13, accentColor: 'var(--primary)', cursor: 'pointer' }} />

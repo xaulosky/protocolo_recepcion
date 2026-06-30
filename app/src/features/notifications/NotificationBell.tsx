@@ -85,7 +85,7 @@ export function NotificationBell() {
       {open && (
         <div
           className="fade-up"
-          style={{ position: 'absolute', top: 44, right: 0, width: 340, maxWidth: '90vw', background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-card-lg)', zIndex: 80, overflow: 'hidden' }}
+          style={{ position: 'absolute', top: 44, right: 0, width: 340, maxWidth: '90vw', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-card-lg)', zIndex: 80, overflow: 'hidden' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: '1px solid var(--border-soft)' }}>
             <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>Notificaciones</span>

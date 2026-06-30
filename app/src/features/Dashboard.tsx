@@ -155,7 +155,7 @@ export function Dashboard() {
           </div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
             {etapaStats.map((ds) => (
-              <div key={ds.etapa} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', minWidth: 90 }}>
+              <div key={ds.etapa} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', minWidth: 90 }}>
                 <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--text)', lineHeight: 1 }}>{ds.count}</div>
                 <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 3 }}>{ETAPA_LABEL[ds.etapa]}</div>
               </div>
@@ -163,7 +163,7 @@ export function Dashboard() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(175px,1fr))', gap: 8 }}>
             {recepStats.map((dr) => (
-              <div key={dr.nombre} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 9, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div key={dr.nombre} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 9, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 16, background: colorFromString(dr.nombre), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: '#fff', flexShrink: 0 }}>{dr.nombre.charAt(0)}</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{dr.nombre}</div>

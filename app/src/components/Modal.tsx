@@ -29,7 +29,7 @@ export function Modal({ open, onClose, eyebrow, title, children, maxWidth = 560 
         onClick={(e) => e.stopPropagation()}
         className="fade-up"
         style={{
-          background: '#fff', borderRadius: 'var(--radius-modal)', maxWidth, width: '100%',
+          background: 'var(--surface)', borderRadius: 'var(--radius-modal)', maxWidth, width: '100%',
           maxHeight: '82vh', overflowY: 'auto',
         }}
       >
@@ -37,7 +37,7 @@ export function Modal({ open, onClose, eyebrow, title, children, maxWidth = 560 
           style={{
             padding: 22, borderBottom: '1px solid var(--border-soft)',
             display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14,
-            position: 'sticky', top: 0, background: '#fff', borderRadius: '12px 12px 0 0',
+            position: 'sticky', top: 0, background: 'var(--surface)', borderRadius: '12px 12px 0 0',
           }}
         >
           <div>

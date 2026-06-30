@@ -1,17 +1,25 @@
+import { useState } from 'react';
 import { AsyncState } from '../components/AsyncState';
+import { Pagination } from '../components/Pagination';
 import { useResource } from '../lib/useResource';
 import { Icon } from '../lib/icons';
 import type { Box } from '../lib/types';
 
+const PAGE_SIZE = 12;
+
 export function Boxes() {
+  const [page, setPage] = useState(1);
   const { data, loading, error, reload } = useResource<{ boxes: Box[] }>('/data/boxes');
   const boxes = data?.boxes ?? [];
+
+  const totalPages = Math.ceil(boxes.length / PAGE_SIZE);
+  const paged = boxes.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <AsyncState loading={loading} error={error} onRetry={reload}>
       <div className="fade-up">
         <div className="grid-cards">
-          {boxes.map((bx) => {
+          {paged.map((bx) => {
             const tecnologias = (bx.equipamiento ?? []).map((e) => e.nombre);
             return (
               <div key={bx.id} className="card">
@@ -46,6 +54,7 @@ export function Boxes() {
             );
           })}
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </AsyncState>
   );

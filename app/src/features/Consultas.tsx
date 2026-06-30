@@ -1,20 +1,28 @@
+import { useState } from 'react';
 import { AsyncState } from '../components/AsyncState';
+import { Pagination } from '../components/Pagination';
 import { useResource } from '../lib/useResource';
 import type { Consultation } from '../lib/types';
+
+const PAGE_SIZE = 12;
 
 function isGratis(valor: string): boolean {
   return /gratis|gratu|^\$?\s*0$/i.test(valor.trim());
 }
 
 export function Consultas() {
+  const [page, setPage] = useState(1);
   const { data, loading, error, reload } = useResource<{ consultations: Consultation[] }>('/data/consultations');
   const consultations = data?.consultations ?? [];
+
+  const totalPages = Math.ceil(consultations.length / PAGE_SIZE);
+  const paged = consultations.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <AsyncState loading={loading} error={error} onRetry={reload}>
       <div className="fade-up">
         <div className="grid-cards">
-          {consultations.map((c) => {
+          {paged.map((c) => {
             const profs = c.profesionales ?? [];
             const profLabel = profs.length ? profs.map((p) => p.nombre).join(', ') : '—';
             const gratis = isGratis(c.valor);
@@ -37,6 +45,7 @@ export function Consultas() {
             );
           })}
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </AsyncState>
   );

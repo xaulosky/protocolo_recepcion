@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from '../../lib/icons';
+import { Pagination } from '../../components/Pagination';
 import { AsyncState } from '../../components/AsyncState';
 import { fmtDate, clp } from '../../lib/format';
 import { useAuth } from '../../store/auth-context';
@@ -38,12 +39,19 @@ export function Cirugias() {
   const [q, setQ]                      = useState('');
   const [createOpen, setCreateOpen]    = useState(false);
   const [detailId, setDetailId]        = useState<string | null>(null);
+  const [page, setPage]                = useState(1);
 
   const filtradas = cirugias.filter((c) => {
     if (etapaFiltro !== 'TODAS' && c.etapa !== etapaFiltro) return false;
     if (q && !c.paciente.toLowerCase().includes(q.toLowerCase()) && !c.tipo.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
+
+  useEffect(() => { setPage(1); }, [etapaFiltro, q]);
+
+  const PAGE_SIZE = 12;
+  const totalPages = Math.ceil(filtradas.length / PAGE_SIZE);
+  const paged = filtradas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="fade-up">
@@ -112,8 +120,9 @@ export function Cirugias() {
           ? <p style={{ color: 'var(--muted)', fontSize: 14, padding: '32px 0', textAlign: 'center' }}>
               {cirugias.length === 0 ? 'No hay cirugías registradas.' : 'Sin resultados para el filtro actual.'}
             </p>
-          : <div className="grid-cards">
-              {filtradas.map((c) => {
+          : <>
+            <div className="grid-cards">
+              {paged.map((c) => {
                 const estSt = c.etapa ? ETAPA_STYLE[c.etapa] : null;
                 const presSt = c.presupuesto ? PRESUPUESTO_STYLE[c.presupuesto.estado] : null;
                 return (
@@ -179,7 +188,9 @@ export function Cirugias() {
                   </div>
                 );
               })}
-            </div>}
+            </div>
+            <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+          </>}
       </AsyncState>
 
       <CirugiaCreateModal

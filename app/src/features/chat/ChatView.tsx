@@ -449,7 +449,7 @@ function MessageThread({ variant }: { variant: Variant }) {
           {searchResults.length > 0 && (
             <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 220, overflowY: 'auto' }}>
               {searchResults.map((m) => (
-                <div key={m.id} style={{ padding: '7px 10px', borderRadius: 7, background: '#fff', border: '1px solid var(--border-soft)', fontSize: 12 }}>
+                <div key={m.id} style={{ padding: '7px 10px', borderRadius: 7, background: 'var(--surface)', border: '1px solid var(--border-soft)', fontSize: 12 }}>
                   <span style={{ fontWeight: 600, color: colorFromString(m.autor.nombre) }}>{m.autor.nombre}: </span>
                   <span style={{ color: 'var(--text)' }}>{m.contenido}</span>
                   <span style={{ color: 'var(--muted-3)', marginLeft: 8, fontSize: 11 }}>{new Date(m.createdAt).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
@@ -659,17 +659,17 @@ function Bubble({ m, mine, grupo, agrupado, myId, onReact, onEdit, onDelete, onR
               <button
                 onClick={() => onReply(m)}
                 title="Responder"
-                style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}
+                style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}
               >
                 <Icon name="reply" size={12} style={{ color: 'var(--muted)' }} />
               </button>
               {/* Edit + Delete — solo para mensajes propios */}
               {mine && (
                 <>
-                  <button onClick={() => { setEditing(true); setEditVal(m.contenido); }} title="Editar" style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
+                  <button onClick={() => { setEditing(true); setEditVal(m.contenido); }} title="Editar" style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
                     <Icon name="edit" size={12} style={{ color: 'var(--muted)' }} />
                   </button>
-                  <button onClick={() => onDelete(m.id)} title="Eliminar" style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
+                  <button onClick={() => onDelete(m.id)} title="Eliminar" style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
                     <Icon name="trash" size={12} style={{ color: '#C04040' }} />
                   </button>
                 </>
@@ -677,7 +677,7 @@ function Bubble({ m, mine, grupo, agrupado, myId, onReact, onEdit, onDelete, onR
               {/* Emoji reaction */}
               <button
                 onClick={() => setShowPicker((p) => !p)}
-                style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}
+                style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}
               >
                 <Icon name="smile" size={13} style={{ color: 'var(--muted)' }} />
               </button>
@@ -685,7 +685,7 @@ function Bubble({ m, mine, grupo, agrupado, myId, onReact, onEdit, onDelete, onR
                 <div style={{
                   position: 'absolute', bottom: 30,
                   ...(mine ? { right: 0 } : { left: 0 }),
-                  background: '#fff', border: '1px solid var(--border)', borderRadius: 10,
+                  background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10,
                   padding: 6, display: 'flex', gap: 2, boxShadow: '0 4px 16px rgba(0,0,0,.12)',
                   zIndex: 10, whiteSpace: 'nowrap',
                 }}>
@@ -715,7 +715,7 @@ function Bubble({ m, mine, grupo, agrupado, myId, onReact, onEdit, onDelete, onR
                 style={{
                   display: 'flex', alignItems: 'center', gap: 3,
                   padding: '2px 7px', borderRadius: 99, border: `1px solid ${isMine ? 'var(--primary)' : 'var(--border)'}`,
-                  background: isMine ? 'var(--primary-soft)' : '#fff', cursor: 'pointer', fontSize: 13,
+                  background: isMine ? 'var(--primary-soft)' : 'var(--surface)', cursor: 'pointer', fontSize: 13,
                 }}
               >
                 <span>{emoji}</span>

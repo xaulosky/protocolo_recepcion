@@ -26,7 +26,7 @@ function cutoff(periodo: '7d' | '30d' | '90d' | 'total'): Date | null {
 
 function StatCard({ label, value, sub }: { label: string; value: number | string; sub?: string }) {
   return (
-    <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <div style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border)', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 4 }}>
       <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
       <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--primary)', lineHeight: 1.1 }}>{value}</span>
       {sub && <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>{sub}</span>}
@@ -70,7 +70,7 @@ function ReembolsoPill({ label, count, bg, color }: { label: string; count: numb
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border)', padding: '18px 20px' }}>
+    <section style={{ background: 'var(--surface)', borderRadius: 12, border: '1px solid var(--border)', padding: '18px 20px' }}>
       <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 16 }}>{title}</h2>
       {children}
     </section>
@@ -161,7 +161,7 @@ export function Reportes() {
         </div>
         <div style={{ display: 'flex', gap: 4, background: 'var(--border-softer)', borderRadius: 8, padding: 3 }}>
           {(['7d', '30d', '90d', 'total'] as const).map((p) => (
-            <button key={p} onClick={() => setPeriodo(p)} style={{ padding: '5px 12px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: periodo === p ? '#fff' : 'transparent', color: periodo === p ? 'var(--text)' : 'var(--muted)', boxShadow: periodo === p ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all .15s' }}>
+            <button key={p} onClick={() => setPeriodo(p)} style={{ padding: '5px 12px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', background: periodo === p ? 'var(--surface)' : 'transparent', color: periodo === p ? 'var(--text)' : 'var(--muted)', boxShadow: periodo === p ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all .15s' }}>
               {p === 'total' ? 'Todo' : p === '7d' ? '7 días' : p === '30d' ? '30 días' : '90 días'}
             </button>
           ))}
@@ -194,9 +194,9 @@ export function Reportes() {
         <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Presupuestos de cirugías</h2>
         <AsyncState loading={cirugias.loading} error={cirugias.error}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-            <PresupuestoCard label="Pendiente" count={presupuestosStats.PENDIENTE.count} total={presupuestosStats.PENDIENTE.total} bg="#FBF5EB" color="#C07B3A" />
-            <PresupuestoCard label="Aprobado" count={presupuestosStats.APROBADO.count} total={presupuestosStats.APROBADO.total} bg="#EDF5EF" color="#3A6A4A" />
-            <PresupuestoCard label="Rechazado" count={presupuestosStats.RECHAZADO.count} bg="#FBF0F0" color="#9A3A3A" />
+            <PresupuestoCard label="Pendiente" count={presupuestosStats.PENDIENTE.count} total={presupuestosStats.PENDIENTE.total} bg="var(--orange-soft)" color="var(--orange)" />
+            <PresupuestoCard label="Aprobado" count={presupuestosStats.APROBADO.count} total={presupuestosStats.APROBADO.total} bg="var(--green-bg)" color="var(--green)" />
+            <PresupuestoCard label="Rechazado" count={presupuestosStats.RECHAZADO.count} bg="var(--danger-soft)" color="#9A3A3A" />
           </div>
         </AsyncState>
       </div>
@@ -204,10 +204,10 @@ export function Reportes() {
       <Section title="Reembolsos por estado">
         <AsyncState loading={reembolsos.loading} error={reembolsos.error}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            <ReembolsoPill label="Pendiente" count={reembolsoEstados.PENDIENTE} bg="#FBF5EB" color="#C07B3A" />
-            <ReembolsoPill label="En revisión" count={reembolsoEstados.EN_REVISION} bg="#EBF3FB" color="#2F6B9A" />
-            <ReembolsoPill label="Aprobado" count={reembolsoEstados.APROBADO} bg="#EDF5EF" color="#3A6A4A" />
-            <ReembolsoPill label="Rechazado" count={reembolsoEstados.RECHAZADO} bg="#FBF0F0" color="#9A3A3A" />
+            <ReembolsoPill label="Pendiente" count={reembolsoEstados.PENDIENTE} bg="var(--orange-soft)" color="var(--orange)" />
+            <ReembolsoPill label="En revisión" count={reembolsoEstados.EN_REVISION} bg="var(--info-soft)" color="#2F6B9A" />
+            <ReembolsoPill label="Aprobado" count={reembolsoEstados.APROBADO} bg="var(--green-bg)" color="var(--green)" />
+            <ReembolsoPill label="Rechazado" count={reembolsoEstados.RECHAZADO} bg="var(--danger-soft)" color="#9A3A3A" />
           </div>
         </AsyncState>
       </Section>

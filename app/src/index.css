@@ -34,6 +34,7 @@
   --orange: #C97B4B;
   --orange-soft: #FBF0EB;
   --danger-soft: #FBF5F5;
+  --info-soft: #EBF3FB;
 
   --radius-card: 10px;
   --radius-modal: 12px;
@@ -72,6 +73,7 @@
   --green-bg: #1A2820;
   --danger-soft: #2A1F1F;
   --orange-soft: #2A1F18;
+  --info-soft: #1A2030;
 }
 
 /* ===================== Reset ===================== */

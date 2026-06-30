@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Modal } from '../components/Modal';
 import { AsyncState } from '../components/AsyncState';
+import { Pagination } from '../components/Pagination';
 import { useResource } from '../lib/useResource';
 import { Icon } from '../lib/icons';
 import { initials, avatarColor } from '../lib/format';
 import type { Professional } from '../lib/types';
+
+const PAGE_SIZE = 12;
 
 function diasLabel(p: Professional): string {
   return p.disponibilidad?.dias?.join(', ') || 'Por confirmar';
@@ -14,6 +17,7 @@ export function Profesionales() {
   const [selected, setSelected] = useState<Professional | null>(null);
   const [search, setSearch] = useState('');
   const [esp, setEsp] = useState('Todas');
+  const [page, setPage] = useState(1);
   const { data, loading, error, reload } = useResource<{ professionals: Professional[] }>('/data/professionals');
   const professionals = data?.professionals ?? [];
 
@@ -28,6 +32,11 @@ export function Profesionales() {
     const q = search.toLowerCase();
     return p.nombreCompleto.toLowerCase().includes(q) || p.especialidad.toLowerCase().includes(q);
   });
+
+  useEffect(() => { setPage(1); }, [search, esp]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <AsyncState loading={loading} error={error} onRetry={reload}>
@@ -45,7 +54,7 @@ export function Profesionales() {
         </div>
 
         <div className="grid-cards">
-          {filtered.map((p, i) => (
+          {paged.map((p, i) => (
             <div key={p.id} onClick={() => setSelected(p)} className="card card-hover" style={{ cursor: 'pointer' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                 <div style={{ width: 42, height: 42, borderRadius: 21, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 600, color: '#fff', flexShrink: 0, background: avatarColor(i) }}>
@@ -63,6 +72,8 @@ export function Profesionales() {
             </div>
           ))}
         </div>
+
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
 
         <Modal open={!!selected} onClose={() => setSelected(null)} eyebrow={selected?.especialidad} title={selected?.nombreCompleto ?? ''}>
           {selected && (

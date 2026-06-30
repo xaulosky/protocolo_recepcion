@@ -13,7 +13,7 @@ type Tab = 'tratamientos' | 'profesionales' | 'faq' | 'consultas';
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.45)' }}>
-      <div style={{ background: '#fff', borderRadius: 14, padding: 24, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', position: 'relative', boxShadow: '0 8px 40px rgba(0,0,0,.18)' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 14, padding: 24, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', position: 'relative', boxShadow: '0 8px 40px rgba(0,0,0,.18)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{title}</h2>
           <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--muted)' }}>
@@ -179,7 +179,7 @@ function TratamientosTab() {
       {error && <div style={{ color: 'var(--orange)', padding: 16 }}>{error}</div>}
 
       {!loading && !error && (
-        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead style={{ background: 'var(--border-softer)' }}>
               <tr>
@@ -192,7 +192,7 @@ function TratamientosTab() {
             </thead>
             <tbody>
               {treatments.map((t, i) => (
-                <tr key={t.id} style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? '#fff' : 'var(--bg)' }}>
+                <tr key={t.id} style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? 'var(--surface-soft)' : 'var(--bg)' }}>
                   <td style={{ padding: '9px 14px', color: 'var(--muted)', fontSize: 11, fontFamily: 'monospace' }}>{t.id}</td>
                   <td style={{ padding: '9px 14px', fontWeight: 500 }}>{t.nombre}</td>
                   <td style={{ padding: '9px 14px', color: 'var(--muted)' }}>{t.categoria}</td>
@@ -334,7 +334,7 @@ function ProfesionalesTab() {
       {error && <div style={{ color: 'var(--orange)', padding: 16 }}>{error}</div>}
 
       {!loading && !error && (
-        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead style={{ background: 'var(--border-softer)' }}>
               <tr>
@@ -348,7 +348,7 @@ function ProfesionalesTab() {
             </thead>
             <tbody>
               {professionals.map((p, i) => (
-                <tr key={p.id} style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? '#fff' : 'var(--bg)' }}>
+                <tr key={p.id} style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? 'var(--surface-soft)' : 'var(--bg)' }}>
                   <td style={{ padding: '9px 14px', color: 'var(--muted)', fontSize: 11, fontFamily: 'monospace' }}>{p.id}</td>
                   <td style={{ padding: '9px 14px', fontWeight: 500 }}>{p.nombreCompleto}</td>
                   <td style={{ padding: '9px 14px', color: 'var(--muted)' }}>{p.especialidad}</td>
@@ -463,7 +463,7 @@ function FaqTab() {
       {error && <div style={{ color: 'var(--orange)', padding: 16 }}>{error}</div>}
 
       {!loading && !error && (
-        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead style={{ background: 'var(--border-softer)' }}>
               <tr>
@@ -475,7 +475,7 @@ function FaqTab() {
             </thead>
             <tbody>
               {faq.map((f, i) => (
-                <tr key={f.id} style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? '#fff' : 'var(--bg)' }}>
+                <tr key={f.id} style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? 'var(--surface-soft)' : 'var(--bg)' }}>
                   <td style={{ padding: '9px 14px', fontWeight: 500, maxWidth: 340 }}>
                     <div style={{ marginBottom: 2 }}>{f.pregunta}</div>
                     <div style={{ fontSize: 11, color: 'var(--muted-2)', fontWeight: 400, lineHeight: 1.4 }}>{f.respuesta}</div>
@@ -602,7 +602,7 @@ function ConsultasTab() {
       {error && <div style={{ color: 'var(--orange)', padding: 16 }}>{error}</div>}
 
       {!loading && !error && (
-        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead style={{ background: 'var(--border-softer)' }}>
               <tr>
@@ -616,7 +616,7 @@ function ConsultasTab() {
             </thead>
             <tbody>
               {consultations.map((c, i) => (
-                <tr key={c.id} style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? '#fff' : 'var(--bg)' }}>
+                <tr key={c.id} style={{ borderBottom: '1px solid var(--border-soft)', background: i % 2 === 0 ? 'var(--surface-soft)' : 'var(--bg)' }}>
                   <td style={{ padding: '9px 14px', fontWeight: 500 }}>
                     <span style={{ marginRight: 6 }}>{c.emoji}</span>{c.nombre}
                     {c.descripcion && <div style={{ fontSize: 11, color: 'var(--muted-2)', fontWeight: 400, marginTop: 1 }}>{c.descripcion}</div>}

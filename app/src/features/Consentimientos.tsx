@@ -142,6 +142,11 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string, firma?: FirmaPr
     ${section('Cuidados post-procedimiento', c.cuidados)}
   ` : ''}
 
+  <div class="section" style="margin-top:14px;padding:10px 14px;border:1px solid #ddd;border-radius:6px;background:#fafafa;">
+    <h3 style="margin-top:0;">Política de Reembolsos</h3>
+    <p style="font-size:12px;margin:4px 0 0;color:#444;">De acuerdo con las políticas internas de Clínica Cialo, <strong>no se realizan devoluciones bajo ninguna circunstancia</strong>. En caso de suspensión de una sesión, esta podrá ser reagendada según disponibilidad.</p>
+  </div>
+
   <div class="foto">
     <div class="foto-label">Registro Fotográfico</div>
     <p>Autorizo el registro fotográfico de los procedimientos realizados y su uso con fines médicos, académicos y/o publicitarios, sin revelar mi identidad:</p>
@@ -334,7 +339,7 @@ function FillModal({ consent, onClose, onCreated }: { consent: Consent; onClose:
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=6&data=${encodeURIComponent(enlace)}`}
                   alt="QR de firma"
                   width={100} height={100}
-                  style={{ borderRadius: 8, flexShrink: 0, background: '#fff', padding: 4 }}
+                  style={{ borderRadius: 8, flexShrink: 0, background: 'var(--surface)', padding: 4 }}
                 />
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <a href={enlace} target="_blank" rel="noreferrer"
@@ -579,10 +584,17 @@ function VistaFirmadoModal({ id, onClose, onPrint }: { id: string; onClose: () =
               </div>
             ))}
 
+            <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 14px', marginBottom: 14 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Política de Reembolsos</div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.55 }}>
+                De acuerdo con las políticas internas de Clínica Cialo, <strong>no se realizan devoluciones bajo ninguna circunstancia</strong>. En caso de suspensión de una sesión, esta podrá ser reagendada según disponibilidad.
+              </div>
+            </div>
+
             {detalle.firmaImagen && (
               <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
                 <div style={{ fontSize: 10, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Firma del paciente</div>
-                <img src={detalle.firmaImagen} alt="Firma" style={{ maxHeight: 80, border: '1px solid var(--border)', borderRadius: 6, background: '#fff', padding: 4 }} />
+                <img src={detalle.firmaImagen} alt="Firma" style={{ maxHeight: 80, border: '1px solid var(--border)', borderRadius: 6, background: 'var(--surface)', padding: 4 }} />
                 <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>
                   {detalle.firmanteNombre} · {fmtFecha(detalle.firmadoAt)}
                   {detalle.fotoAuth !== null && detalle.fotoAuth !== undefined && (
@@ -1011,6 +1023,12 @@ export function Consentimientos() {
                 </div>
               );
             })}
+            <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 14px', marginBottom: 18 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>Política de Reembolsos</div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.55 }}>
+                De acuerdo con las políticas internas de Clínica Cialo, <strong>no se realizan devoluciones bajo ninguna circunstancia</strong>. En caso de suspensión de una sesión, esta podrá ser reagendada según disponibilidad.
+              </div>
+            </div>
             <div style={{ height: 1, background: 'var(--border)', margin: '20px 0 18px' }} />
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn-primary" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13 }} onClick={() => { setPreview(null); setFilling(preview); }}>

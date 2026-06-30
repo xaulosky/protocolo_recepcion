@@ -70,7 +70,7 @@ export function UserMultiSelect({ users, selected, onChange, placeholder = 'Sin 
       {open && (
         <div style={{
           position: 'absolute', zIndex: 300, top: 'calc(100% + 4px)', left: 0, right: 0,
-          background: '#fff', border: '1px solid var(--border)', borderRadius: 8,
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8,
           boxShadow: '0 6px 20px rgba(0,0,0,0.12)', overflow: 'hidden',
         }}>
           <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--border-soft)' }}>

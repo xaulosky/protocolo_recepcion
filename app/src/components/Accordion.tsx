@@ -13,7 +13,7 @@ interface AccordionItemProps {
 /** Fila colapsable reutilizable (protocolos, FAQ). */
 export function AccordionItem({ open, onToggle, header, children, bodyIndent = 18 }: AccordionItemProps) {
   return (
-    <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', overflow: 'hidden' }}>
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', overflow: 'hidden' }}>
       <div
         onClick={onToggle}
         className="accordion-head"

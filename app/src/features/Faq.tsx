@@ -1,13 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Chips } from '../components/Chips';
 import { AccordionItem, useSingleOpen } from '../components/Accordion';
 import { AsyncState } from '../components/AsyncState';
+import { Pagination } from '../components/Pagination';
 import { useResource } from '../lib/useResource';
 import type { FaqItem } from '../lib/types';
+
+const PAGE_SIZE = 15;
 
 export function Faq() {
   const acc = useSingleOpen();
   const [cat, setCat] = useState('Todos');
+  const [page, setPage] = useState(1);
   const { data, loading, error, reload } = useResource<{ faq: FaqItem[] }>('/data/faq');
   const faq = useMemo(() => data?.faq ?? [], [data]);
 
@@ -17,12 +21,17 @@ export function Faq() {
   );
   const filtered = cat === 'Todos' ? faq : faq.filter((f) => f.categoria === cat);
 
+  useEffect(() => { setPage(1); }, [cat]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
     <AsyncState loading={loading} error={error} onRetry={reload}>
       <div className="fade-up">
         <Chips options={categories} value={cat} onChange={setCat} />
         <div className="stack" style={{ maxWidth: 780 }}>
-          {filtered.map((f) => (
+          {paged.map((f) => (
             <AccordionItem
               key={f.id}
               open={acc.isOpen(f.id)}
@@ -38,6 +47,7 @@ export function Faq() {
             </AccordionItem>
           ))}
         </div>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
     </AsyncState>
   );
