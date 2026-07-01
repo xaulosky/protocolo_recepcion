@@ -1631,6 +1631,23 @@ export const profesionalesData = [
             notasEspeciales: 'Especializada en recuperación post quirúrgica. Requiere certificación de Kinesiólogo para equipos. Tiene consentimientos informados propios.'
         },
         pendientesAdministrativos: []
+    },
+    {
+        id: 'katalina-neumann',
+        nombreCompleto: 'Katalina Neumann',
+        especialidad: 'Kinesiología Dermatofuncional',
+        rut: '16.988.294-0',
+        disponibilidad: {
+            dias: [],
+            horario: '',
+            frecuencia: '',
+            flexibilidad: ''
+        },
+        prestaciones: {
+            servicios: []
+        },
+        requisitosLogisticos: {},
+        pendientesAdministrativos: []
     }
 ];
 
