@@ -106,7 +106,6 @@ export function Reembolso() {
   };
 
   const enviarCorreo = () => {
-    const sub = encodeURIComponent('Solicitud de Reembolso – Clínica Cialo');
     const lines = [
       'Estimado equipo,\n\nAdjunto los datos de la solicitud de reembolso.\n',
       `Paciente: ${form.paciente}`,
