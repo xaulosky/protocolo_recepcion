@@ -308,6 +308,32 @@ export interface SolicitudReembolso {
   updatedAt: string;
 }
 
+// ── Honorarios a profesionales ──
+
+export type PagoEstado = 'PAGADO' | 'PENDIENTE_PAGO' | 'PENDIENTE_FACTURA' | 'PENDIENTE_BOLETA';
+
+export interface PagoProfesional {
+  id: string;
+  professionalId: string;
+  professional: { id: string; nombreCompleto: string; especialidad: string } | null;
+  periodo: string;       // mes al que pertenece, "YYYY-MM"
+  monto: number;         // CLP
+  estado: PagoEstado;
+  fechaPago: string | null;
+  notas: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HonorariosResumen {
+  count: number;
+  total: number;
+  PAGADO: number;
+  PENDIENTE_PAGO: number;
+  PENDIENTE_FACTURA: number;
+  PENDIENTE_BOLETA: number;
+}
+
 // ── Cirugías / Procedimientos ──
 
 export type EtapaCirugia =

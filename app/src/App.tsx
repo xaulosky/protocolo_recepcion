@@ -34,6 +34,7 @@ import { Reembolso } from './features/Reembolso';
 import { Reportes } from './features/Reportes';
 import { Usuarios } from './features/usuarios/Usuarios';
 import { AdminPanel } from './features/admin/AdminPanel';
+import { Honorarios } from './features/honorarios/Honorarios';
 import type { ViewId } from './lib/nav';
 import { canView } from './lib/permissions';
 
@@ -61,6 +62,7 @@ const VIEWS: Record<ViewId, ComponentType> = {
   reportes: Reportes,
   usuarios: Usuarios,
   admin: AdminPanel,
+  honorarios: Honorarios,
 };
 
 function Shell() {

@@ -27,7 +27,7 @@ const ROLE_DEFAULTS: Record<Role, ViewId[]> = {
 /** Conjunto efectivo de secciones que el usuario puede ver. */
 export function allowedViews(user: AuthUser | null): Set<ViewId> {
   if (!user) return new Set();
-  if (user.role === 'ADMIN') return new Set<ViewId>([...PERMISSION_VIEWS, 'usuarios', 'admin']);
+  if (user.role === 'ADMIN') return new Set<ViewId>([...PERMISSION_VIEWS, 'honorarios', 'usuarios', 'admin']);
   const base = user.permisos && user.permisos.length > 0
     ? (user.permisos as ViewId[]).filter((v) => PERMISSION_VIEWS.includes(v))
     : ROLE_DEFAULTS[user.role];

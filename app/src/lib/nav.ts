@@ -7,7 +7,7 @@ export type ViewId =
   | 'inventario'
   | 'productos' | 'presupuestos' | 'giftcards' | 'consentimientos'
   | 'faq' | 'reembolso' | 'reportes'
-  | 'usuarios' | 'admin';
+  | 'honorarios' | 'usuarios' | 'admin';
 
 export interface NavItem { id: ViewId; label: string; icon: IconName; }
 export interface NavSection { section: string; items: NavItem[]; }
@@ -45,6 +45,7 @@ export const NAV: NavSection[] = [
     { id: 'reportes', label: 'Reportes', icon: 'chart' },
   ]},
   { section: 'Administración', items: [
+    { id: 'honorarios', label: 'Honorarios', icon: 'credit' },
     { id: 'usuarios', label: 'Usuarios', icon: 'shield' },
     { id: 'admin', label: 'Panel Admin', icon: 'key' },
   ]},
@@ -72,6 +73,7 @@ export const VIEW_LABELS: Record<ViewId, string> = {
   faq: 'Preguntas Frecuentes',
   reembolso: 'Solicitud de Reembolso',
   reportes: 'Reportes & Análisis',
+  honorarios: 'Honorarios a Profesionales',
   usuarios: 'Gestión de Usuarios',
   admin: 'Panel de Administración',
 };

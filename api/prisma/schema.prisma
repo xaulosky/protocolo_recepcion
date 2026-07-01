@@ -56,6 +56,7 @@ model User {
   quotes            Quote[]            @relation("QuoteCreador")
   giftCards         GiftCard[]         @relation("GiftCardCreador")
   reembolsos        SolicitudReembolso[] @relation("ReembolsoCreador")
+  pagosProfCreados  PagoProfesional[]  @relation("PagoProfCreador")
   inventarioItems       InventarioItem[]       @relation("InventarioCreadoPor")
   inventarioMovimientos InventarioMovimiento[] @relation("InventarioMovUsuario")
   // Si el usuario es una estación Box, su buzón privado con Recepción.
@@ -244,6 +245,14 @@ enum ReembolsoEstado {
   RECHAZADO
 }
 
+// Estado de un pago de honorarios a un profesional.
+enum PagoEstado {
+  PAGADO
+  PENDIENTE_PAGO
+  PENDIENTE_FACTURA
+  PENDIENTE_BOLETA
+}
+
 // Presupuesto generado en la sección Comercial (no vinculado a cirugía).
 model Quote {
   id          String   @id @default(cuid())
@@ -305,6 +314,26 @@ model SolicitudReembolso {
   @@index([estado])
   @@index([urgente])
   @@index([createdAt])
+}
+
+// Pago de honorarios a un profesional. Registro central: varios por profesional/mes.
+model PagoProfesional {
+  id             String       @id @default(cuid())
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  professionalId String
+  periodo        String       // mes al que pertenece, formato "YYYY-MM"
+  monto          Int          @default(0) // CLP
+  estado         PagoEstado   @default(PENDIENTE_PAGO)
+  fechaPago      DateTime?    // cuándo se pagó efectivamente
+  notas          String?
+  creadoPor      User?        @relation("PagoProfCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([professionalId])
+  @@index([periodo])
+  @@index([estado])
 }
 
 // ───────────────────────────── Chat interno ─────────────────────────────
@@ -420,6 +449,7 @@ model Professional {
   usuarios     User[]
   cirugias     Cirugia[]
   inventarioMovimientos InventarioMovimiento[] @relation("InventarioMovProfesional")
+  pagos        PagoProfesional[]
 
   @@index([especialidad])
 }
