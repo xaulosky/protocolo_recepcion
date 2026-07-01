@@ -382,7 +382,11 @@ function KanbanCard({ t, isDragging, isSelected, onDragStart, onDragEnd, onMover
         <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 4, background: 'var(--primary-soft)', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130 }}>{t.tipo}</span>
         <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 4, background: prio.bg, color: prio.color }}>{PRIORIDAD_LABEL[t.prioridad]}</span>
       </div>
-      <p style={{ fontSize: 12.5, color: 'var(--text)', lineHeight: 1.45, marginBottom: 8 }}>{t.descripcion}</p>
+      <p style={{
+        fontSize: 12.5, color: 'var(--text)', lineHeight: 1.45, marginBottom: 8,
+        display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
+        overflow: 'hidden', wordBreak: 'break-word',
+      }}>{t.descripcion}</p>
       {t.paciente && (
         <div style={{ fontSize: 11, color: 'var(--muted-2)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
           <Icon name="user" size={11} /> {t.paciente}
