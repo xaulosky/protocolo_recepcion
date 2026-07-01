@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { api } from '../../lib/api';
 import { Icon } from '../../lib/icons';
 import { useCopy } from '../../store/app-context';
@@ -56,7 +57,9 @@ function DetalleModal({ id, onClose }: { id: string; onClose: () => void }) {
     display: 'flex', alignItems: 'center', gap: 6,
   });
 
-  return (
+  // Portal a document.body: el overlay `position: fixed` cubre toda la pantalla
+  // sin quedar atrapado por el `transform` de un ancestro (.fade-up de la página).
+  return createPortal((
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 14, padding: 0, width: '100%', maxWidth: 600, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}>
 
@@ -123,7 +126,7 @@ function DetalleModal({ id, onClose }: { id: string; onClose: () => void }) {
         </div>
       </div>
     </div>
-  );
+  ), document.body);
 }
 
 function ConsentRow({ c, copy }: { c: SignedConsent; copy: (text: string, msg?: string) => void }) {

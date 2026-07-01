@@ -92,7 +92,10 @@ button { cursor: pointer; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #D5CDC4; border-radius: 3px; }
 
-@keyframes fadeUp { from { transform: translateY(7px); opacity: .6; } to { transform: translateY(0); opacity: 1; } }
+/* El estado final usa `transform: none` (no `translateY(0)`): con animation-fill-mode
+   `both`, un `translateY(0)` persistente convierte a `.fade-up` en bloque contenedor y
+   rompe el `position: fixed` de los modales anidados. `none` evita ese atrapamiento. */
+@keyframes fadeUp { from { transform: translateY(7px); opacity: .6; } to { transform: none; opacity: 1; } }
 @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
 .fade-up { animation: fadeUp .3s ease both; }
 
