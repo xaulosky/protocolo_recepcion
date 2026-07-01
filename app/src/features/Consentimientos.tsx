@@ -7,6 +7,7 @@ import { Icon } from '../lib/icons';
 import type { Consent, SignedConsent, SignedConsentDetail } from '../lib/types';
 import { cuidadosPostData } from '../data/cuidadosData';
 import type { CuidadoPost } from '../data/cuidadosData';
+import { CONTRATO_TITULO, CONTRATO_INTRO, CONTRATO_CLAUSULAS, contratoServiciosHtml } from '../data/contratoServicios';
 
 // ── Datos del paciente que se llenan antes de imprimir/enviar ──
 
@@ -142,18 +143,7 @@ function buildPrintHtml(c: Consent, f: FillData, origin: string, firma?: FirmaPr
     ${section('Cuidados post-procedimiento', c.cuidados)}
   ` : ''}
 
-  <div style="margin-top:18px;padding:14px 16px;border:1px solid #ccc;border-radius:6px;background:#f9f9f9;page-break-inside:avoid;">
-    <h3 style="margin:0 0 8px;font-size:9.5px;font-family:Arial,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#111;border-bottom:1px solid #ddd;padding-bottom:5px;">Contrato de Prestación de Servicios Médicos, Estéticos y Ambulatorios de Salud</h3>
-    <p style="font-size:11px;margin:0 0 7px;color:#333;line-height:1.6;text-align:justify;">Estimado/a Usuario/a: El presente documento constituye un Contrato de Prestación de Servicios entre el paciente y Clínica Cialo, el cual regula las condiciones bajo las cuales se otorgarán los servicios médicos, estéticos y ambulatorios de salud. La firma de este contrato implica la aceptación expresa de todas las cláusulas aquí establecidas. En el caso de pacientes menores de edad, se entenderá que uno de sus padres o tutor legal actuará como representante, autorizando los tratamientos correspondientes. El paciente declara que este contrato ha sido revisado previamente, que ha tenido la oportunidad de realizar todas las consultas necesarias y que firma de manera informada, consciente y voluntaria, comprendiendo cada uno de los puntos expuestos.</p>
-    <p style="font-size:11px;margin:3px 0;color:#333;line-height:1.6;text-align:justify;"><strong>1.A)</strong> Ningún plan, servicio individual o abono dará derecho a cambio de tratamiento una vez realizado el pago, si las modificaciones, cancelaciones o reprogramaciones no se efectúan con al menos 24 horas de anticipación, a través de los canales oficiales de la clínica. La inasistencia sin aviso previo se considerará como sesión realizada. <strong>No se realizan devoluciones de dinero.</strong></p>
-    <p style="font-size:11px;margin:3px 0;color:#333;line-height:1.6;text-align:justify;"><strong>1.B)</strong> Cualquier reclamo relacionado con pagos deberá ser informado directamente en recepción y posteriormente formalizado mediante una solicitud escrita enviada al correo electrónico: contacto@cialo.cl, para su revisión por parte de la administración de la clínica.</p>
-    <p style="font-size:11px;margin:3px 0;color:#333;line-height:1.6;text-align:justify;"><strong>1.C.1)</strong> El paciente entiende y acepta que los resultados de los tratamientos pueden variar entre individuos, y reconoce que es imposible predecir la respuesta específica de su organismo, así como el número exacto de sesiones necesarias. Todos los tratamientos ofrecidos son complementarios, y su efectividad dependerá del cumplimiento de las sesiones, la dieta, las recomendaciones y los cuidados indicados por el profesional tratante. Ningún tratamiento es garantizado al 100%, ya que cada paciente puede reaccionar de manera distinta. Por lo anterior, algunos tratamientos pueden requerir ser complementados con otros procedimientos, modificados o incluso suspendidos, según criterio del profesional clínico.</p>
-    <p style="font-size:11px;margin:3px 0;color:#333;line-height:1.6;text-align:justify;"><strong>1.C.2)</strong> El procedimiento puede requerir sesiones adicionales a las recomendadas en la evaluación inicial, debido a la respuesta individual del paciente, con el fin de alcanzar el resultado esperado.</p>
-    <p style="font-size:11px;margin:3px 0;color:#333;line-height:1.6;text-align:justify;"><strong>1.D)</strong> El tratamiento comenzará a contar desde el agendamiento de la primera cita correspondiente al plan o servicio individual. Una vez iniciado, tendrá una vigencia de 10 meses para su realización. Los servicios individuales tendrán una vigencia de 6 meses para su realización. El paciente se compromete a ser puntual en la asistencia a cada sesión agendada.</p>
-    <p style="font-size:11px;margin:3px 0;color:#333;line-height:1.6;text-align:justify;"><strong>1.E)</strong> El tratamiento vencerá y el paciente perderá automáticamente el derecho a continuar con este si no asiste a la clínica por un período superior a 90 días consecutivos desde la última sesión realizada.</p>
-    <p style="font-size:11px;margin:3px 0;color:#333;line-height:1.6;text-align:justify;"><strong>1.F)</strong> Los tratamientos son realizados por el equipo interdisciplinario de Clínica Cialo, sin exclusividad de un profesional específico. Todos los profesionales asignados estarán debidamente capacitados para ejecutar el tratamiento correspondiente.</p>
-    <p style="font-size:11px;margin:3px 0;color:#333;line-height:1.6;text-align:justify;"><strong>1.G)</strong> Una vez leído el presente contrato, el paciente declara que ha comprendido su contenido, que le fue debidamente informado el procedimiento y tratamiento a realizar, y que acepta todas las condiciones aquí establecidas.</p>
-  </div>
+  ${contratoServiciosHtml()}
 
   <div class="foto">
     <div class="foto-label">Registro Fotográfico</div>
@@ -394,28 +384,18 @@ function FillModal({ consent, onClose, onCreated }: { consent: Consent; onClose:
 // ── Contrato de prestación de servicios (aparece en todos los consentimientos) ──
 
 function ContratoServiciosBox() {
-  const clauses: [string, string | React.ReactNode][] = [
-    ['1.A)', <span>Ningún plan, servicio individual o abono dará derecho a cambio de tratamiento una vez realizado el pago, si las modificaciones, cancelaciones o reprogramaciones no se efectúan con al menos 24 horas de anticipación, a través de los canales oficiales de la clínica. La inasistencia sin aviso previo se considerará como sesión realizada. <strong>No se realizan devoluciones de dinero.</strong></span>],
-    ['1.B)', 'Cualquier reclamo relacionado con pagos deberá ser informado directamente en recepción y posteriormente formalizado mediante una solicitud escrita enviada al correo electrónico: contacto@cialo.cl, para su revisión por parte de la administración de la clínica.'],
-    ['1.C.1)', 'El paciente entiende y acepta que los resultados de los tratamientos pueden variar entre individuos, y reconoce que es imposible predecir la respuesta específica de su organismo, así como el número exacto de sesiones necesarias. Todos los tratamientos ofrecidos son complementarios, y su efectividad dependerá del cumplimiento de las sesiones, la dieta, las recomendaciones y los cuidados indicados por el profesional tratante. Ningún tratamiento es garantizado al 100%, ya que cada paciente puede reaccionar de manera distinta. Por lo anterior, algunos tratamientos pueden requerir ser complementados con otros procedimientos, modificados o incluso suspendidos, según criterio del profesional clínico.'],
-    ['1.C.2)', 'El procedimiento puede requerir sesiones adicionales a las recomendadas en la evaluación inicial, debido a la respuesta individual del paciente, con el fin de alcanzar el resultado esperado.'],
-    ['1.D)', 'El tratamiento comenzará a contar desde el agendamiento de la primera cita correspondiente al plan o servicio individual. Una vez iniciado, tendrá una vigencia de 10 meses para su realización. Los servicios individuales tendrán una vigencia de 6 meses para su realización. El paciente se compromete a ser puntual en la asistencia a cada sesión agendada.'],
-    ['1.E)', 'El tratamiento vencerá y el paciente perderá automáticamente el derecho a continuar con este si no asiste a la clínica por un período superior a 90 días consecutivos desde la última sesión realizada.'],
-    ['1.F)', 'Los tratamientos son realizados por el equipo interdisciplinario de Clínica Cialo, sin exclusividad de un profesional específico. Todos los profesionales asignados estarán debidamente capacitados para ejecutar el tratamiento correspondiente.'],
-    ['1.G)', 'Una vez leído el presente contrato, el paciente declara que ha comprendido su contenido, que le fue debidamente informado el procedimiento y tratamiento a realizar, y que acepta todas las condiciones aquí establecidas.'],
-  ];
   return (
     <div style={{ background: 'var(--surface-soft)', border: '1px solid var(--border)', borderRadius: 8, padding: '14px 16px', marginBottom: 14 }}>
       <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 8 }}>
-        Contrato de Prestación de Servicios Médicos, Estéticos y Ambulatorios de Salud
+        {CONTRATO_TITULO}
       </div>
       <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 8 }}>
-        Estimado/a Usuario/a: El presente documento constituye un Contrato de Prestación de Servicios entre el paciente y Clínica Cialo, el cual regula las condiciones bajo las cuales se otorgarán los servicios médicos, estéticos y ambulatorios de salud. La firma de este contrato implica la aceptación expresa de todas las cláusulas aquí establecidas. En el caso de pacientes menores de edad, se entenderá que uno de sus padres o tutor legal actuará como representante. El paciente declara que firma de manera informada, consciente y voluntaria, comprendiendo cada uno de los puntos expuestos.
+        {CONTRATO_INTRO}
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-        {clauses.map(([key, val]) => (
-          <div key={key} style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>
-            <strong style={{ color: 'var(--text)' }}>{key}</strong> {val}
+        {CONTRATO_CLAUSULAS.map((c) => (
+          <div key={c.id} style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>
+            <strong style={{ color: 'var(--text)' }}>{c.id}</strong> {c.texto}
           </div>
         ))}
       </div>

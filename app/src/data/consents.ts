@@ -297,25 +297,6 @@ export const consentimientosData = [
         liberacionResponsabilidad: 'Libero de responsabilidad a la Matrona Stefania Kuncar Ferrón y a su equipo frente a complicaciones derivadas del incumplimiento de las indicaciones post procedimiento o de condiciones personales no declaradas.'
     },
     {
-        id: 'contrato-servicios',
-        title: 'CONTRATO DE PRESTACIÓN DE SERVICIOS MÉDICOS, ESTÉTICOS Y AMBULATORIOS DE SALUD',
-        treatment: 'Servicios Clínica Cialo',
-        introduction: 'El presente documento constituye un Contrato de Prestación de Servicios entre el paciente y Clínica Cialo, el cual regula las condiciones bajo las cuales se otorgarán los servicios médicos, estéticos y ambulatorios de salud. La firma de este contrato implica la aceptación expresa de todas las cláusulas aquí establecidas. En el caso de pacientes menores de edad, se entenderá que uno de sus padres o tutor legal actuará como representante, autorizando los tratamientos correspondientes. El paciente declara que este contrato ha sido revisado previamente, que ha tenido la oportunidad de realizar todas las consultas necesarias y que firma de manera informada, consciente y voluntaria, comprendiendo cada uno de los puntos expuestos.',
-        beneficios: [],
-        efectosSecundarios: [],
-        contraindicaciones: [],
-        cuidados: [
-            '1.A) Ningún plan, servicio individual o abono dará derecho a cambio de tratamiento una vez realizado el pago, si las modificaciones, cancelaciones o reprogramaciones no se efectúan con al menos 24 horas de anticipación, a través de los canales oficiales de la clínica. La inasistencia sin aviso previo se considerará como sesión realizada. No se realizan devoluciones de dinero.',
-            '1.B) Cualquier reclamo relacionado con pagos deberá ser informado directamente en recepción y posteriormente formalizado mediante una solicitud escrita enviada al correo electrónico contacto@cialo.cl, para su revisión por parte de la administración de la clínica.',
-            '1.C.1) El paciente entiende y acepta que los resultados de los tratamientos pueden variar entre individuos, y reconoce que es imposible predecir la respuesta específica de su organismo, así como el número exacto de sesiones necesarias. Todos los tratamientos ofrecidos son complementarios, y su efectividad dependerá del cumplimiento de las sesiones, la dieta, las recomendaciones y los cuidados indicados por el profesional tratante. Ningún tratamiento es garantizado al 100%. Algunos tratamientos pueden requerir ser complementados con otros procedimientos, modificados o incluso suspendidos, según criterio del profesional clínico.',
-            '1.C.2) El procedimiento puede requerir sesiones adicionales a las recomendadas en la evaluación inicial, debido a la respuesta individual del paciente, con el fin de alcanzar el resultado esperado.',
-            '1.D) El tratamiento comenzará a contar desde el agendamiento de la primera cita correspondiente al plan o servicio. Una vez iniciado, tendrá una vigencia de 10 meses para su realización. Los servicios individuales tendrán una vigencia de 6 meses. El paciente se compromete a ser puntual en la asistencia a cada sesión agendada.',
-            '1.E) El tratamiento vencerá y el paciente perderá automáticamente el derecho a continuar con este si no asiste a la clínica por un período superior a 90 días consecutivos desde la última sesión realizada.',
-            '1.F) Los tratamientos son realizados por el equipo interdisciplinario de Clínica Cialo, sin exclusividad de un profesional específico. Todos los profesionales asignados estarán debidamente capacitados para ejecutar el tratamiento correspondiente.',
-            '1.G) Una vez leído el presente contrato, el paciente declara que ha comprendido su contenido, que le fue debidamente informado el procedimiento y tratamiento a realizar, y que acepta todas las condiciones aquí establecidas.',
-        ],
-    },
-    {
         id: 'laser-drug-delivery-vulvar',
         title: 'CONSENTIMIENTO INFORMADO – LÁSER DRUG DELIVERY Y/O PEELING PARA HIPOPIGMENTACIÓN VULVAR',
         treatment: 'Láser Drug Delivery y/o Peeling para Hipopigmentación Vulvar',

@@ -18,6 +18,7 @@ import { Protocolos } from './features/Protocolos';
 import { Guiones } from './features/Guiones';
 import { Pagos } from './features/Pagos';
 import { Suspensiones } from './features/Suspensiones';
+import { Pacientes } from './features/pacientes/Pacientes';
 import { Tratamientos } from './features/Tratamientos';
 import { Profesionales } from './features/Profesionales';
 import { Consultas } from './features/Consultas';
@@ -44,6 +45,7 @@ const VIEWS: Record<ViewId, ComponentType> = {
   guiones: Guiones,
   pagos: Pagos,
   suspensiones: Suspensiones,
+  pacientes: Pacientes,
   tratamientos: Tratamientos,
   profesionales: Profesionales,
   consultas: Consultas,

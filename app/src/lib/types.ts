@@ -142,6 +142,32 @@ export interface SignedConsentDetail extends SignedConsent {
   firmaUserAgent?: string | null;
 }
 
+// ── Pacientes (vista consolidada, agrupada por RUT desde consentimientos) ──
+
+export interface PacienteResumen {
+  id: string;        // RUT normalizado (clave de agrupación y de la URL de detalle)
+  rut: string;       // RUT tal como se registró
+  nombre: string;
+  telefono: string | null;
+  email: string | null;
+  total: number;
+  firmados: number;
+  pendientes: number;
+  anulados: number;
+  ultimaActividad: string;
+}
+
+export interface PacienteDetalle {
+  paciente: {
+    id: string;
+    rut: string;
+    nombre: string;
+    telefono: string | null;
+    email: string | null;
+  };
+  consentimientos: SignedConsent[];
+}
+
 /** Vista pública (paciente) cargada desde /firma/:token. */
 export interface FirmaPublicData {
   titulo: string;

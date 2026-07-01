@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Icon } from '../../lib/icons';
 import type { FirmaPublicData } from '../../lib/types';
+import { CONTRATO_TITULO, CONTRATO_INTRO, CONTRATO_CLAUSULAS } from '../../data/contratoServicios';
 
 // Cliente público: sin tokens de sesión, va directo a las rutas /firma.
 const API = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:4000';
@@ -184,7 +185,10 @@ export function FirmaPublica() {
     s.beneficios.length         ? { titulo: 'Beneficios esperados',          texto: '', items: s.beneficios,         color: 'green'   } : null,
     s.efectosSecundarios.length ? { titulo: 'Posibles efectos y riesgos',    texto: '', items: s.efectosSecundarios, color: 'orange'  } : null,
     s.contraindicaciones.length ? { titulo: 'Contraindicaciones',            texto: '', items: s.contraindicaciones, color: 'red'     } : null,
-    s.cuidados.length           ? { titulo: s.beneficios.length + s.efectosSecundarios.length + s.contraindicaciones.length === 0 ? 'Términos del contrato' : 'Cuidados post-procedimiento', texto: '', items: s.cuidados, color: 'primary' } : null,
+    s.cuidados.length           ? { titulo: 'Cuidados post-procedimiento',   texto: '', items: s.cuidados,           color: 'primary' } : null,
+    // Contrato de prestación de servicios — se muestra en todos los consentimientos
+    // para que el paciente lo lea y lo acepte al firmar.
+    { titulo: CONTRATO_TITULO, texto: CONTRATO_INTRO, items: CONTRATO_CLAUSULAS.map((c) => `${c.id} ${c.texto}`), color: 'primary' },
   ].filter(Boolean) as { titulo: string; texto: string; items: string[] | null; color: string }[];
 
   const TOTAL = 1 + infoSteps.length + 2; // portada + info + foto + firma

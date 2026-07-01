@@ -15,6 +15,7 @@ import { quotesRoutes } from './modules/quotes/quotes.routes.ts';
 import { giftcardsRoutes } from './modules/giftcards/giftcards.routes.ts';
 import { reembolsosRoutes } from './modules/reembolsos/reembolsos.routes.ts';
 import { inventarioRoutes } from './modules/inventario/inventario.routes.ts';
+import { pacientesRoutes } from './modules/pacientes/pacientes.routes.ts';
 
 const app = Fastify({
   logger: { transport: env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined },
@@ -41,6 +42,7 @@ await app.register(quotesRoutes, { prefix: '/quotes' });
 await app.register(giftcardsRoutes, { prefix: '/gift-cards' });
 await app.register(reembolsosRoutes, { prefix: '/reembolsos' });
 await app.register(inventarioRoutes, { prefix: '/inventario' });
+await app.register(pacientesRoutes, { prefix: '/pacientes' });
 
 try {
   // En producción la API vive detrás de nginx: solo localhost. En dev, accesible en la red.

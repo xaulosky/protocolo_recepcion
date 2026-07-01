@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CONTRATO_TITULO, CONTRATO_INTRO, CONTRATO_CLAUSULAS } from '../../data/contratoServicios';
 
 const API = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:4000';
 
@@ -133,6 +134,19 @@ function DocumentoConsentimiento({ d }: { d: PrintData }) {
           <SeccionLista titulo="Cuidados post-procedimiento" items={s.cuidados} />
         </>
       )}
+
+      {/* Contrato de prestación de servicios */}
+      <div style={{ margin: '14px 0', paddingTop: 14, borderTop: '1px solid #ddd', pageBreakInside: 'avoid' }}>
+        <h3 style={{ fontSize: 8.5, fontFamily: 'Arial, sans-serif', letterSpacing: 1.5, textTransform: 'uppercase', color: '#111', margin: '0 0 6px', paddingBottom: 4, borderBottom: '1px solid #e0e0e0' }}>
+          {CONTRATO_TITULO}
+        </h3>
+        <p style={{ fontSize: 11.5, lineHeight: 1.6, textAlign: 'justify', margin: '0 0 6px', color: '#333' }}>{CONTRATO_INTRO}</p>
+        {CONTRATO_CLAUSULAS.map((c) => (
+          <p key={c.id} style={{ fontSize: 11.5, lineHeight: 1.6, textAlign: 'justify', margin: '4px 0', color: '#333' }}>
+            <strong>{c.id}</strong> {c.texto}
+          </p>
+        ))}
+      </div>
 
       {/* Registro fotográfico */}
       <div style={{ margin: '14px 0', paddingTop: 14, borderTop: '1px solid #ddd' }}>
