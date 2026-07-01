@@ -3,15 +3,19 @@ import { z } from 'zod';
 import { prisma as db } from '../../db.ts';
 
 const createSchema = z.object({
-  paciente:  z.string().min(1),
-  rut:       z.string().optional().nullable(),
-  telefono:  z.string().optional().nullable(),
-  fechaPago: z.string().optional().nullable(),
-  monto:     z.string().optional().nullable(),
-  motivo:    z.string().min(1),
-  banco:     z.string().optional().nullable(),
-  cuenta:    z.string().optional().nullable(),
-  urgente:   z.boolean().default(false),
+  paciente:       z.string().min(1),
+  rut:            z.string().optional().nullable(),
+  telefono:       z.string().optional().nullable(),
+  email:          z.string().optional().nullable(),
+  fechaPago:      z.string().optional().nullable(),
+  fechaSolicitud: z.string().optional().nullable(),
+  monto:          z.string().optional().nullable(),
+  motivo:         z.string().min(1),
+  banco:          z.string().optional().nullable(),
+  tipoCuenta:     z.string().optional().nullable(),
+  cuenta:         z.string().optional().nullable(),
+  titular:        z.string().optional().nullable(),
+  urgente:        z.boolean().default(false),
 });
 
 const updateSchema = z.object({
@@ -49,14 +53,18 @@ export const reembolsosRoutes: FastifyPluginAsync = async (app) => {
     // Crear tarea con todos los datos del reembolso
     const detalles = [
       `Paciente: ${body.paciente}`,
-      body.rut       ? `RUT: ${body.rut}`                  : null,
-      body.telefono  ? `Teléfono: ${body.telefono}`        : null,
-      body.fechaPago ? `Fecha de pago: ${body.fechaPago}`  : null,
-      body.monto     ? `Monto: ${body.monto}`              : null,
+      body.rut            ? `RUT: ${body.rut}`                          : null,
+      body.telefono       ? `Teléfono: ${body.telefono}`                : null,
+      body.email          ? `Correo: ${body.email}`                     : null,
+      body.fechaSolicitud ? `Fecha solicitud: ${body.fechaSolicitud}`   : null,
+      body.fechaPago      ? `Fecha de pago: ${body.fechaPago}`          : null,
+      body.monto          ? `Monto: ${body.monto}`                      : null,
       `Motivo: ${body.motivo}`,
-      body.banco     ? `Banco: ${body.banco}`              : null,
-      body.cuenta    ? `N° cuenta: ${body.cuenta}`         : null,
-      body.urgente   ? `URGENTE`                           : null,
+      body.banco          ? `Banco: ${body.banco}`                      : null,
+      body.tipoCuenta     ? `Tipo cuenta: ${body.tipoCuenta}`           : null,
+      body.cuenta         ? `N° cuenta: ${body.cuenta}`                 : null,
+      body.titular        ? `Titular: ${body.titular}`                  : null,
+      body.urgente        ? `URGENTE`                                   : null,
     ].filter(Boolean).join('\n');
 
     try {

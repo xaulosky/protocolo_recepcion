@@ -301,11 +301,15 @@ model SolicitudReembolso {
   fechaPago   String?         // texto libre para flexibilidad (ej. "12/06/2026")
   monto       String?         // texto libre (ej. "$150.000")
   motivo      String
-  banco       String?
-  cuenta      String?
-  urgente     Boolean         @default(false)
-  estado      ReembolsoEstado @default(PENDIENTE)
-  notas       String?         // notas internas del equipo
+  email           String?
+  banco           String?
+  tipoCuenta      String?         // "Corriente" | "Vista / RUT" | "Ahorro" | "Empresa"
+  cuenta          String?
+  titular         String?         // nombre titular si difiere del paciente
+  urgente         Boolean         @default(false)
+  fechaSolicitud  String?         // cuándo el paciente hizo la solicitud (texto libre)
+  estado          ReembolsoEstado @default(PENDIENTE)
+  notas           String?         // notas internas del equipo
   creadoPor   User?           @relation("ReembolsoCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
   creadoPorId String?
   createdAt   DateTime        @default(now())

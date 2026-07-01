@@ -295,11 +295,15 @@ export interface SolicitudReembolso {
   paciente: string;
   rut: string | null;
   telefono: string | null;
+  email: string | null;
   fechaPago: string | null;
+  fechaSolicitud: string | null;
   monto: string | null;
   motivo: string;
   banco: string | null;
+  tipoCuenta: string | null;
   cuenta: string | null;
+  titular: string | null;
   urgente: boolean;
   estado: ReembolsoEstado;
   notas: string | null;

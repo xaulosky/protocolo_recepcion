@@ -22,8 +22,11 @@ const ESTADO_STYLE: Record<ReembolsoEstado, { bg: string; color: string }> = {
   RECHAZADO:   { bg: '#FBF0EB', color: '#C04040' },
 };
 
+const TIPO_CUENTA_OPTS = ['Corriente', 'Vista / RUT', 'Ahorro', 'Empresa'];
+
 const EMPTY_FORM = {
-  paciente: '', rut: '', tel: '', fecha: '', monto: '', motivo: '', banco: '', cuenta: '', urgente: false,
+  paciente: '', rut: '', tel: '', email: '', fechaSolicitud: '', fecha: '',
+  monto: '', motivo: '', banco: '', tipoCuenta: '', cuenta: '', titular: '', urgente: false,
 };
 
 export function Reembolso() {
@@ -78,15 +81,19 @@ export function Reembolso() {
     setSaving(true);
     try {
       await api.post('/reembolsos', {
-        paciente: form.paciente.trim(),
-        rut: form.rut.trim() || null,
-        telefono: form.tel.trim() || null,
-        fechaPago: form.fecha || null,
-        monto: form.monto.trim() || null,
-        motivo: form.motivo.trim(),
-        banco: form.banco.trim() || null,
-        cuenta: form.cuenta.trim() || null,
-        urgente: form.urgente,
+        paciente:       form.paciente.trim(),
+        rut:            form.rut.trim() || null,
+        telefono:       form.tel.trim() || null,
+        email:          form.email.trim() || null,
+        fechaSolicitud: form.fechaSolicitud || null,
+        fechaPago:      form.fecha || null,
+        monto:          form.monto.trim() || null,
+        motivo:         form.motivo.trim(),
+        banco:          form.banco.trim() || null,
+        tipoCuenta:     form.tipoCuenta || null,
+        cuenta:         form.cuenta.trim() || null,
+        titular:        form.titular.trim() || null,
+        urgente:        form.urgente,
       });
       toast('Solicitud registrada en el sistema');
       setForm(EMPTY_FORM);
@@ -100,14 +107,23 @@ export function Reembolso() {
 
   const enviarCorreo = () => {
     const sub = encodeURIComponent('Solicitud de Reembolso – Clínica Cialo');
-    const body = encodeURIComponent(
-      `Estimado equipo,\n\nAdjunto los datos de la solicitud de reembolso.\n\n` +
-      `Paciente: ${form.paciente}\nRUT: ${form.rut}\nTeléfono: ${form.tel}\n` +
-      `Fecha del pago: ${form.fecha}\nMonto: ${form.monto}\nMotivo: ${form.motivo}\n` +
-      `Banco: ${form.banco}\nCuenta: ${form.cuenta}\n` +
-      `${form.urgente ? '\n** URGENTE **' : ''}`,
-    );
-    window.open(`mailto:contacto@cialo.cl?subject=${sub}&body=${body}`, '_blank');
+    const lines = [
+      'Estimado equipo,\n\nAdjunto los datos de la solicitud de reembolso.\n',
+      `Paciente: ${form.paciente}`,
+      form.rut            ? `RUT: ${form.rut}`                         : null,
+      form.tel            ? `Teléfono: ${form.tel}`                    : null,
+      form.email          ? `Correo: ${form.email}`                    : null,
+      form.fechaSolicitud ? `Fecha de solicitud: ${form.fechaSolicitud}`: null,
+      form.fecha          ? `Fecha del pago original: ${form.fecha}`   : null,
+      form.monto          ? `Monto a reembolsar: ${form.monto}`        : null,
+      `Motivo: ${form.motivo}`,
+      form.banco          ? `Banco: ${form.banco}`                     : null,
+      form.tipoCuenta     ? `Tipo de cuenta: ${form.tipoCuenta}`       : null,
+      form.cuenta         ? `N° cuenta: ${form.cuenta}`                : null,
+      form.titular        ? `Titular: ${form.titular}`                 : null,
+      form.urgente        ? '\n** URGENTE **'                          : null,
+    ].filter(Boolean).join('\n');
+    window.open(`mailto:contacto@cialo.cl?subject=${encodeURIComponent('Solicitud de Reembolso – Clínica Cialo')}&body=${encodeURIComponent(lines)}`, '_blank');
     toast('Abriendo cliente de correo...');
   };
 
@@ -145,17 +161,33 @@ export function Reembolso() {
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          {/* Datos del paciente */}
           <Field label="Nombre del paciente" value={form.paciente} onChange={set('paciente')} placeholder="Nombre completo" />
           <Field label="RUT" value={form.rut} onChange={set('rut')} placeholder="12.345.678-9" />
           <Field label="Teléfono" value={form.tel} onChange={set('tel')} placeholder="+56 9 XXXX XXXX" />
+          <Field label="Correo electrónico" value={form.email} onChange={set('email')} placeholder="correo@ejemplo.com" type="email" />
+          <Field label="Fecha de solicitud" type="date" value={form.fechaSolicitud} onChange={set('fechaSolicitud')} />
           <Field label="Fecha del pago original" type="date" value={form.fecha} onChange={set('fecha')} />
           <Field span label="Monto a reembolsar" value={form.monto} onChange={set('monto')} placeholder="$ 0" />
           <div style={{ gridColumn: '1/-1' }}>
             <label className="label">Motivo</label>
             <textarea className="textarea" rows={3} value={form.motivo} onChange={(e) => set('motivo')(e.target.value)} placeholder="Describe el motivo del reembolso..." />
           </div>
-          <Field label="Banco" value={form.banco} onChange={set('banco')} placeholder="Banco" />
+          {/* Datos bancarios */}
+          <Field label="Banco" value={form.banco} onChange={set('banco')} placeholder="Banco Estado, Santander…" />
+          <div>
+            <label className="label">Tipo de cuenta</label>
+            <select
+              className="input"
+              value={form.tipoCuenta}
+              onChange={(e) => set('tipoCuenta')(e.target.value)}
+            >
+              <option value="">Selecciona tipo</option>
+              {TIPO_CUENTA_OPTS.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
           <Field label="Número de cuenta" value={form.cuenta} onChange={set('cuenta')} placeholder="Número de cuenta" />
+          <Field label="Nombre del titular" value={form.titular} onChange={set('titular')} placeholder="Si difiere del paciente" />
           <div style={{ gridColumn: '1/-1' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
               <input type="checkbox" checked={form.urgente} onChange={(e) => set('urgente')(e.target.checked)} style={{ accentColor: 'var(--primary)', width: 14, height: 14 }} />
@@ -265,7 +297,17 @@ export function Reembolso() {
                       {r.monto && (
                         <div style={{ fontSize: 12, color: 'var(--text)', marginTop: 2, fontWeight: 500 }}>{r.monto}</div>
                       )}
-                      <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>{fmtDateTime(r.createdAt)}</div>
+                      {(r.banco || r.tipoCuenta || r.cuenta) && (
+                        <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 3 }}>
+                          {[r.banco, r.tipoCuenta, r.cuenta && `Cta: ${r.cuenta}`, r.titular && `Titular: ${r.titular}`].filter(Boolean).join(' · ')}
+                        </div>
+                      )}
+                      {r.email && (
+                        <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 2 }}>{r.email}</div>
+                      )}
+                      <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
+                        {r.fechaSolicitud ? `Solicitado: ${r.fechaSolicitud} · ` : ''}Registrado: {fmtDateTime(r.createdAt)}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
                       <span style={{ fontSize: 11.5, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: es.bg, color: es.color }}>
