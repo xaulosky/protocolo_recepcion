@@ -278,11 +278,12 @@ function KanbanView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggle
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => handleDrop(etapa)}
             style={{
-              minWidth: 225, flexShrink: 0, borderRadius: 10,
+              width: 230, minWidth: 230, maxWidth: 230, flexShrink: 0, borderRadius: 10,
               border: isOver && !sameCol ? '2px dashed var(--primary)' : '2px solid transparent',
               background: isOver && !sameCol ? 'var(--primary-soft)' : 'transparent',
               padding: isOver && !sameCol ? 6 : 0,
               transition: 'background .15s, border .15s, padding .15s',
+              overflow: 'hidden',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10, padding: '0 2px' }}>
