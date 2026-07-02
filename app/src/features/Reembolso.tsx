@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { api } from '../lib/api';
 import { useApp } from '../store/app-context';
 import { useAuth } from '../store/auth-context';
-import { fmtDateTime } from '../lib/format';
+import { fmtDateTime, clp } from '../lib/format';
 import { Icon } from '../lib/icons';
-import type { SolicitudReembolso, ReembolsoEstado } from '../lib/types';
+import { Modal } from '../components/Modal';
+import type { SolicitudReembolso, ReembolsoActividad, ReembolsoEstado } from '../lib/types';
 
 const ESTADOS: ReembolsoEstado[] = ['PENDIENTE', 'EN_REVISION', 'APROBADO', 'RECHAZADO'];
 
@@ -29,6 +30,12 @@ const EMPTY_FORM = {
   monto: '', motivo: '', banco: '', tipoCuenta: '', cuenta: '', titular: '', urgente: false,
 };
 
+const TIPO_ACTIVIDAD: Record<string, string> = {
+  CREACION: 'Solicitud creada',
+  ESTADO:   'Cambio de estado',
+  EDICION:  'Campos editados',
+};
+
 export function Reembolso() {
   const { toast } = useApp();
   const { user } = useAuth();
@@ -38,6 +45,8 @@ export function Reembolso() {
   const [busqueda, setBusqueda] = useState('');
   const [lista, setLista] = useState<SolicitudReembolso[]>([]);
   const [loadingLista, setLoadingLista] = useState(false);
+  const [resumen, setResumen] = useState<Record<ReembolsoEstado, number>>({ PENDIENTE: 0, EN_REVISION: 0, APROBADO: 0, RECHAZADO: 0 });
+  const [detalle, setDetalle] = useState<SolicitudReembolso | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const set = (k: keyof typeof form) => (v: string | boolean) =>
@@ -52,8 +61,9 @@ export function Reembolso() {
       if (filtro !== 'TODOS') params.set('estado', filtro);
       if (q?.trim()) params.set('q', q.trim());
       const qs = params.toString() ? `?${params.toString()}` : '';
-      const data = await api.get<{ reembolsos: SolicitudReembolso[] }>(`/reembolsos${qs}`);
+      const data = await api.get<{ reembolsos: SolicitudReembolso[]; resumen: Record<ReembolsoEstado, number> }>(`/reembolsos${qs}`);
       setLista(data.reembolsos ?? []);
+      if (data.resumen) setResumen(data.resumen);
     } catch {
       toast('Error al cargar historial');
     } finally {
@@ -130,6 +140,7 @@ export function Reembolso() {
     try {
       await api.patch(`/reembolsos/${id}`, { estado });
       setLista((prev) => prev.map((r) => r.id === id ? { ...r, estado } : r));
+      if (detalle?.id === id) setDetalle((d) => d ? { ...d, estado } : d);
     } catch {
       toast('Error al cambiar estado');
     }
@@ -140,11 +151,19 @@ export function Reembolso() {
     try {
       await api.del(`/reembolsos/${id}`);
       setLista((prev) => prev.filter((r) => r.id !== id));
+      if (detalle?.id === id) setDetalle(null);
       toast('Solicitud eliminada');
     } catch {
       toast('Error al eliminar');
     }
   };
+
+  // Total monto de la lista visible (parseo heurístico de texto libre)
+  const totalMonto = lista.reduce((acc, r) => {
+    const n = parseInt((r.monto ?? '').replace(/\D/g, ''), 10);
+    return acc + (isNaN(n) ? 0 : n);
+  }, 0);
+  const hayMontoImparseable = lista.some((r) => r.monto && isNaN(parseInt((r.monto ?? '').replace(/\D/g, ''), 10)));
 
   return (
     <div className="fade-up" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
@@ -160,7 +179,6 @@ export function Reembolso() {
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {/* Datos del paciente */}
           <Field label="Nombre del paciente" value={form.paciente} onChange={set('paciente')} placeholder="Nombre completo" />
           <Field label="RUT" value={form.rut} onChange={set('rut')} placeholder="12.345.678-9" />
           <Field label="Teléfono" value={form.tel} onChange={set('tel')} placeholder="+56 9 XXXX XXXX" />
@@ -172,15 +190,10 @@ export function Reembolso() {
             <label className="label">Motivo</label>
             <textarea className="textarea" rows={3} value={form.motivo} onChange={(e) => set('motivo')(e.target.value)} placeholder="Describe el motivo del reembolso..." />
           </div>
-          {/* Datos bancarios */}
           <Field label="Banco" value={form.banco} onChange={set('banco')} placeholder="Banco Estado, Santander…" />
           <div>
             <label className="label">Tipo de cuenta</label>
-            <select
-              className="input"
-              value={form.tipoCuenta}
-              onChange={(e) => set('tipoCuenta')(e.target.value)}
-            >
+            <select className="input" value={form.tipoCuenta} onChange={(e) => set('tipoCuenta')(e.target.value)}>
               <option value="">Selecciona tipo</option>
               {TIPO_CUENTA_OPTS.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -195,19 +208,10 @@ export function Reembolso() {
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 20 }}>
-          <button
-            className="btn btn-primary"
-            style={{ padding: 11, fontSize: 13.5 }}
-            onClick={registrar}
-            disabled={saving}
-          >
+          <button className="btn btn-primary" style={{ padding: 11, fontSize: 13.5 }} onClick={registrar} disabled={saving}>
             {saving ? 'Guardando...' : 'Registrar en sistema'}
           </button>
-          <button
-            className="btn btn-secondary"
-            style={{ padding: 11, fontSize: 13.5 }}
-            onClick={enviarCorreo}
-          >
+          <button className="btn btn-secondary" style={{ padding: 11, fontSize: 13.5 }} onClick={enviarCorreo}>
             Enviar por correo
           </button>
         </div>
@@ -225,7 +229,6 @@ export function Reembolso() {
           </div>
         </div>
 
-        {/* Search */}
         <input
           className="input"
           style={{ marginBottom: 10, fontSize: 12.5 }}
@@ -234,11 +237,12 @@ export function Reembolso() {
           onChange={(e) => setBusqueda(e.target.value)}
         />
 
-        {/* Filter chips */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+        {/* Filter chips with counters */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           {(['TODOS', ...ESTADOS] as const).map((e) => {
             const active = filtro === e;
             const style = e !== 'TODOS' ? ESTADO_STYLE[e as ReembolsoEstado] : null;
+            const count = e !== 'TODOS' ? resumen[e as ReembolsoEstado] : null;
             return (
               <button
                 key={e}
@@ -256,10 +260,20 @@ export function Reembolso() {
                 }}
               >
                 {e === 'TODOS' ? 'Todos' : ESTADO_LABEL[e as ReembolsoEstado]}
+                {count !== null && count > 0 && (
+                  <span style={{ marginLeft: 5, fontWeight: 700, opacity: 0.75 }}>{count}</span>
+                )}
               </button>
             );
           })}
         </div>
+
+        {/* Total monto visible */}
+        {lista.length > 0 && totalMonto > 0 && (
+          <div style={{ fontSize: 11.5, color: 'var(--muted)', marginBottom: 12 }}>
+            Total visible: ${clp(totalMonto)}{hayMontoImparseable ? ' aprox.' : ''}
+          </div>
+        )}
 
         {/* List */}
         {loadingLista ? (
@@ -273,12 +287,17 @@ export function Reembolso() {
               return (
                 <div
                   key={r.id}
+                  onClick={() => setDetalle(r)}
                   style={{
                     border: '1px solid var(--border-soft)',
                     borderRadius: 10,
                     padding: '12px 14px',
                     background: 'var(--surface)',
+                    cursor: 'pointer',
+                    transition: 'box-shadow 0.15s',
                   }}
+                  onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'none')}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                     <div style={{ minWidth: 0 }}>
@@ -296,19 +315,14 @@ export function Reembolso() {
                       {r.monto && (
                         <div style={{ fontSize: 12, color: 'var(--text)', marginTop: 2, fontWeight: 500 }}>{r.monto}</div>
                       )}
-                      {(r.banco || r.tipoCuenta || r.cuenta) && (
-                        <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 3 }}>
-                          {[r.banco, r.tipoCuenta, r.cuenta && `Cta: ${r.cuenta}`, r.titular && `Titular: ${r.titular}`].filter(Boolean).join(' · ')}
-                        </div>
-                      )}
-                      {r.email && (
-                        <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 2 }}>{r.email}</div>
-                      )}
                       <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>
                         {r.fechaSolicitud ? `Solicitado: ${r.fechaSolicitud} · ` : ''}Registrado: {fmtDateTime(r.createdAt)}
                       </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+                    <div
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <span style={{ fontSize: 11.5, fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: es.bg, color: es.color }}>
                         {ESTADO_LABEL[r.estado]}
                       </span>
@@ -317,13 +331,9 @@ export function Reembolso() {
                           value={r.estado}
                           onChange={(e) => cambiarEstado(r.id, e.target.value as ReembolsoEstado)}
                           style={{
-                            fontSize: 11.5,
-                            padding: '2px 6px',
-                            borderRadius: 6,
-                            border: '1px solid var(--border-soft)',
-                            background: 'var(--bg)',
-                            color: 'var(--text)',
-                            cursor: 'pointer',
+                            fontSize: 11.5, padding: '2px 6px', borderRadius: 6,
+                            border: '1px solid var(--border-soft)', background: 'var(--bg)',
+                            color: 'var(--text)', cursor: 'pointer',
                           }}
                         >
                           {ESTADOS.map((s) => (
@@ -342,22 +352,293 @@ export function Reembolso() {
                       )}
                     </div>
                   </div>
-                  {canManage && (
-                    <NotasEditor id={r.id} initial={r.notas ?? ''} onSave={(notas) => {
-                      setLista(prev => prev.map(x => x.id === r.id ? { ...x, notas } : x));
-                    }} />
-                  )}
-                  {!canManage && r.notas && (
-                    <div style={{ marginTop: 8, fontSize: 12, color: 'var(--muted)', background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
-                      {r.notas}
-                    </div>
-                  )}
+                  <div onClick={(e) => e.stopPropagation()}>
+                    {canManage && (
+                      <NotasEditor id={r.id} initial={r.notas ?? ''} onSave={(notas) => {
+                        setLista(prev => prev.map(x => x.id === r.id ? { ...x, notas } : x));
+                      }} />
+                    )}
+                    {!canManage && r.notas && (
+                      <div style={{ marginTop: 8, fontSize: 12, color: 'var(--muted)', background: 'var(--bg)', borderRadius: 6, padding: '6px 10px' }}>
+                        {r.notas}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Detail modal */}
+      <DetalleReembolsoModal
+        reembolso={detalle}
+        onClose={() => setDetalle(null)}
+        canManage={canManage}
+        onEstadoChange={cambiarEstado}
+        onEliminar={eliminar}
+        onUpdate={(updated) => {
+          setLista(prev => prev.map(r => r.id === updated.id ? { ...r, ...updated } : r));
+          setDetalle(d => d ? { ...d, ...updated } : d);
+        }}
+      />
+    </div>
+  );
+}
+
+// ── DetalleReembolsoModal ──────────────────────────────────────────────────
+
+interface DetalleProps {
+  reembolso: SolicitudReembolso | null;
+  onClose: () => void;
+  canManage: boolean;
+  onEstadoChange: (id: string, estado: ReembolsoEstado) => void;
+  onEliminar: (id: string) => void;
+  onUpdate: (updated: Partial<SolicitudReembolso> & { id: string }) => void;
+}
+
+function DetalleReembolsoModal({ reembolso, onClose, canManage, onEstadoChange, onEliminar, onUpdate }: DetalleProps) {
+  const { toast } = useApp();
+  const [actividad, setActividad] = useState<ReembolsoActividad[]>([]);
+  const [loadingAct, setLoadingAct] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editForm, setEditForm] = useState<{
+    paciente: string; rut: string; telefono: string; email: string;
+    fechaSolicitud: string; fechaPago: string; monto: string; motivo: string;
+    banco: string; tipoCuenta: string; cuenta: string; titular: string; urgente: boolean;
+  }>({
+    paciente: '', rut: '', telefono: '', email: '', fechaSolicitud: '',
+    fechaPago: '', monto: '', motivo: '', banco: '', tipoCuenta: '', cuenta: '', titular: '', urgente: false,
+  });
+
+  useEffect(() => {
+    if (!reembolso) { setActividad([]); setEditing(false); return; }
+    setEditing(false);
+    setEditForm({
+      paciente:       reembolso.paciente,
+      rut:            reembolso.rut ?? '',
+      telefono:       reembolso.telefono ?? '',
+      email:          reembolso.email ?? '',
+      fechaSolicitud: reembolso.fechaSolicitud ?? '',
+      fechaPago:      reembolso.fechaPago ?? '',
+      monto:          reembolso.monto ?? '',
+      motivo:         reembolso.motivo,
+      banco:          reembolso.banco ?? '',
+      tipoCuenta:     reembolso.tipoCuenta ?? '',
+      cuenta:         reembolso.cuenta ?? '',
+      titular:        reembolso.titular ?? '',
+      urgente:        reembolso.urgente,
+    });
+    setLoadingAct(true);
+    api.get<{ reembolso: SolicitudReembolso }>(`/reembolsos/${reembolso.id}`)
+      .then((d) => setActividad(d.reembolso.actividad ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingAct(false));
+  }, [reembolso?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const copiarDatos = () => {
+    if (!reembolso) return;
+    const lineas = [
+      `Titular: ${reembolso.titular || reembolso.paciente}`,
+      reembolso.rut      ? `RUT: ${reembolso.rut}`             : null,
+      reembolso.banco    ? `Banco: ${reembolso.banco}`         : null,
+      reembolso.tipoCuenta ? `Tipo: ${reembolso.tipoCuenta}`  : null,
+      reembolso.cuenta   ? `N° cuenta: ${reembolso.cuenta}`   : null,
+      reembolso.email    ? `Correo: ${reembolso.email}`        : null,
+      reembolso.monto    ? `Monto: ${reembolso.monto}`         : null,
+    ].filter(Boolean).join('\n');
+    navigator.clipboard.writeText(lineas).then(() => toast('Datos de transferencia copiados'));
+  };
+
+  const guardarEdicion = async () => {
+    if (!reembolso) return;
+    setSaving(true);
+    try {
+      const payload = {
+        paciente:       editForm.paciente.trim() || undefined,
+        rut:            editForm.rut.trim() || null,
+        telefono:       editForm.telefono.trim() || null,
+        email:          editForm.email.trim() || null,
+        fechaSolicitud: editForm.fechaSolicitud || null,
+        fechaPago:      editForm.fechaPago || null,
+        monto:          editForm.monto.trim() || null,
+        motivo:         editForm.motivo.trim() || undefined,
+        banco:          editForm.banco.trim() || null,
+        tipoCuenta:     editForm.tipoCuenta || null,
+        cuenta:         editForm.cuenta.trim() || null,
+        titular:        editForm.titular.trim() || null,
+        urgente:        editForm.urgente,
+      };
+      const data = await api.patch<{ reembolso: SolicitudReembolso }>(`/reembolsos/${reembolso.id}`, payload);
+      onUpdate(data.reembolso);
+      setEditing(false);
+      toast('Cambios guardados');
+      // Refrescar actividad
+      const d = await api.get<{ reembolso: SolicitudReembolso }>(`/reembolsos/${reembolso.id}`);
+      setActividad(d.reembolso.actividad ?? []);
+    } catch {
+      toast('Error al guardar cambios');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!reembolso) return null;
+  const es = ESTADO_STYLE[reembolso.estado];
+
+  return (
+    <Modal open={!!reembolso} onClose={onClose} eyebrow="Solicitud de Reembolso" title={reembolso.paciente} maxWidth={580}>
+      {/* Estado + urgente */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <span style={{ fontSize: 12.5, fontWeight: 600, padding: '4px 12px', borderRadius: 20, background: es.bg, color: es.color }}>
+          {ESTADO_LABEL[reembolso.estado]}
+        </span>
+        {reembolso.urgente && (
+          <span style={{ fontSize: 11, fontWeight: 700, background: '#FFF0CC', color: '#A06000', padding: '3px 10px', borderRadius: 20, letterSpacing: 0.3 }}>
+            URGENTE
+          </span>
+        )}
+        {canManage && !editing && (
+          <select
+            value={reembolso.estado}
+            onChange={(e) => onEstadoChange(reembolso.id, e.target.value as ReembolsoEstado)}
+            style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border-soft)', background: 'var(--bg)', color: 'var(--text)', cursor: 'pointer', marginLeft: 'auto' }}
+          >
+            {ESTADOS.map((s) => <option key={s} value={s}>{ESTADO_LABEL[s]}</option>)}
+          </select>
+        )}
+      </div>
+
+      {/* Datos principales */}
+      {!editing ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <DR label="Paciente"       value={reembolso.paciente} />
+          {reembolso.rut      && <DR label="RUT"           value={reembolso.rut} />}
+          {reembolso.telefono && <DR label="Teléfono"      value={reembolso.telefono} />}
+          {reembolso.email    && <DR label="Correo"        value={reembolso.email} />}
+          {reembolso.fechaSolicitud && <DR label="Fecha solicitud" value={reembolso.fechaSolicitud} />}
+          {reembolso.fechaPago      && <DR label="Fecha pago"      value={reembolso.fechaPago} />}
+          {reembolso.monto    && <DR label="Monto"         value={reembolso.monto} bold />}
+          <DR label="Motivo"        value={reembolso.motivo} wrap />
+          {(reembolso.banco || reembolso.tipoCuenta || reembolso.cuenta || reembolso.titular) && (
+            <>
+              <div style={{ borderTop: '1px solid var(--border-soft)', margin: '4px 0' }} />
+              {reembolso.banco      && <DR label="Banco"        value={reembolso.banco} />}
+              {reembolso.tipoCuenta && <DR label="Tipo cuenta"  value={reembolso.tipoCuenta} />}
+              {reembolso.cuenta     && <DR label="N° cuenta"    value={reembolso.cuenta} />}
+              {reembolso.titular    && <DR label="Titular"      value={reembolso.titular} />}
+            </>
+          )}
+          <div style={{ borderTop: '1px solid var(--border-soft)', margin: '4px 0' }} />
+          <DR label="Registrado"   value={fmtDateTime(reembolso.createdAt)} />
+          {reembolso.creadoPor && <DR label="Por"          value={reembolso.creadoPor.nombre} />}
+          {reembolso.notas    && <DR label="Notas"         value={reembolso.notas} wrap />}
+        </div>
+      ) : (
+        /* Formulario de edición */
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <Field label="Nombre del paciente" value={editForm.paciente} onChange={(v) => setEditForm(f => ({ ...f, paciente: v }))} placeholder="Nombre completo" />
+          <Field label="RUT" value={editForm.rut} onChange={(v) => setEditForm(f => ({ ...f, rut: v }))} placeholder="12.345.678-9" />
+          <Field label="Teléfono" value={editForm.telefono} onChange={(v) => setEditForm(f => ({ ...f, telefono: v }))} placeholder="+56 9" />
+          <Field label="Correo" value={editForm.email} onChange={(v) => setEditForm(f => ({ ...f, email: v }))} placeholder="correo@" type="email" />
+          <Field label="Fecha solicitud" type="date" value={editForm.fechaSolicitud} onChange={(v) => setEditForm(f => ({ ...f, fechaSolicitud: v }))} />
+          <Field label="Fecha pago" type="date" value={editForm.fechaPago} onChange={(v) => setEditForm(f => ({ ...f, fechaPago: v }))} />
+          <Field span label="Monto" value={editForm.monto} onChange={(v) => setEditForm(f => ({ ...f, monto: v }))} placeholder="$0" />
+          <div style={{ gridColumn: '1/-1' }}>
+            <label className="label">Motivo</label>
+            <textarea className="textarea" rows={3} value={editForm.motivo} onChange={(e) => setEditForm(f => ({ ...f, motivo: e.target.value }))} />
+          </div>
+          <Field label="Banco" value={editForm.banco} onChange={(v) => setEditForm(f => ({ ...f, banco: v }))} placeholder="Banco Estado…" />
+          <div>
+            <label className="label">Tipo de cuenta</label>
+            <select className="input" value={editForm.tipoCuenta} onChange={(e) => setEditForm(f => ({ ...f, tipoCuenta: e.target.value }))}>
+              <option value="">Selecciona tipo</option>
+              {TIPO_CUENTA_OPTS.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <Field label="N° cuenta" value={editForm.cuenta} onChange={(v) => setEditForm(f => ({ ...f, cuenta: v }))} placeholder="Número de cuenta" />
+          <Field label="Titular" value={editForm.titular} onChange={(v) => setEditForm(f => ({ ...f, titular: v }))} placeholder="Si difiere" />
+          <div style={{ gridColumn: '1/-1' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input type="checkbox" checked={editForm.urgente} onChange={(e) => setEditForm(f => ({ ...f, urgente: e.target.checked }))} style={{ accentColor: 'var(--primary)', width: 14, height: 14 }} />
+              <span style={{ fontSize: 13, color: 'var(--text)' }}>Marcar como urgente</span>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Acciones */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button className="btn btn-soft" style={{ fontSize: 12.5, padding: '7px 14px', display: 'flex', alignItems: 'center', gap: 6 }} onClick={copiarDatos}>
+          <Icon name="copy" size={13} /> Copiar datos transferencia
+        </button>
+        {canManage && !editing && (
+          <button className="btn btn-soft" style={{ fontSize: 12.5, padding: '7px 14px', display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setEditing(true)}>
+            <Icon name="pencil" size={13} /> Editar
+          </button>
+        )}
+        {editing && (
+          <>
+            <button className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 14px' }} onClick={guardarEdicion} disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+            <button className="btn btn-soft" style={{ fontSize: 12.5, padding: '7px 14px' }} onClick={() => setEditing(false)}>
+              Cancelar
+            </button>
+          </>
+        )}
+        {canManage && !editing && (
+          <button
+            className="btn btn-soft"
+            style={{ fontSize: 12.5, padding: '7px 14px', color: 'var(--danger)', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={() => onEliminar(reembolso.id)}
+          >
+            <Icon name="trash" size={13} /> Eliminar
+          </button>
+        )}
+      </div>
+
+      {/* Actividad */}
+      <div>
+        <div className="eyebrow" style={{ marginBottom: 10 }}>Historial de cambios</div>
+        {loadingAct ? (
+          <div style={{ fontSize: 12.5, color: 'var(--muted)', padding: '10px 0' }}>Cargando...</div>
+        ) : actividad.length === 0 ? (
+          <div style={{ fontSize: 12.5, color: 'var(--muted)', padding: '6px 0' }}>Sin actividad registrada</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {actividad.map((a) => (
+              <div key={a.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <div style={{ width: 7, height: 7, borderRadius: 4, background: 'var(--primary)', marginTop: 5, flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 12.5, color: 'var(--text)' }}>
+                    <span style={{ fontWeight: 600 }}>{a.user.nombre}</span>
+                    {' · '}
+                    {TIPO_ACTIVIDAD[a.tipo] ?? a.tipo}
+                    {a.detalle ? <span style={{ color: 'var(--muted)', fontWeight: 400 }}> — {a.detalle}</span> : null}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 2 }}>{fmtDateTime(a.createdAt)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+// ── Componentes auxiliares ─────────────────────────────────────────────────
+
+function DR({ label, value, bold, wrap }: { label: string; value: string; bold?: boolean; wrap?: boolean }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: wrap ? 'flex-start' : 'center' }}>
+      <span style={{ fontSize: 12.5, color: 'var(--muted-2)', flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 12.5, color: 'var(--text-2)', textAlign: 'right', fontWeight: bold ? 600 : 400, whiteSpace: wrap ? 'pre-wrap' : undefined, wordBreak: wrap ? 'break-word' : undefined }}>
+        {value}
+      </span>
     </div>
   );
 }

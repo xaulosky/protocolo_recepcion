@@ -303,6 +303,14 @@ export interface GiftCard {
   updatedAt: string;
 }
 
+export interface ReembolsoActividad {
+  id: string;
+  tipo: string;   // CREACION | ESTADO | EDICION
+  detalle: string | null;
+  user: TaskUserRef;
+  createdAt: string;
+}
+
 export interface SolicitudReembolso {
   id: string;
   paciente: string;
@@ -321,6 +329,7 @@ export interface SolicitudReembolso {
   estado: ReembolsoEstado;
   notas: string | null;
   creadoPor: TaskUserRef | null;
+  actividad?: ReembolsoActividad[];
   createdAt: string;
   updatedAt: string;
 }
