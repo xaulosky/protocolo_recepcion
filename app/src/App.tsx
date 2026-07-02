@@ -6,6 +6,7 @@ import { Login } from './features/auth/Login';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Toast } from './components/Toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalSearch } from './components/GlobalSearch';
 import { useGlobalSearch } from './hooks/useGlobalSearch';
 
@@ -92,7 +93,7 @@ function Shell() {
         <Header onOpenMobile={() => setMobileOpen(m => !m)} onOpenSearch={() => setSearchOpen(true)} />
         <main style={{ flex: 1, overflowY: view === 'chat' ? 'hidden' : 'auto', padding: view === 'chat' ? 0 : 24, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {allowed
-            ? <ViewComponent />
+            ? <ErrorBoundary key={view}><ViewComponent /></ErrorBoundary>
             : <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted-2)', fontSize: 14 }}>No tienes acceso a esta sección.</div>}
         </main>
       </div>

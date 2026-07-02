@@ -44,6 +44,19 @@ export interface Treatment {
   postTratamiento: string[];
 }
 
+/** Un servicio puede venir como texto simple o como objeto con detalle. */
+export interface ProfesionalServicio {
+  nombre?: string;
+  duracion?: string;
+  valor?: string;
+  descripcion?: string;
+  equipo?: string;
+  insumos?: string;
+  notas?: string;
+  espacio?: string;
+  [key: string]: unknown;
+}
+
 export interface Professional {
   id: string;
   nombreCompleto: string;
@@ -52,7 +65,7 @@ export interface Professional {
   telefono: string | null;
   email: string | null;
   disponibilidad: { dias?: string[]; horario?: string; frecuencia?: string } | null;
-  prestaciones: { servicios?: string[]; duracionPromedio?: string } | null;
+  prestaciones: { servicios?: (string | ProfesionalServicio)[]; duracionPromedio?: string } | null;
 }
 
 export interface Product {

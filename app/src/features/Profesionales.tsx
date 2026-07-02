@@ -5,7 +5,7 @@ import { Pagination } from '../components/Pagination';
 import { useResource } from '../lib/useResource';
 import { Icon } from '../lib/icons';
 import { initials, avatarColor } from '../lib/format';
-import type { Professional } from '../lib/types';
+import type { Professional, ProfesionalServicio } from '../lib/types';
 
 const PAGE_SIZE = 12;
 
@@ -93,9 +93,9 @@ export function Profesionales() {
               {selected.prestaciones?.servicios?.length ? (
                 <div>
                   <div className="eyebrow" style={{ marginBottom: 8 }}>Prestaciones</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {selected.prestaciones.servicios.map((s, i) => (
-                      <span key={i} className="badge" style={{ fontWeight: 500 }}>{s}</span>
+                      <ServicioRow key={i} servicio={s} />
                     ))}
                   </div>
                 </div>
@@ -122,6 +122,31 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
       <span style={{ fontSize: 12.5, color: 'var(--muted-2)', flexShrink: 0 }}>{label}</span>
       <span style={{ fontSize: 12.5, color: 'var(--text-2)', textAlign: 'right' }}>{value}</span>
+    </div>
+  );
+}
+
+/** Devuelve el valor solo si es texto; evita renderizar objetos/arrays como hijos de React. */
+const txt = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+
+/** Renderiza un servicio que puede ser string o un objeto con detalle. */
+function ServicioRow({ servicio }: { servicio: string | ProfesionalServicio }) {
+  const srv: ProfesionalServicio = typeof servicio === 'string' ? { nombre: servicio } : (servicio ?? {});
+  const nombre = txt(srv.nombre) || '—';
+  const meta = [txt(srv.duracion), txt(srv.valor)].filter(Boolean).join('  ·  ');
+  const detalle = txt(srv.descripcion) || txt(srv.notas);
+  const extra = [
+    txt(srv.equipo) && `Equipo: ${txt(srv.equipo)}`,
+    txt(srv.insumos) && `Insumos: ${txt(srv.insumos)}`,
+    txt(srv.espacio) && `Espacio: ${txt(srv.espacio)}`,
+  ].filter(Boolean).join('  ·  ');
+
+  return (
+    <div style={{ border: '1px solid var(--border-soft)', borderRadius: 8, padding: '9px 11px' }}>
+      <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--text)' }}>{nombre}</div>
+      {meta && <div style={{ fontSize: 11.5, color: 'var(--primary)', marginTop: 2, fontWeight: 500 }}>{meta}</div>}
+      {detalle && <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 4, lineHeight: 1.45 }}>{detalle}</div>}
+      {extra && <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 4 }}>{extra}</div>}
     </div>
   );
 }
