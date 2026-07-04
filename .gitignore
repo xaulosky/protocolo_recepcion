@@ -26,3 +26,6 @@ Thumbs.db
 
 # Claude internal
 .claude/
+
+# Archivos subidos (documentos personales) — viven solo en el servidor
+api/uploads/

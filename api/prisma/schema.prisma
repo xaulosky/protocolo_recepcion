@@ -38,6 +38,9 @@ model User {
   // Si el usuario es un profesional, enlaza a su ficha clínica.
   professional   Professional? @relation(fields: [professionalId], references: [id])
   professionalId String?
+  // Perfil personal (editable por el propio usuario).
+  telefono        String?
+  fechaNacimiento String? // "YYYY-MM-DD" — usado para el aviso de cumpleaños
 
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
@@ -60,6 +63,8 @@ model User {
   pagosProfCreados     PagoProfesional[]       @relation("PagoProfCreador")
   inventarioItems       InventarioItem[]       @relation("InventarioCreadoPor")
   inventarioMovimientos InventarioMovimiento[] @relation("InventarioMovUsuario")
+  documentos            UserDocument[]         @relation("DocumentosUsuario")
+  documentosSubidos     UserDocument[]         @relation("DocumentosSubidoPor")
   // Si el usuario es una estación Box, su buzón privado con Recepción.
   buzon             Conversation? @relation("BuzonBox")
 
@@ -96,6 +101,27 @@ model PasswordResetToken {
 }
 
 // ───────────────────────────── Notificaciones ─────────────────────────────
+
+// Documento personal de un usuario (contrato, anexo, liquidación, etc.).
+// El archivo vive en disco (api/uploads/documentos/<userId>/); aquí solo la metadata.
+model UserDocument {
+  id          String   @id @default(cuid())
+  user        User     @relation("DocumentosUsuario", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  tipo        String   // CONTRATO | ANEXO | LIQUIDACION | CERTIFICADO | OTRO
+  titulo      String
+  filename    String   // nombre original del archivo
+  path        String   // ruta relativa dentro de uploads/
+  mime        String
+  size        Int
+  periodo     String?  // para liquidaciones: "YYYY-MM"
+  notas       String?
+  subidoPor   User?    @relation("DocumentosSubidoPor", fields: [subidoPorId], references: [id], onDelete: SetNull)
+  subidoPorId String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
 
 enum NotificationType {
   TAREA_ASIGNADA

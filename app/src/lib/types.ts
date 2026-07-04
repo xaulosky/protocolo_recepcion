@@ -9,6 +9,8 @@ export interface AuthUser {
   role: Role;
   permisos: string[];
   professionalId: string | null;
+  telefono?: string | null;
+  fechaNacimiento?: string | null; // "YYYY-MM-DD"
 }
 
 /** Usuario completo para la gestión de admin. */
@@ -21,7 +23,32 @@ export interface ManagedUser {
   permisos: string[];
   ocultarEnDM: boolean;
   professionalId: string | null;
+  telefono?: string | null;
+  fechaNacimiento?: string | null;
   createdAt: string;
+}
+
+// ── Documentos personales del usuario (contratos, anexos, liquidaciones) ──
+
+export type DocumentoTipo = 'CONTRATO' | 'ANEXO' | 'LIQUIDACION' | 'CERTIFICADO' | 'OTRO';
+
+export interface UserDocument {
+  id: string;
+  tipo: DocumentoTipo | string;
+  titulo: string;
+  filename: string;
+  mime: string;
+  size: number;
+  periodo: string | null;
+  notas: string | null;
+  subidoPor: { id: string; nombre: string } | null;
+  createdAt: string;
+}
+
+/** Respuesta de GET /users/cumpleanos. */
+export interface CumpleanosData {
+  hoy: { id: string; nombre: string }[];
+  proximos: { id: string; nombre: string; fecha: string; dias: number }[];
 }
 
 export interface Treatment {

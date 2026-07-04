@@ -6,7 +6,7 @@ import { env } from '../../env.ts';
 import { hashPassword } from '../../lib/password.ts';
 import { syncUserChannels } from '../../lib/channels.ts';
 import { syncBuzones } from '../../lib/buzon.ts';
-import { sendMail } from '../../lib/notify.ts';
+import { sendMail, notify } from '../../lib/notify.ts';
 import { welcomeEmail } from '../../lib/emails.ts';
 
 const createSchema = z.object({
@@ -29,7 +29,19 @@ const updateSchema = z.object({
   ocultarEnDM: z.boolean().optional(),
 });
 
-const select = { id: true, email: true, nombre: true, role: true, activo: true, permisos: true, ocultarEnDM: true, professionalId: true, createdAt: true } as const;
+// Perfil editable por el propio usuario (no toca email, rol ni permisos).
+const perfilSchema = z.object({
+  nombre: z.string().min(1).optional(),
+  telefono: z.string().max(30).nullable().optional(),
+  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+});
+
+const select = { id: true, email: true, nombre: true, role: true, activo: true, permisos: true, ocultarEnDM: true, professionalId: true, telefono: true, fechaNacimiento: true, createdAt: true } as const;
+
+/** "YYYY-MM-DD" de hoy en horario de Chile (el servidor corre en UTC). */
+function hoyChile(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Santiago' });
+}
 
 export async function usersRoutes(app: FastifyInstance) {
   const adminOnly = { preHandler: app.authorize([Role.ADMIN]) };
@@ -42,6 +54,74 @@ export async function usersRoutes(app: FastifyInstance) {
       orderBy: { nombre: 'asc' },
     });
     return { users };
+  });
+
+  // PATCH /users/me/perfil — el propio usuario actualiza su perfil
+  app.patch('/me/perfil', { preHandler: app.authenticate }, async (req, reply) => {
+    const parsed = perfilSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos', detalles: parsed.error.flatten() });
+    const user = await prisma.user.update({ where: { id: req.user.sub }, data: parsed.data, select });
+    return { user };
+  });
+
+  // GET /users/cumpleanos — cumpleañeros de hoy y próximos 30 días.
+  // Además, la primera visita del día dispara el aviso a todos los usuarios activos.
+  app.get('/cumpleanos', { preHandler: app.authenticate }, async () => {
+    const hoyStr = hoyChile(); // "YYYY-MM-DD"
+    const [y, m, d] = hoyStr.split('-').map(Number);
+    const hoyMD = hoyStr.slice(5); // "MM-DD"
+
+    const users = await prisma.user.findMany({
+      where: { activo: true, fechaNacimiento: { not: null } },
+      select: { id: true, nombre: true, fechaNacimiento: true },
+    });
+    const conFecha = users.filter((u) => /^\d{4}-\d{2}-\d{2}$/.test(u.fechaNacimiento ?? ''));
+
+    const hoy = conFecha
+      .filter((u) => u.fechaNacimiento!.slice(5) === hoyMD)
+      .map((u) => ({ id: u.id, nombre: u.nombre }));
+
+    const base = Date.UTC(y, m - 1, d);
+    const proximos = conFecha
+      .map((u) => {
+        const [, mm, dd] = u.fechaNacimiento!.split('-').map(Number);
+        let next = Date.UTC(y, mm - 1, dd);
+        if (next < base) next = Date.UTC(y + 1, mm - 1, dd);
+        const dias = Math.round((next - base) / 86400000);
+        return { id: u.id, nombre: u.nombre, fecha: `${String(dd).padStart(2, '0')}/${String(mm).padStart(2, '0')}`, dias };
+      })
+      .filter((p) => p.dias > 0 && p.dias <= 30)
+      .sort((a, b) => a.dias - b.dias);
+
+    // Aviso diario idempotente: una sola tanda de notificaciones por día con cumpleaños.
+    if (hoy.length > 0) {
+      const yaAvisado = await prisma.notification.findFirst({
+        where: {
+          AND: [
+            { data: { path: ['kind'], equals: 'cumpleanos' } },
+            { data: { path: ['date'], equals: hoyStr } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (!yaAvisado) {
+        const nombres = hoy.map((h) => h.nombre).join(', ');
+        const destinatarios = await prisma.user.findMany({ where: { activo: true }, select: { id: true } });
+        await Promise.allSettled(
+          destinatarios.map((dest) =>
+            notify({
+              userId: dest.id,
+              title: '🎂 ¡Hoy hay cumpleaños!',
+              body: `Hoy está de cumpleaños: ${nombres}. ¡Envíale un saludo!`,
+              data: { kind: 'cumpleanos', date: hoyStr },
+              email: false, // in-app + push basta; sin spam de correo
+            }),
+          ),
+        );
+      }
+    }
+
+    return { hoy, proximos };
   });
 
   // GET /users

@@ -11,6 +11,7 @@ import { GlobalSearch } from './components/GlobalSearch';
 import { useGlobalSearch } from './hooks/useGlobalSearch';
 
 import { Dashboard } from './features/Dashboard';
+import { Documentos } from './features/Documentos';
 import { Tareas } from './features/tareas/Tareas';
 import { Chat } from './features/chat/Chat';
 import { ChatProvider } from './features/chat/ChatProvider';
@@ -43,6 +44,7 @@ const VIEWS: Record<ViewId, ComponentType> = {
   dashboard: Dashboard,
   tareas: Tareas,
   chat: Chat,
+  documentos: Documentos,
   protocolos: Protocolos,
   guiones: Guiones,
   pagos: Pagos,

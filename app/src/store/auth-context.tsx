@@ -11,6 +11,8 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   hasRole: (...roles: Role[]) => boolean;
+  /** Actualiza el usuario en memoria (p.ej. tras editar el perfil propio). */
+  updateUser: (user: AuthUser) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -72,7 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const hasRole = useCallback((...roles: Role[]) => (user ? roles.includes(user.role) : false), [user]);
 
-  const value = useMemo<AuthContextValue>(() => ({ status, user, login, logout, hasRole }), [status, user, login, logout, hasRole]);
+  const updateUser = useCallback((u: AuthUser) => setUser(u), []);
+
+  const value = useMemo<AuthContextValue>(() => ({ status, user, login, logout, hasRole, updateUser }), [status, user, login, logout, hasRole, updateUser]);
 
   return <AuthContext value={value}>{children}</AuthContext>;
 }

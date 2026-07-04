@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
 import { env, corsOrigins } from './env.ts';
 import authPlugin from './lib/auth.ts';
 import { authRoutes } from './modules/auth/auth.routes.ts';
@@ -17,6 +18,7 @@ import { reembolsosRoutes } from './modules/reembolsos/reembolsos.routes.ts';
 import { inventarioRoutes } from './modules/inventario/inventario.routes.ts';
 import { pacientesRoutes } from './modules/pacientes/pacientes.routes.ts';
 import { honorariosRoutes } from './modules/honorarios/honorarios.routes.ts';
+import { documentosRoutes } from './modules/documentos/documentos.routes.ts';
 
 const app = Fastify({
   logger: { transport: env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined },
@@ -26,6 +28,8 @@ const app = Fastify({
 });
 
 await app.register(cors, { origin: corsOrigins, credentials: true });
+// Subida de archivos (documentos personales): máx. 25 MB por archivo.
+await app.register(multipart, { limits: { fileSize: 25 * 1024 * 1024, files: 1 } });
 await app.register(authPlugin);
 
 app.get('/health', async () => ({ status: 'ok', ts: new Date().toISOString() }));
@@ -45,6 +49,7 @@ await app.register(reembolsosRoutes, { prefix: '/reembolsos' });
 await app.register(inventarioRoutes, { prefix: '/inventario' });
 await app.register(pacientesRoutes, { prefix: '/pacientes' });
 await app.register(honorariosRoutes, { prefix: '/honorarios' });
+await app.register(documentosRoutes, { prefix: '/documentos' });
 
 try {
   // En producción la API vive detrás de nginx: solo localhost. En dev, accesible en la red.

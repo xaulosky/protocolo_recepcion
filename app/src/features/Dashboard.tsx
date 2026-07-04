@@ -7,7 +7,7 @@ import { useResource } from '../lib/useResource';
 import { AsyncState } from '../components/AsyncState';
 import { colorFromString } from '../lib/format';
 import { useTareas, ETAPAS, ETAPA_LABEL } from './tareas/useTareas';
-import type { CirugiaListItem } from '../lib/types';
+import type { CirugiaListItem, CumpleanosData } from '../lib/types';
 
 interface Stats {
   treatments: number; professionals: number; products: number;
@@ -33,6 +33,8 @@ export function Dashboard() {
   const cirugias   = useResource<{ cirugias: CirugiaListItem[] }>('/cirugias');
   const reembolsos = useResource<{ reembolsos: { estado: string; urgente: boolean }[] }>('/reembolsos');
   const giftcards  = useResource<{ giftCards: { estado: string }[] }>('/gift-cards');
+  // Además de mostrar el banner, esta llamada dispara el aviso diario a todos en el backend.
+  const cumple     = useResource<CumpleanosData>('/users/cumpleanos');
   const s = data?.stats;
 
   const todoCirugia = cirugias.data?.cirugias ?? [];
@@ -87,6 +89,33 @@ export function Dashboard() {
           </h2>
           <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 3 }}>Sistema interno de protocolos y herramientas de Clínica Cialo.</p>
         </div>
+
+        {(cumple.data?.hoy?.length ?? 0) > 0 && (
+          <div
+            className="card"
+            style={{
+              padding: '14px 18px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14,
+              background: 'linear-gradient(90deg, #FFF6E5, #FDEFF4)', border: '1px solid #F2DFC8',
+            }}
+          >
+            <span style={{ fontSize: 26, flexShrink: 0 }}>🎂</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#7A5A30' }}>
+                ¡Hoy está de cumpleaños {cumple.data!.hoy.map((h) => h.nombre).join(', ')}!
+              </div>
+              <div style={{ fontSize: 12, color: '#A08050', marginTop: 2 }}>No olvides enviarle un saludo 🎉</div>
+            </div>
+          </div>
+        )}
+        {(cumple.data?.hoy?.length ?? 0) === 0 && (cumple.data?.proximos?.length ?? 0) > 0 && (
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span>🎈</span>
+            <span>
+              Próximos cumpleaños:{' '}
+              {cumple.data!.proximos.slice(0, 3).map((p) => `${p.nombre} (${p.fecha})`).join(' · ')}
+            </span>
+          </div>
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10, marginBottom: 28 }}>
           {stats.map((st) => (

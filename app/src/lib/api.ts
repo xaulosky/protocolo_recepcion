@@ -74,7 +74,8 @@ async function tryRefresh(): Promise<boolean> {
 async function request(path: string, options: RequestInit = {}, retry = true): Promise<Response> {
   const headers = new Headers(options.headers);
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
-  if (options.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+  // FormData define su propio Content-Type (boundary incluido): no lo pisamos.
+  if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
 
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
 
@@ -104,10 +105,29 @@ export async function apiJson<T>(path: string, options?: RequestInit): Promise<T
   return res.json() as Promise<T>;
 }
 
+/** Descarga binaria autenticada (documentos, archivos). Lanza ApiError si no es 2xx. */
+export async function apiBlob(path: string): Promise<Blob> {
+  const res = await request(path);
+  if (!res.ok) {
+    let message = res.statusText;
+    try {
+      const body = await res.json();
+      message = body.error ?? message;
+    } catch {
+      /* sin cuerpo JSON */
+    }
+    throw new ApiError(res.status, message);
+  }
+  return res.blob();
+}
+
 export const api = {
   get: <T>(path: string) => apiJson<T>(path),
   post: <T>(path: string, body?: unknown) => apiJson<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
   put: <T>(path: string, body?: unknown) => apiJson<T>(path, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
   patch: <T>(path: string, body?: unknown) => apiJson<T>(path, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   del: <T>(path: string) => apiJson<T>(path, { method: 'DELETE' }),
+  /** POST multipart (FormData): el navegador fija el Content-Type con boundary. */
+  upload: <T>(path: string, form: FormData) => apiJson<T>(path, { method: 'POST', body: form }),
+  blob: (path: string) => apiBlob(path),
 };
