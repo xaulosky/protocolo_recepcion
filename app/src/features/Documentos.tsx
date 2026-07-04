@@ -73,6 +73,21 @@ export function Documentos() {
     }
   };
 
+  /** PDFs e imágenes se pueden abrir directo en una pestaña del navegador. */
+  const previsualizable = (doc: UserDocument) => doc.mime === 'application/pdf' || doc.mime.startsWith('image/');
+
+  const ver = async (doc: UserDocument) => {
+    try {
+      const blob = await api.blob(`/documentos/${doc.id}/archivo`);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      // No revocar de inmediato: la pestaña nueva necesita el blob para renderizar.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      toast('Error al abrir el archivo');
+    }
+  };
+
   const eliminar = async (doc: UserDocument) => {
     if (!window.confirm(`¿Eliminar "${doc.titulo}"? Esta acción no se puede deshacer.`)) return;
     try {
@@ -110,7 +125,7 @@ export function Documentos() {
       {isAdmin && viendoOtro && (
         <UploadForm
           userId={targetId}
-          onUploaded={(doc) => { setDocs((prev) => [doc, ...(prev ?? [])]); }}
+          onUploaded={(nuevos) => { setDocs((prev) => [...nuevos, ...(prev ?? [])]); }}
         />
       )}
 
@@ -148,7 +163,29 @@ export function Documentos() {
                       {d.subidoPor ? ` · subido por ${d.subidoPor.nombre}` : ''}
                     </div>
                     {d.notas && <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 2 }}>{d.notas}</div>}
+                    {viendoOtro && (
+                      <div style={{ marginTop: 5 }}>
+                        {d.vistoAt ? (
+                          <span style={{ fontSize: 10.5, fontWeight: 600, background: '#EDF5EF', color: '#3A6A4A', padding: '2px 8px', borderRadius: 20 }}>
+                            Descargado el {fmtDate(d.vistoAt)}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 10.5, fontWeight: 600, background: '#FFF8E8', color: '#B08030', padding: '2px 8px', borderRadius: 20 }}>
+                            Aún no visto
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
+                  {previsualizable(d) && (
+                    <button
+                      className="btn btn-soft"
+                      style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
+                      onClick={() => ver(d)}
+                    >
+                      <Icon name="eye" size={13} /> Ver
+                    </button>
+                  )}
                   <button
                     className="btn btn-soft"
                     style={{ fontSize: 12, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
@@ -175,19 +212,19 @@ export function Documentos() {
   );
 }
 
-/** Formulario de subida (solo admin, sobre el usuario seleccionado). */
-function UploadForm({ userId, onUploaded }: { userId: string; onUploaded: (doc: UserDocument) => void }) {
+/** Formulario de subida (solo admin, sobre el usuario seleccionado). Acepta varios archivos. */
+function UploadForm({ userId, onUploaded }: { userId: string; onUploaded: (docs: UserDocument[]) => void }) {
   const { toast } = useApp();
   const [tipo, setTipo] = useState<DocumentoTipo>('CONTRATO');
   const [titulo, setTitulo] = useState('');
   const [periodo, setPeriodo] = useState('');
   const [notas, setNotas] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [subiendo, setSubiendo] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const subir = async () => {
-    if (!file) { toast('Selecciona un archivo'); return; }
+    if (files.length === 0) { toast('Selecciona al menos un archivo'); return; }
     if (!titulo.trim()) { toast('Ingresa un título'); return; }
     setSubiendo(true);
     try {
@@ -197,14 +234,14 @@ function UploadForm({ userId, onUploaded }: { userId: string; onUploaded: (doc: 
       form.set('titulo', titulo.trim());
       if (periodo) form.set('periodo', periodo);
       if (notas.trim()) form.set('notas', notas.trim());
-      form.set('archivo', file);
-      const data = await api.upload<{ documento: UserDocument }>('/documentos', form);
-      onUploaded(data.documento);
-      setTitulo(''); setPeriodo(''); setNotas(''); setFile(null);
+      for (const f of files) form.append('archivo', f);
+      const data = await api.upload<{ documentos: UserDocument[] }>('/documentos', form);
+      onUploaded(data.documentos);
+      setTitulo(''); setPeriodo(''); setNotas(''); setFiles([]);
       if (fileRef.current) fileRef.current.value = '';
-      toast('Documento subido — el usuario fue notificado');
+      toast(data.documentos.length === 1 ? 'Documento subido — el usuario fue notificado' : `${data.documentos.length} documentos subidos — el usuario fue notificado`);
     } catch {
-      toast('Error al subir el documento');
+      toast('Error al subir');
     } finally {
       setSubiendo(false);
     }
@@ -229,14 +266,20 @@ function UploadForm({ userId, onUploaded }: { userId: string; onUploaded: (doc: 
           <input className="input" type="month" value={periodo} onChange={(e) => setPeriodo(e.target.value)} />
         </div>
         <div>
-          <label className="label">Archivo</label>
+          <label className="label">Archivo(s)</label>
           <input
             ref={fileRef}
             className="input"
             type="file"
+            multiple
             accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
           />
+          {files.length > 1 && (
+            <div style={{ fontSize: 11.5, color: 'var(--muted)', marginTop: 4 }}>
+              {files.length} archivos seleccionados — cada uno quedará como "{titulo.trim() || 'Título'} — nombre del archivo"
+            </div>
+          )}
         </div>
         <div style={{ gridColumn: '1/-1' }}>
           <label className="label">Notas (opcional)</label>
@@ -244,7 +287,7 @@ function UploadForm({ userId, onUploaded }: { userId: string; onUploaded: (doc: 
         </div>
       </div>
       <button className="btn btn-primary" style={{ marginTop: 14, padding: '9px 18px', fontSize: 13 }} onClick={subir} disabled={subiendo}>
-        {subiendo ? 'Subiendo...' : 'Subir documento'}
+        {subiendo ? 'Subiendo...' : files.length > 1 ? `Subir ${files.length} documentos` : 'Subir documento'}
       </button>
     </div>
   );

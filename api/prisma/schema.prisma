@@ -118,6 +118,7 @@ model UserDocument {
   notas       String?
   subidoPor   User?    @relation("DocumentosSubidoPor", fields: [subidoPorId], references: [id], onDelete: SetNull)
   subidoPorId String?
+  vistoAt     DateTime? // primera descarga/vista por el dueño (acuse de recibo)
   createdAt   DateTime @default(now())
 
   @@index([userId])

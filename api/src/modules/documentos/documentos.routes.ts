@@ -50,26 +50,25 @@ export async function documentosRoutes(app: FastifyInstance) {
     return { documentos };
   });
 
-  // POST /documentos — subir un documento para un usuario (solo admin, multipart)
+  // POST /documentos — subir uno o varios documentos para un usuario (solo admin, multipart)
   app.post('/', adminOnly, async (req, reply) => {
     if (!req.isMultipart()) return reply.code(400).send({ error: 'Se espera multipart/form-data' });
 
     const fields: Record<string, string> = {};
-    let fileBuf: Buffer | null = null;
-    let filename = '';
-    let mime = 'application/octet-stream';
+    const files: { buf: Buffer; filename: string; mime: string }[] = [];
 
     for await (const part of req.parts()) {
       if (part.type === 'file') {
-        filename = part.filename || 'documento';
-        mime = part.mimetype || mime;
-        fileBuf = await part.toBuffer();
+        const buf = await part.toBuffer();
+        if (buf.length > 0) {
+          files.push({ buf, filename: part.filename || 'documento', mime: part.mimetype || 'application/octet-stream' });
+        }
       } else {
         fields[part.fieldname] = String(part.value ?? '');
       }
     }
 
-    if (!fileBuf || fileBuf.length === 0) return reply.code(400).send({ error: 'Falta el archivo' });
+    if (files.length === 0) return reply.code(400).send({ error: 'Falta el archivo' });
 
     const parsed = metaSchema.safeParse(fields);
     if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos', detalles: parsed.error.flatten() });
@@ -77,37 +76,46 @@ export async function documentosRoutes(app: FastifyInstance) {
     const target = await prisma.user.findUnique({ where: { id: parsed.data.userId }, select: { id: true, nombre: true } });
     if (!target) return reply.code(404).send({ error: 'Usuario no encontrado' });
 
-    // Ruta relativa siempre con "/" (portable entre SO y lo que se guarda en BD).
-    const rel = ['documentos', target.id, `${randomUUID()}-${sanitize(filename)}`].join('/');
-    const abs = path.join(UPLOADS_ROOT, rel);
-    await mkdir(path.dirname(abs), { recursive: true });
-    await writeFile(abs, fileBuf);
+    const documentos = [];
+    for (const f of files) {
+      // Ruta relativa siempre con "/" (portable entre SO y lo que se guarda en BD).
+      const rel = ['documentos', target.id, `${randomUUID()}-${sanitize(f.filename)}`].join('/');
+      const abs = path.join(UPLOADS_ROOT, rel);
+      await mkdir(path.dirname(abs), { recursive: true });
+      await writeFile(abs, f.buf);
 
-    const documento = await prisma.userDocument.create({
-      data: {
-        userId: target.id,
-        tipo: parsed.data.tipo,
-        titulo: parsed.data.titulo,
-        filename,
-        path: rel,
-        mime,
-        size: fileBuf.length,
-        periodo: parsed.data.periodo || null,
-        notas: parsed.data.notas || null,
-        subidoPorId: req.user.sub,
-      },
-      include,
-    });
+      // Con varios archivos, cada documento lleva el título base + su nombre de archivo.
+      const sinExt = f.filename.replace(/\.[^.]+$/, '');
+      const titulo = files.length === 1 ? parsed.data.titulo : `${parsed.data.titulo} — ${sinExt}`;
 
-    // Avisar al dueño del documento (no bloquea la respuesta si falla).
+      documentos.push(await prisma.userDocument.create({
+        data: {
+          userId: target.id,
+          tipo: parsed.data.tipo,
+          titulo,
+          filename: f.filename,
+          path: rel,
+          mime: f.mime,
+          size: f.buf.length,
+          periodo: parsed.data.periodo || null,
+          notas: parsed.data.notas || null,
+          subidoPorId: req.user.sub,
+        },
+        include,
+      }));
+    }
+
+    // Un solo aviso al dueño, sin importar cuántos archivos (no bloquea la respuesta).
     notify({
       userId: target.id,
-      title: 'Nuevo documento disponible',
-      body: `Se agregó "${parsed.data.titulo}" a tu sección Mis Documentos.`,
-      data: { kind: 'documento', documentoId: documento.id },
+      title: documentos.length === 1 ? 'Nuevo documento disponible' : 'Nuevos documentos disponibles',
+      body: documentos.length === 1
+        ? `Se agregó "${documentos[0].titulo}" a tu sección Mis Documentos.`
+        : `Se agregaron ${documentos.length} documentos a tu sección Mis Documentos.`,
+      data: { kind: 'documento', documentoIds: documentos.map((d) => d.id) },
     }).catch(() => {});
 
-    return reply.code(201).send({ documento });
+    return reply.code(201).send({ documentos });
   });
 
   // GET /documentos/:id/archivo — descarga (dueño o admin)
@@ -124,6 +132,11 @@ export async function documentosRoutes(app: FastifyInstance) {
       await stat(abs);
     } catch {
       return reply.code(410).send({ error: 'El archivo ya no está disponible en el servidor' });
+    }
+
+    // Acuse de recibo: primera descarga/vista por el dueño.
+    if (doc.userId === req.user.sub && !doc.vistoAt) {
+      await prisma.userDocument.update({ where: { id: doc.id }, data: { vistoAt: new Date() } }).catch(() => {});
     }
 
     reply.header('Content-Type', doc.mime);

@@ -73,7 +73,7 @@ export function Header({ onOpenMobile, onOpenSearch }: { onOpenMobile: () => voi
   );
 }
 
-/** Modal de perfil propio: nombre, teléfono y fecha de nacimiento (para el aviso de cumpleaños). */
+/** Modal de perfil propio: nombre, teléfono, fecha de nacimiento y cambio de contraseña. */
 function PerfilModal({ onClose }: { onClose: () => void }) {
   const { toast } = useApp();
   const { user, updateUser } = useAuth();
@@ -81,6 +81,27 @@ function PerfilModal({ onClose }: { onClose: () => void }) {
   const [telefono, setTelefono] = useState(user?.telefono ?? '');
   const [fechaNacimiento, setFechaNacimiento] = useState(user?.fechaNacimiento ?? '');
   const [saving, setSaving] = useState(false);
+  // Cambio de contraseña (sección plegable)
+  const [showPass, setShowPass] = useState(false);
+  const [passActual, setPassActual] = useState('');
+  const [passNueva, setPassNueva] = useState('');
+  const [passRepetir, setPassRepetir] = useState('');
+  const [savingPass, setSavingPass] = useState(false);
+
+  const cambiarPassword = async () => {
+    if (passNueva.length < 6) { toast('La nueva contraseña debe tener al menos 6 caracteres'); return; }
+    if (passNueva !== passRepetir) { toast('Las contraseñas no coinciden'); return; }
+    setSavingPass(true);
+    try {
+      await api.post('/users/me/password', { actual: passActual, nueva: passNueva });
+      toast('Contraseña actualizada');
+      setPassActual(''); setPassNueva(''); setPassRepetir(''); setShowPass(false);
+    } catch (e) {
+      toast(e instanceof Error && e.message ? e.message : 'Error al cambiar la contraseña');
+    } finally {
+      setSavingPass(false);
+    }
+  };
 
   const guardar = async () => {
     if (!nombre.trim()) { toast('El nombre no puede quedar vacío'); return; }
@@ -122,6 +143,42 @@ function PerfilModal({ onClose }: { onClose: () => void }) {
         <div>
           <label className="label">Correo</label>
           <input className="input" value={user?.email ?? ''} disabled style={{ opacity: 0.6 }} />
+        </div>
+
+        {/* Cambio de contraseña */}
+        <div style={{ borderTop: '1px solid var(--border-soft)', paddingTop: 12 }}>
+          {!showPass ? (
+            <button
+              onClick={() => setShowPass(true)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12.5, color: 'var(--primary)', fontWeight: 500, padding: 0 }}
+            >
+              Cambiar contraseña
+            </button>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="eyebrow">Cambiar contraseña</div>
+              <div>
+                <label className="label">Contraseña actual</label>
+                <input className="input" type="password" value={passActual} onChange={(e) => setPassActual(e.target.value)} autoComplete="current-password" />
+              </div>
+              <div>
+                <label className="label">Nueva contraseña</label>
+                <input className="input" type="password" value={passNueva} onChange={(e) => setPassNueva(e.target.value)} autoComplete="new-password" placeholder="Mínimo 6 caracteres" />
+              </div>
+              <div>
+                <label className="label">Repetir nueva contraseña</label>
+                <input className="input" type="password" value={passRepetir} onChange={(e) => setPassRepetir(e.target.value)} autoComplete="new-password" />
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn btn-primary" style={{ fontSize: 12.5, padding: '7px 14px' }} onClick={cambiarPassword} disabled={savingPass || !passActual || !passNueva}>
+                  {savingPass ? 'Guardando...' : 'Actualizar contraseña'}
+                </button>
+                <button className="btn btn-soft" style={{ fontSize: 12.5, padding: '7px 14px' }} onClick={() => { setShowPass(false); setPassActual(''); setPassNueva(''); setPassRepetir(''); }}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>

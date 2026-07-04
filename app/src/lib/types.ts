@@ -42,6 +42,7 @@ export interface UserDocument {
   periodo: string | null;
   notas: string | null;
   subidoPor: { id: string; nombre: string } | null;
+  vistoAt: string | null; // primera descarga/vista por el dueño (acuse de recibo)
   createdAt: string;
 }
 

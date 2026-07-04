@@ -28,8 +28,8 @@ const app = Fastify({
 });
 
 await app.register(cors, { origin: corsOrigins, credentials: true });
-// Subida de archivos (documentos personales): máx. 25 MB por archivo.
-await app.register(multipart, { limits: { fileSize: 25 * 1024 * 1024, files: 1 } });
+// Subida de archivos (documentos personales): máx. 25 MB por archivo, hasta 20 por request.
+await app.register(multipart, { limits: { fileSize: 25 * 1024 * 1024, files: 20 } });
 await app.register(authPlugin);
 
 app.get('/health', async () => ({ status: 'ok', ts: new Date().toISOString() }));

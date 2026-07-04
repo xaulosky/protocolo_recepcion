@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
 import { env } from '../../env.ts';
-import { hashPassword } from '../../lib/password.ts';
+import { hashPassword, verifyPassword } from '../../lib/password.ts';
 import { syncUserChannels } from '../../lib/channels.ts';
 import { syncBuzones } from '../../lib/buzon.ts';
 import { sendMail, notify } from '../../lib/notify.ts';
@@ -62,6 +62,23 @@ export async function usersRoutes(app: FastifyInstance) {
     if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos', detalles: parsed.error.flatten() });
     const user = await prisma.user.update({ where: { id: req.user.sub }, data: parsed.data, select });
     return { user };
+  });
+
+  // POST /users/me/password — el propio usuario cambia su contraseña
+  app.post('/me/password', { preHandler: app.authenticate }, async (req, reply) => {
+    const parsed = z.object({ actual: z.string().min(1), nueva: z.string().min(6) }).safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'La nueva contraseña debe tener al menos 6 caracteres' });
+
+    const me = await prisma.user.findUnique({ where: { id: req.user.sub }, select: { passwordHash: true } });
+    if (!me || !(await verifyPassword(parsed.data.actual, me.passwordHash))) {
+      return reply.code(400).send({ error: 'Contraseña actual incorrecta' });
+    }
+
+    await prisma.user.update({
+      where: { id: req.user.sub },
+      data: { passwordHash: await hashPassword(parsed.data.nueva) },
+    });
+    return { ok: true };
   });
 
   // GET /users/cumpleanos — cumpleañeros de hoy y próximos 30 días.
