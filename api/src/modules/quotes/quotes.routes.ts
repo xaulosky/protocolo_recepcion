@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { prisma as db } from '../../db.ts';
+import { createQuote } from './quotes.service.ts';
 
 const itemSchema = z.object({
   nombre:   z.string(),
@@ -9,7 +10,7 @@ const itemSchema = z.object({
   cantidad: z.number().int().min(1),
 });
 
-const createSchema = z.object({
+export const createSchema = z.object({
   paciente:  z.string().min(1),
   rut:       z.string().optional().nullable(),
   telefono:  z.string().optional().nullable(),
@@ -37,18 +38,7 @@ export const quotesRoutes: FastifyPluginAsync = async (app) => {
   // POST /quotes — crear
   app.post('/', { onRequest: [app.authenticate] }, async (req, reply) => {
     const body = createSchema.parse(req.body);
-    const subtotal = body.items.reduce((s, it) => s + it.precio * it.cantidad, 0);
-    const total    = Math.round(subtotal * (1 - body.descuento / 100));
-    const quote = await db.quote.create({
-      data: {
-        ...body,
-        items:      body.items,
-        subtotal,
-        total,
-        creadoPorId: req.user.sub,
-      },
-      include: { creadoPor: { select: { id: true, nombre: true } } },
-    });
+    const quote = await createQuote(body, req.user.sub);
     return reply.code(201).send({ quote });
   });
 

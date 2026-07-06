@@ -3,13 +3,14 @@ import { z } from 'zod';
 import { Etapa, Prioridad, Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
 import { notify } from '../../lib/notify.ts';
+import { createTask, recordTaskActivity, taskIncludeBase } from './tasks.service.ts';
 
 const ETAPA_ES: Record<string, string> = {
   PENDIENTE: 'Pendiente', ASIGNADO: 'Asignado', EN_PROCESO: 'En proceso',
   REVISION: 'Revisión', CERRADO: 'Cerrado',
 };
 
-const createSchema = z.object({
+export const createSchema = z.object({
   tipo: z.string().min(1),
   descripcion: z.string().min(1),
   paciente: z.string().optional(),
@@ -31,11 +32,7 @@ const updateSchema = z.object({
   tags: z.array(z.string()).optional(),
 });
 
-const includeBase = {
-  asignadas:  { select: { id: true, nombre: true } },
-  creadoPor:  { select: { id: true, nombre: true } },
-  checklist:  { orderBy: { orden: 'asc' as const } },
-} as const;
+const includeBase = taskIncludeBase;
 
 const includeWithHistory = {
   ...includeBase,
@@ -45,9 +42,7 @@ const includeWithHistory = {
   },
 } as const;
 
-async function recordActivity(taskId: string, userId: string, tipo: string, detalle?: string) {
-  await prisma.taskActivity.create({ data: { taskId, userId, tipo, detalle } });
-}
+const recordActivity = recordTaskActivity;
 
 export async function tasksRoutes(app: FastifyInstance) {
   const canEdit = { preHandler: app.authorize([Role.ADMIN, Role.RECEPCION, Role.PROFESIONAL]) };
@@ -88,34 +83,7 @@ export async function tasksRoutes(app: FastifyInstance) {
     const parsed = createSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos', detalles: parsed.error.flatten() });
 
-    const { asignadasIds, dueAt, ...rest } = parsed.data;
-
-    const task = await prisma.task.create({
-      data: {
-        ...rest,
-        dueAt: dueAt ? new Date(dueAt) : null,
-        creadoPorId: req.user.sub,
-        asignadas: asignadasIds.length ? { connect: asignadasIds.map((id) => ({ id })) } : undefined,
-      },
-      include: includeBase,
-    });
-
-    const nombres = task.asignadas.map((u) => u.nombre).join(', ');
-    await recordActivity(task.id, req.user.sub, 'CREADA',
-      nombres ? `Asignada a ${nombres}` : undefined
-    );
-
-    for (const u of task.asignadas) {
-      if (u.id !== req.user.sub) {
-        await notify({
-          userId: u.id,
-          type: 'TAREA_ASIGNADA',
-          title: 'Nueva tarea asignada',
-          body: `${task.tipo}: ${task.descripcion}`,
-          data: { taskId: task.id },
-        });
-      }
-    }
+    const task = await createTask(parsed.data, req.user.sub);
     return reply.code(201).send({ task });
   });
 

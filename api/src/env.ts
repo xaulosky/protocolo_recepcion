@@ -32,6 +32,10 @@ const schema = z.object({
 
   SEED_ADMIN_EMAIL: z.string().default('admin@cialo.cl'),
   SEED_ADMIN_PASSWORD: z.string().default('admin1234'),
+
+  // Copiloto IA (chat con function-calling sobre DeepSeek, API compatible con OpenAI).
+  DEEPSEEK_API_KEY: z.string().default(''),
+  DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
 });
 
 export const env = schema.parse(process.env);

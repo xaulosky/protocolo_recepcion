@@ -17,6 +17,7 @@ const createSchema = z.object({
   professionalId: z.string().optional(),
   permisos: z.array(z.string()).optional(),
   ocultarEnDM: z.boolean().optional(),
+  copilotoHabilitado: z.boolean().optional(),
 });
 
 const updateSchema = z.object({
@@ -27,6 +28,7 @@ const updateSchema = z.object({
   professionalId: z.string().nullable().optional(),
   permisos: z.array(z.string()).optional(),
   ocultarEnDM: z.boolean().optional(),
+  copilotoHabilitado: z.boolean().optional(),
 });
 
 // Perfil editable por el propio usuario (no toca email, rol ni permisos).
@@ -36,7 +38,7 @@ const perfilSchema = z.object({
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
 });
 
-const select = { id: true, email: true, nombre: true, role: true, activo: true, permisos: true, ocultarEnDM: true, professionalId: true, telefono: true, fechaNacimiento: true, createdAt: true } as const;
+const select = { id: true, email: true, nombre: true, role: true, activo: true, permisos: true, ocultarEnDM: true, copilotoHabilitado: true, professionalId: true, telefono: true, fechaNacimiento: true, createdAt: true } as const;
 
 /** "YYYY-MM-DD" de hoy en horario de Chile (el servidor corre en UTC). */
 function hoyChile(): string {

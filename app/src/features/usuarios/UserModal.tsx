@@ -23,6 +23,7 @@ export interface UserFormData {
   activo?: boolean;
   permisos: string[];
   ocultarEnDM: boolean;
+  copilotoHabilitado: boolean;
 }
 
 interface Props {
@@ -41,6 +42,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
   const [custom, setCustom] = useState(false);
   const [permisos, setPermisos] = useState<string[]>([]);
   const [ocultarEnDM, setOcultarEnDM] = useState(false);
+  const [copilotoHabilitado, setCopilotoHabilitado] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -54,11 +56,13 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
       setRole(editing.role);
       setActivo(editing.activo);
       setOcultarEnDM(editing.ocultarEnDM);
+      setCopilotoHabilitado(editing.copilotoHabilitado);
       const tienePersonalizados = editing.permisos && editing.permisos.length > 0;
       setCustom(!!tienePersonalizados);
       setPermisos(tienePersonalizados ? editing.permisos : defaultPermisos(editing.role));
     } else {
       setNombre(''); setEmail(''); setRole('RECEPCION'); setActivo(true); setOcultarEnDM(false);
+      setCopilotoHabilitado(false);
       setCustom(false); setPermisos(defaultPermisos('RECEPCION'));
     }
   }, [open, editing]);
@@ -91,6 +95,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
         // Admin → permisos vacíos (ve todo). Custom → la selección. Si no → vacío (defaults del rol).
         permisos: isAdmin || !custom ? [] : permisos,
         ocultarEnDM,
+        copilotoHabilitado,
       });
       onClose();
     } catch (e) {
@@ -156,6 +161,17 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>Cuenta compartida / estación (ej. Recepción)</span>
             <span style={{ display: 'block', fontSize: 12, color: 'var(--muted-2)', marginTop: 2 }}>
               No aparece en el selector de mensajes directos; se le escribe por el canal, no como DM individual.
+            </span>
+          </span>
+        </label>
+
+        {/* Copiloto IA */}
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, cursor: 'pointer' }}>
+          <input type="checkbox" checked={copilotoHabilitado} onChange={(e) => setCopilotoHabilitado(e.target.checked)} style={{ marginTop: 2 }} />
+          <span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>Copiloto IA habilitado</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--muted-2)', marginTop: 2 }}>
+              Permite usar el asistente de IA integrado (chat flotante) para crear tareas, reembolsos, presupuestos, consultar datos y organizar documentos.
             </span>
           </span>
         </label>

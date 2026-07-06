@@ -35,6 +35,8 @@ model User {
   // Cuenta compartida/estación (ej. "Recepción"): se oculta del selector de
   // mensajes directos; se le escribe por el canal, no como DM individual.
   ocultarEnDM  Boolean  @default(false)
+  // Acceso al Copiloto IA (chat con DeepSeek); activable por el admin, por usuario.
+  copilotoHabilitado Boolean @default(false)
   // Si el usuario es un profesional, enlaza a su ficha clínica.
   professional   Professional? @relation(fields: [professionalId], references: [id])
   professionalId String?
@@ -65,6 +67,7 @@ model User {
   inventarioMovimientos InventarioMovimiento[] @relation("InventarioMovUsuario")
   documentos            UserDocument[]         @relation("DocumentosUsuario")
   documentosSubidos     UserDocument[]         @relation("DocumentosSubidoPor")
+  copilotoMensajes      CopilotoMensaje[]
   // Si el usuario es una estación Box, su buzón privado con Recepción.
   buzon             Conversation? @relation("BuzonBox")
 
@@ -122,6 +125,22 @@ model UserDocument {
   createdAt   DateTime @default(now())
 
   @@index([userId])
+}
+
+// Mensaje del Copiloto IA (chat 1:1 usuario↔asistente, sin modelo de "Conversación"
+// separado). role: 'user' | 'assistant' | 'tool'.
+model CopilotoMensaje {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  role       String
+  contenido  String   @db.Text
+  toolName   String?
+  toolArgs   Json?
+  toolResult Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 enum NotificationType {

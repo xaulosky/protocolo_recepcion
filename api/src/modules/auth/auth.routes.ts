@@ -16,8 +16,11 @@ const resetSchema = z.object({ token: z.string().min(10), password: z.string().m
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
-function publicUser(u: { id: string; email: string; nombre: string; role: AccessPayload['role']; permisos: string[]; professionalId: string | null; telefono?: string | null; fechaNacimiento?: string | null }) {
-  return { id: u.id, email: u.email, nombre: u.nombre, role: u.role, permisos: u.permisos, professionalId: u.professionalId, telefono: u.telefono ?? null, fechaNacimiento: u.fechaNacimiento ?? null };
+function publicUser(u: { id: string; email: string; nombre: string; role: AccessPayload['role']; permisos: string[]; professionalId: string | null; telefono?: string | null; fechaNacimiento?: string | null; copilotoHabilitado?: boolean }) {
+  return {
+    id: u.id, email: u.email, nombre: u.nombre, role: u.role, permisos: u.permisos, professionalId: u.professionalId,
+    telefono: u.telefono ?? null, fechaNacimiento: u.fechaNacimiento ?? null, copilotoHabilitado: u.copilotoHabilitado ?? false,
+  };
 }
 
 export async function authRoutes(app: FastifyInstance) {

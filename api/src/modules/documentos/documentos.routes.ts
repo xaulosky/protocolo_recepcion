@@ -6,21 +6,12 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { createReadStream } from 'node:fs';
-import { mkdir, writeFile, unlink, stat } from 'node:fs/promises';
+import { unlink, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
 import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
 import { notify } from '../../lib/notify.ts';
-
-const TIPOS = ['CONTRATO', 'ANEXO', 'LIQUIDACION', 'CERTIFICADO', 'OTRO'] as const;
-
-// Raíz de uploads relativa al cwd del proceso (en el VPS: /var/www/cialo-hub/api/uploads).
-const UPLOADS_ROOT = path.resolve(process.cwd(), 'uploads');
-
-const include = {
-  subidoPor: { select: { id: true, nombre: true } },
-} as const;
+import { TIPOS, UPLOADS_ROOT, documentoInclude as include, saveUserDocument } from './documentos.service.ts';
 
 const metaSchema = z.object({
   userId: z.string().min(1),
@@ -29,11 +20,6 @@ const metaSchema = z.object({
   periodo: z.string().optional(),
   notas: z.string().optional(),
 });
-
-/** Limpia el nombre original para usarlo en disco sin caracteres problemáticos. */
-function sanitize(name: string): string {
-  return name.replace(/[^a-zA-Z0-9à-ÿÀ-ß._\- ]/g, '_').slice(-120) || 'documento';
-}
 
 export async function documentosRoutes(app: FastifyInstance) {
   const adminOnly = { preHandler: app.authorize([Role.ADMIN]) };
@@ -78,30 +64,18 @@ export async function documentosRoutes(app: FastifyInstance) {
 
     const documentos = [];
     for (const f of files) {
-      // Ruta relativa siempre con "/" (portable entre SO y lo que se guarda en BD).
-      const rel = ['documentos', target.id, `${randomUUID()}-${sanitize(f.filename)}`].join('/');
-      const abs = path.join(UPLOADS_ROOT, rel);
-      await mkdir(path.dirname(abs), { recursive: true });
-      await writeFile(abs, f.buf);
-
       // Con varios archivos, cada documento lleva el título base + su nombre de archivo.
       const sinExt = f.filename.replace(/\.[^.]+$/, '');
       const titulo = files.length === 1 ? parsed.data.titulo : `${parsed.data.titulo} — ${sinExt}`;
 
-      documentos.push(await prisma.userDocument.create({
-        data: {
-          userId: target.id,
-          tipo: parsed.data.tipo,
-          titulo,
-          filename: f.filename,
-          path: rel,
-          mime: f.mime,
-          size: f.buf.length,
-          periodo: parsed.data.periodo || null,
-          notas: parsed.data.notas || null,
-          subidoPorId: req.user.sub,
-        },
-        include,
+      documentos.push(await saveUserDocument({
+        userId: target.id,
+        tipo: parsed.data.tipo,
+        titulo,
+        periodo: parsed.data.periodo,
+        notas: parsed.data.notas,
+        file: f,
+        subidoPorId: req.user.sub,
       }));
     }
 

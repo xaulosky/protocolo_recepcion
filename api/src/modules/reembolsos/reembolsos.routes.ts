@@ -1,8 +1,9 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { prisma as db } from '../../db.ts';
+import { createReembolso } from './reembolsos.service.ts';
 
-const createSchema = z.object({
+export const createSchema = z.object({
   paciente:       z.string().min(1),
   rut:            z.string().optional().nullable(),
   telefono:       z.string().optional().nullable(),
@@ -86,48 +87,7 @@ export const reembolsosRoutes: FastifyPluginAsync = async (app) => {
   // POST /reembolsos — registrar solicitud y crear tarea automática
   app.post('/', { onRequest: [app.authenticate] }, async (req, reply) => {
     const body = createSchema.parse(req.body);
-    const reembolso = await db.solicitudReembolso.create({
-      data: { ...body, creadoPorId: req.user.sub },
-      include: { creadoPor: { select: { id: true, nombre: true } } },
-    });
-
-    // Registrar actividad de creación
-    await db.reembolsoActividad.create({
-      data: { reembolsoId: reembolso.id, userId: req.user.sub, tipo: 'CREACION' },
-    }).catch(() => {});
-
-    // Crear tarea con todos los datos del reembolso
-    const detalles = [
-      `Paciente: ${body.paciente}`,
-      body.rut            ? `RUT: ${body.rut}`                          : null,
-      body.telefono       ? `Teléfono: ${body.telefono}`                : null,
-      body.email          ? `Correo: ${body.email}`                     : null,
-      body.fechaSolicitud ? `Fecha solicitud: ${body.fechaSolicitud}`   : null,
-      body.fechaPago      ? `Fecha de pago: ${body.fechaPago}`          : null,
-      body.monto          ? `Monto: ${body.monto}`                      : null,
-      `Motivo: ${body.motivo}`,
-      body.banco          ? `Banco: ${body.banco}`                      : null,
-      body.tipoCuenta     ? `Tipo cuenta: ${body.tipoCuenta}`           : null,
-      body.cuenta         ? `N° cuenta: ${body.cuenta}`                 : null,
-      body.titular        ? `Titular: ${body.titular}`                  : null,
-      body.urgente        ? `URGENTE`                                   : null,
-    ].filter(Boolean).join('\n');
-
-    try {
-      await db.task.create({
-        data: {
-          tipo: 'Reembolso',
-          descripcion: detalles,
-          paciente: body.paciente,
-          prioridad: body.urgente ? 'URGENTE' : 'NORMAL',
-          tags: ['reembolso'],
-          creadoPorId: req.user.sub,
-        },
-      });
-    } catch (err) {
-      app.log.error({ err }, 'No se pudo crear la tarea para el reembolso');
-    }
-
+    const reembolso = await createReembolso(body, req.user.sub);
     return reply.code(201).send({ reembolso });
   });
 

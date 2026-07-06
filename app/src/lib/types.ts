@@ -11,6 +11,7 @@ export interface AuthUser {
   professionalId: string | null;
   telefono?: string | null;
   fechaNacimiento?: string | null; // "YYYY-MM-DD"
+  copilotoHabilitado?: boolean;
 }
 
 /** Usuario completo para la gestión de admin. */
@@ -22,9 +23,24 @@ export interface ManagedUser {
   activo: boolean;
   permisos: string[];
   ocultarEnDM: boolean;
+  copilotoHabilitado: boolean;
   professionalId: string | null;
   telefono?: string | null;
   fechaNacimiento?: string | null;
+  createdAt: string;
+}
+
+// ── Copiloto IA ──
+
+export type CopilotoRole = 'user' | 'assistant' | 'tool';
+
+export interface CopilotoMensaje {
+  id: string;
+  role: CopilotoRole;
+  contenido: string;
+  toolName?: string | null;
+  toolArgs?: Record<string, unknown> | null;
+  toolResult?: Record<string, unknown> | null;
   createdAt: string;
 }
 

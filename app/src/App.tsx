@@ -16,6 +16,8 @@ import { Tareas } from './features/tareas/Tareas';
 import { Chat } from './features/chat/Chat';
 import { ChatProvider } from './features/chat/ChatProvider';
 import { ChatFloating } from './features/chat/ChatFloating';
+import { CopilotoProvider } from './features/copiloto/CopilotoProvider';
+import { CopilotoFloating } from './features/copiloto/CopilotoFloating';
 import { Protocolos } from './features/Protocolos';
 import { Guiones } from './features/Guiones';
 import { Pagos } from './features/Pagos';
@@ -120,8 +122,11 @@ function Gate() {
   return (
     <AppProvider>
       <ChatProvider>
-        <Shell />
-        <ChatFloating />
+        <CopilotoProvider>
+          <Shell />
+          <ChatFloating />
+          <CopilotoFloating />
+        </CopilotoProvider>
       </ChatProvider>
     </AppProvider>
   );
