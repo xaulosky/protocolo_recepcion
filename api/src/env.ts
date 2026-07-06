@@ -35,7 +35,7 @@ const schema = z.object({
 
   // Copiloto IA (chat con function-calling sobre DeepSeek, API compatible con OpenAI).
   DEEPSEEK_API_KEY: z.string().default(''),
-  DEEPSEEK_MODEL: z.string().default('deepseek-chat'),
+  DEEPSEEK_MODEL: z.string().default('deepseek-v4-flash'),
 });
 
 export const env = schema.parse(process.env);
