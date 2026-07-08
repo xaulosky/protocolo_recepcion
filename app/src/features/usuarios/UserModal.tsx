@@ -80,7 +80,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
   const submit = async () => {
     setError('');
     if (!nombre.trim()) return setError('El nombre es obligatorio');
-    if (!editing && !email.trim()) return setError('El email es obligatorio');
+    if (!email.trim()) return setError('El email es obligatorio');
     if (!editing && password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres');
     if (editing && password && password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres');
 
@@ -116,8 +116,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={!!editing}
-            style={{ ...input, opacity: editing ? 0.6 : 1 }}
+            style={input}
             placeholder="persona@cialo.cl"
           />
         </Field>

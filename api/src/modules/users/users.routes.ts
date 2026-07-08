@@ -22,6 +22,7 @@ const createSchema = z.object({
 
 const updateSchema = z.object({
   nombre: z.string().min(1).optional(),
+  email: z.string().email().optional(),
   role: z.nativeEnum(Role).optional(),
   activo: z.boolean().optional(),
   password: z.string().min(6).optional(),
@@ -177,6 +178,11 @@ export async function usersRoutes(app: FastifyInstance) {
     const { id } = req.params as { id: string };
     const parsed = updateSchema.safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos' });
+
+    if (parsed.data.email) {
+      const exists = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+      if (exists && exists.id !== id) return reply.code(409).send({ error: 'Ese email ya está registrado' });
+    }
 
     const { password, ...rest } = parsed.data;
     const data: Record<string, unknown> = { ...rest };

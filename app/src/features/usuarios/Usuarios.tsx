@@ -43,7 +43,7 @@ export function Usuarios() {
   const handleSubmit = async (data: UserFormData) => {
     if (editing) {
       const body: Record<string, unknown> = {
-        nombre: data.nombre, role: data.role, activo: data.activo, permisos: data.permisos,
+        nombre: data.nombre, email: data.email, role: data.role, activo: data.activo, permisos: data.permisos,
         ocultarEnDM: data.ocultarEnDM, copilotoHabilitado: data.copilotoHabilitado,
       };
       if (data.password) body.password = data.password;
