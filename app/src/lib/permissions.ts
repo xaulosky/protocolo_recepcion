@@ -7,7 +7,7 @@ export const PERMISSION_VIEWS: ViewId[] = [
   'protocolos', 'guiones', 'pagos', 'suspensiones',
   'pacientes', 'tratamientos', 'profesionales', 'consultas', 'boxes', 'cirugias',
   'inventario',
-  'productos', 'presupuestos', 'giftcards', 'consentimientos',
+  'productos', 'caja', 'presupuestos', 'giftcards', 'consentimientos',
   'faq', 'reembolso', 'reportes',
 ];
 
@@ -15,11 +15,12 @@ export const PERMISSION_VIEWS: ViewId[] = [
 const ROLE_DEFAULTS: Record<Role, ViewId[]> = {
   // El admin ve todo (incluye 'usuarios', que se añade aparte).
   ADMIN: [...PERMISSION_VIEWS],
-  // Recepción y profesional: todo el contenido salvo administración.
+  // Recepción: todo el contenido salvo administración.
   RECEPCION: [...PERMISSION_VIEWS],
-  PROFESIONAL: [...PERMISSION_VIEWS],
-  // Solo lectura: secciones de referencia, sin tareas.
-  LECTURA: PERMISSION_VIEWS.filter((v) => v !== 'tareas'),
+  // Profesional: sin la caja (manejo de efectivo es responsabilidad de recepción).
+  PROFESIONAL: PERMISSION_VIEWS.filter((v) => v !== 'caja'),
+  // Solo lectura: secciones de referencia, sin tareas ni caja.
+  LECTURA: PERMISSION_VIEWS.filter((v) => v !== 'tareas' && v !== 'caja'),
   // Estación Box: solo mensajería.
   BOX: ['chat'],
 };

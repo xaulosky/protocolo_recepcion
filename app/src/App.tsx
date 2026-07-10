@@ -30,6 +30,7 @@ import { Boxes } from './features/Boxes';
 import { Cirugias } from './features/cirugias/Cirugias';
 import { Inventario } from './features/inventario/Inventario';
 import { Productos } from './features/Productos';
+import { Caja } from './features/caja/Caja';
 import { Presupuestos } from './features/Presupuestos';
 import { GiftCards } from './features/GiftCards';
 import { Consentimientos } from './features/Consentimientos';
@@ -59,6 +60,7 @@ const VIEWS: Record<ViewId, ComponentType> = {
   cirugias: Cirugias,
   inventario: Inventario,
   productos: Productos,
+  caja: Caja,
   presupuestos: Presupuestos,
   giftcards: GiftCards,
   consentimientos: Consentimientos,

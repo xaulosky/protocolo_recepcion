@@ -68,6 +68,10 @@ model User {
   documentos            UserDocument[]         @relation("DocumentosUsuario")
   documentosSubidos     UserDocument[]         @relation("DocumentosSubidoPor")
   copilotoMensajes      CopilotoMensaje[]
+  turnosAbiertos        Turno[]                @relation("TurnoAbiertoPor")
+  turnosCerrados        Turno[]                @relation("TurnoCerradoPor")
+  ventasVendedor        Venta[]                @relation("VentaVendedor")
+  ventasAnuladas        Venta[]                @relation("VentaAnuladaPor")
   // Si el usuario es una estación Box, su buzón privado con Recepción.
   buzon             Conversation? @relation("BuzonBox")
 
@@ -381,6 +385,91 @@ model ReembolsoActividad {
   @@index([reembolsoId])
 }
 
+// ───────────────────────────── Caja / Punto de venta ─────────────────────────────
+
+enum TurnoEstado {
+  ABIERTO
+  CERRADO
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TARJETA
+  TRANSFERENCIA
+}
+
+// Turno de caja GLOBAL (una sola caja física en la clínica): solo puede haber
+// uno ABIERTO a la vez; cualquier usuario con permiso puede operarlo.
+model Turno {
+  id            String      @id @default(cuid())
+  estado        TurnoEstado @default(ABIERTO)
+  montoInicial  Int         @default(0) // efectivo inicial en el cajón (CLP)
+  aperturaNotas String?
+  abiertoPor    User        @relation("TurnoAbiertoPor", fields: [abiertoPorId], references: [id])
+  abiertoPorId  String
+  abiertoAt     DateTime    @default(now())
+
+  // Cierre: el esperado = montoInicial + Σ ventas EFECTIVO no anuladas del turno.
+  montoContado  Int?
+  montoEsperado Int?
+  diferencia    Int?
+  cierreNotas   String?
+  cerradoPor    User?     @relation("TurnoCerradoPor", fields: [cerradoPorId], references: [id], onDelete: SetNull)
+  cerradoPorId  String?
+  cerradoAt     DateTime?
+
+  ventas Venta[]
+
+  @@index([estado])
+  @@index([abiertoAt])
+}
+
+model Venta {
+  id              String     @id @default(cuid())
+  numero          Int        @unique @default(autoincrement()) // folio del comprobante
+  turno           Turno      @relation(fields: [turnoId], references: [id])
+  turnoId         String
+  cliente         String?
+  metodoPago      MetodoPago
+  subtotal        Int
+  descuento       Int        @default(0) // % 0-100
+  total           Int
+  notas           String?
+  vendedor        User       @relation("VentaVendedor", fields: [vendedorId], references: [id])
+  vendedorId      String
+  items           VentaItem[]
+  // Anulación lógica (nunca DELETE): repone stock y sale del reporte mensual,
+  // pero queda visible en el historial para trazabilidad.
+  anuladaAt       DateTime?
+  anuladaPor      User?      @relation("VentaAnuladaPor", fields: [anuladaPorId], references: [id], onDelete: SetNull)
+  anuladaPorId    String?
+  motivoAnulacion String?
+  createdAt       DateTime   @default(now())
+
+  @@index([turnoId])
+  @@index([vendedorId])
+  @@index([createdAt])
+  @@index([anuladaAt])
+}
+
+model VentaItem {
+  id               String          @id @default(cuid())
+  venta            Venta           @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  ventaId          String
+  product          Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId        Int?
+  inventarioItem   InventarioItem? @relation(fields: [inventarioItemId], references: [id], onDelete: SetNull)
+  inventarioItemId String?
+  nombre           String // snapshot del nombre al momento de vender
+  precioUnitario   Int    // snapshot del precio al momento de vender
+  cantidad         Int
+  movimientos      InventarioMovimiento[]
+
+  @@index([ventaId])
+  @@index([productId])
+  @@index([inventarioItemId])
+}
+
 // Pago de honorarios a un profesional. Registro central: varios por profesional/mes.
 model PagoProfesional {
   id             String       @id @default(cuid())
@@ -539,6 +628,12 @@ model Product {
   description String?
 
   insumos CirugiaInsumo[]
+
+  // Vínculo 1:1 opcional con el inventario: si está seteado, la Caja descuenta
+  // stock real al vender este producto.
+  inventarioItem   InventarioItem? @relation(fields: [inventarioItemId], references: [id], onDelete: SetNull)
+  inventarioItemId String?         @unique
+  ventaItems       VentaItem[]
 
   @@index([brand])
 }
@@ -831,6 +926,8 @@ model InventarioItem {
 
   movimientos        InventarioMovimiento[]
   locationInventario LocationInventario[]
+  producto           Product?
+  ventaItems         VentaItem[]
 
   creadoPor    User?    @relation("InventarioCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
   creadoPorId  String?
@@ -863,11 +960,16 @@ model InventarioMovimiento {
   profesionalId  String?
   realizadoPor   User?    @relation("InventarioMovUsuario", fields: [realizadoPorId], references: [id], onDelete: SetNull)
   realizadoPorId String?
+  // Trazabilidad de ventas de caja: SIN @unique — un mismo VentaItem genera la
+  // SALIDA al vender y una ENTRADA de devolución si la venta se anula.
+  ventaItem      VentaItem? @relation(fields: [ventaItemId], references: [id], onDelete: SetNull)
+  ventaItemId    String?
   fechaMovimiento DateTime @default(now())
   createdAt       DateTime @default(now())
 
   @@index([itemId, fechaMovimiento])
   @@index([fechaMovimiento])
   @@index([tipo])
+  @@index([ventaItemId])
   @@index([ubicacionId])
 }

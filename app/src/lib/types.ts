@@ -119,6 +119,8 @@ export interface Product {
   price: number;
   category: string | null;
   description: string | null;
+  /** Vínculo con inventario: si existe, la Caja descuenta stock al vender. */
+  inventarioItem?: { id: string; stock: number; unidad: string } | null;
 }
 
 export interface Consultation {
@@ -376,6 +378,71 @@ export interface SolicitudReembolso {
   actividad?: ReembolsoActividad[];
   createdAt: string;
   updatedAt: string;
+}
+
+// ── Caja / Punto de venta ──
+
+export type MetodoPago = 'EFECTIVO' | 'TARJETA' | 'TRANSFERENCIA';
+export type TurnoEstado = 'ABIERTO' | 'CERRADO';
+
+export interface TurnoResumen {
+  ventas: number;
+  total: number;
+  EFECTIVO: number;
+  TARJETA: number;
+  TRANSFERENCIA: number;
+}
+
+export interface Turno {
+  id: string;
+  estado: TurnoEstado;
+  montoInicial: number;
+  aperturaNotas: string | null;
+  abiertoPor: TaskUserRef | null;
+  abiertoAt: string;
+  montoContado: number | null;
+  montoEsperado: number | null;
+  diferencia: number | null;
+  cierreNotas: string | null;
+  cerradoPor: TaskUserRef | null;
+  cerradoAt: string | null;
+  resumen?: TurnoResumen;
+}
+
+export interface VentaItem {
+  id: string;
+  productId: number | null;
+  inventarioItemId: string | null;
+  nombre: string;
+  precioUnitario: number;
+  cantidad: number;
+}
+
+export interface Venta {
+  id: string;
+  numero: number;
+  cliente: string | null;
+  metodoPago: MetodoPago;
+  subtotal: number;
+  descuento: number;
+  total: number;
+  notas: string | null;
+  vendedor: TaskUserRef | null;
+  items: VentaItem[];
+  anuladaAt: string | null;
+  anuladaPor: TaskUserRef | null;
+  motivoAnulacion: string | null;
+  createdAt: string;
+}
+
+export interface VentasResumenMes {
+  resumen: {
+    total: number;
+    cantidad: number;
+    porVendedor: { vendedorId: string; nombre: string; total: number; cantidad: number }[];
+    porMetodoPago: Record<MetodoPago, number>;
+  };
+  meses: string[];
 }
 
 // ── Honorarios a profesionales ──

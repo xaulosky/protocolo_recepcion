@@ -107,7 +107,42 @@ export async function dataRoutes(app: FastifyInstance) {
     });
     return { professionals };
   });
-  app.get('/products', async () => ({ products: await prisma.product.findMany({ orderBy: [{ brand: 'asc' }, { name: 'asc' }] }) }));
+  app.get('/products', async () => ({
+    products: await prisma.product.findMany({
+      include: { inventarioItem: { select: { id: true, stock: true, unidad: true } } },
+      orderBy: [{ brand: 'asc' }, { name: 'asc' }],
+    }),
+  }));
+
+  // PATCH /data/products/:id — vincular/desvincular un producto con su ítem de
+  // inventario (habilita venderlo en Caja con descuento de stock). Solo admin.
+  app.patch('/products/:id', { preHandler: app.authorize([Role.ADMIN]) }, async (req, reply) => {
+    const id = Number((req.params as { id: string }).id);
+    const body = z.object({ inventarioItemId: z.string().nullable() }).parse(req.body);
+
+    if (body.inventarioItemId) {
+      const item = await prisma.inventarioItem.findUnique({ where: { id: body.inventarioItemId }, select: { id: true, activo: true } });
+      if (!item) return reply.code(404).send({ error: 'Ítem de inventario no encontrado' });
+      if (!item.activo) return reply.code(400).send({ error: 'El ítem de inventario está inactivo' });
+    }
+
+    try {
+      const product = await prisma.product.update({
+        where: { id },
+        data: { inventarioItemId: body.inventarioItemId },
+        include: { inventarioItem: { select: { id: true, stock: true, unidad: true } } },
+      });
+      return { product };
+    } catch (err) {
+      if ((err as { code?: string }).code === 'P2002') {
+        return reply.code(409).send({ error: 'Ese ítem de inventario ya está vinculado a otro producto' });
+      }
+      if ((err as { code?: string }).code === 'P2025') {
+        return reply.code(404).send({ error: 'Producto no encontrado' });
+      }
+      throw err;
+    }
+  });
   app.get('/consultations', async () => ({ consultations: await prisma.consultation.findMany({ orderBy: { nombre: 'asc' } }) }));
   app.get('/boxes', async () => ({ boxes: await prisma.box.findMany({ orderBy: { id: 'asc' } }) }));
   app.get('/consents', async () => ({ consents: await prisma.consent.findMany({ orderBy: { treatment: 'asc' } }) }));

@@ -5,7 +5,7 @@ export type ViewId =
   | 'protocolos' | 'guiones' | 'pagos' | 'suspensiones'
   | 'pacientes' | 'tratamientos' | 'profesionales' | 'consultas' | 'boxes' | 'cirugias'
   | 'inventario'
-  | 'productos' | 'presupuestos' | 'giftcards' | 'consentimientos'
+  | 'productos' | 'caja' | 'presupuestos' | 'giftcards' | 'consentimientos'
   | 'faq' | 'reembolso' | 'reportes'
   | 'honorarios' | 'usuarios' | 'admin';
 
@@ -36,6 +36,7 @@ export const NAV: NavSection[] = [
   ]},
   { section: 'Comercial', items: [
     { id: 'productos', label: 'Productos', icon: 'pkg' },
+    { id: 'caja', label: 'Caja', icon: 'credit' },
     { id: 'presupuestos', label: 'Presupuestos', icon: 'file' },
     { id: 'giftcards', label: 'Gift Cards', icon: 'gift' },
     { id: 'consentimientos', label: 'Documentos', icon: 'pen' },
@@ -69,6 +70,7 @@ export const VIEW_LABELS: Record<ViewId, string> = {
   cirugias: 'Cirugías',
   inventario: 'Inventario',
   productos: 'Productos',
+  caja: 'Caja — Venta de Productos',
   presupuestos: 'Presupuestos',
   giftcards: 'Gift Cards',
   consentimientos: 'Documentos Clínicos',
