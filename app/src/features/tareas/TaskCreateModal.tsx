@@ -5,7 +5,8 @@ import { Modal } from '../../components/Modal';
 import { UserMultiSelect } from '../../components/UserMultiSelect';
 import { TagInput } from '../../components/TagInput';
 
-const TIPOS = [
+// Sugerencias de tipos frecuentes: el campo es libre, se puede escribir cualquier otro.
+const TIPOS_SUGERIDOS = [
   'Confirmación de cita', 'Mensaje sin responder', 'Reagendamiento',
   'Solicitud de reembolso', 'Suspensión', 'Seguimiento post-tratamiento', 'Pago / cobro pendiente',
 ];
@@ -69,10 +70,16 @@ export function TaskCreateModal({ open, initialDueAt, users, onClose, onGuardar 
 
         <div>
           <label className="label">Tipo *</label>
-          <select className="select" value={draft.tipo} onChange={(e) => set('tipo', e.target.value)}>
-            <option value="">Seleccionar...</option>
-            {TIPOS.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <input
+            className="input"
+            list="tipos-tarea-sugeridos"
+            value={draft.tipo}
+            onChange={(e) => set('tipo', e.target.value)}
+            placeholder="Elige una sugerencia o escribe cualquier tipo..."
+          />
+          <datalist id="tipos-tarea-sugeridos">
+            {TIPOS_SUGERIDOS.map((t) => <option key={t} value={t} />)}
+          </datalist>
         </div>
 
         <div>
