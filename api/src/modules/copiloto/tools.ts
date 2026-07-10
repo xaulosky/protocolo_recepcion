@@ -158,7 +158,7 @@ export const TOOLS: ToolDef[] = [
     type: 'function',
     function: {
       name: 'invitar_usuarios',
-      description: 'Crea cuentas nuevas en el sistema para una o varias personas y les envía por correo una invitación con un enlace para que cada una cree su propia contraseña. Solo administradores.',
+      description: 'Crea cuentas nuevas en el sistema para una o varias personas y les envía por correo una invitación con un enlace para que cada una cree su propia contraseña. Solo administradores. Crear una cuenta con rol ADMIN requiere confirmación explícita previa del usuario.',
       parameters: {
         type: 'object',
         properties: {
@@ -169,7 +169,8 @@ export const TOOLS: ToolDef[] = [
               properties: {
                 nombre: { type: 'string', description: 'Nombre y apellido de la persona.' },
                 email: { type: 'string', description: 'Correo electrónico (será su usuario).' },
-                rol: { type: 'string', enum: ['RECEPCION', 'PROFESIONAL', 'LECTURA'], description: 'Rol en el sistema. Por defecto RECEPCION.' },
+                rol: { type: 'string', enum: ['ADMIN', 'RECEPCION', 'PROFESIONAL', 'LECTURA'], description: 'Rol en el sistema. Por defecto RECEPCION. ADMIN solo tras confirmación explícita del usuario.' },
+                profesionalVinculado: { type: 'string', description: 'Nombre (o parte del nombre) del profesional de la clínica para vincular la cuenta con su ficha clínica, si corresponde. Independiente del rol.' },
               },
               required: ['nombre', 'email'],
             },
@@ -315,11 +316,13 @@ export async function ejecutarTool(nombre: string, argsRaw: string, ctx: ToolCon
         if (ctx.role !== Role.ADMIN) {
           return toolError('Solo un administrador puede invitar usuarios nuevos.');
         }
-        const lista = Array.isArray(args.usuarios) ? (args.usuarios as { nombre?: string; email?: string; rol?: string }[]) : [];
+        const lista = Array.isArray(args.usuarios) ? (args.usuarios as { nombre?: string; email?: string; rol?: string; profesionalVinculado?: string }[]) : [];
         if (lista.length === 0) return toolError('Debes indicar al menos una persona con nombre y email.');
         if (lista.length > 20) return toolError('Máximo 20 invitaciones por vez.');
 
-        const ROLES_PERMITIDOS = ['RECEPCION', 'PROFESIONAL', 'LECTURA'] as const;
+        // ADMIN permitido aquí porque el ejecutor ya es ADMIN (verificado arriba con
+        // el JWT) y el system prompt exige confirmación explícita antes de usarlo.
+        const ROLES_PERMITIDOS = ['ADMIN', 'RECEPCION', 'PROFESIONAL', 'LECTURA'] as const;
         const resultados = [];
         for (const u of lista) {
           const nombre = String(u.nombre ?? '').trim();
@@ -329,7 +332,26 @@ export async function ejecutarTool(nombre: string, argsRaw: string, ctx: ToolCon
             continue;
           }
           const rol = ROLES_PERMITIDOS.includes(u.rol as (typeof ROLES_PERMITIDOS)[number]) ? (u.rol as Role) : Role.RECEPCION;
-          resultados.push(await inviteUser({ nombre, email, role: rol }));
+
+          // Vincular ficha clínica por nombre (mismo patrón fuzzy que registrar_documento).
+          let professionalId: string | undefined;
+          if (u.profesionalVinculado) {
+            const candidatos = await prisma.professional.findMany({
+              where: { nombreCompleto: { contains: String(u.profesionalVinculado), mode: 'insensitive' } },
+              select: { id: true, nombreCompleto: true },
+            });
+            if (candidatos.length === 0) {
+              resultados.push({ ok: false, nombre, email, error: `No encontré un profesional llamado "${u.profesionalVinculado}".` });
+              continue;
+            }
+            if (candidatos.length > 1) {
+              resultados.push({ ok: false, nombre, email, error: `Varios profesionales coinciden: ${candidatos.map((c) => c.nombreCompleto).join(', ')}. Sé más específico.` });
+              continue;
+            }
+            professionalId = candidatos[0].id;
+          }
+
+          resultados.push(await inviteUser({ nombre, email, role: rol, professionalId }));
         }
         const creados = resultados.filter((r) => r.ok).length;
         const sinCorreo = resultados.filter((r) => r.ok && !('emailEnviado' in r && r.emailEnviado)).length;
