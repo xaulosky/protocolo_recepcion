@@ -8,6 +8,7 @@ import { syncUserChannels } from '../../lib/channels.ts';
 import { syncBuzones } from '../../lib/buzon.ts';
 import { sendMail, notify } from '../../lib/notify.ts';
 import { welcomeEmail } from '../../lib/emails.ts';
+import { inviteUser } from './users.service.ts';
 
 const createSchema = z.object({
   email: z.string().email(),
@@ -30,6 +31,18 @@ const updateSchema = z.object({
   permisos: z.array(z.string()).optional(),
   ocultarEnDM: z.boolean().optional(),
   copilotoHabilitado: z.boolean().optional(),
+});
+
+// Invitación: usuarios nuevos sin contraseña (la crean ellos vía enlace por correo).
+const inviteSchema = z.object({
+  usuarios: z.array(z.object({
+    nombre: z.string().min(1),
+    email: z.string().email(),
+    role: z.nativeEnum(Role).optional(),
+    permisos: z.array(z.string()).optional(),
+    ocultarEnDM: z.boolean().optional(),
+    copilotoHabilitado: z.boolean().optional(),
+  })).min(1).max(20),
 });
 
 // Perfil editable por el propio usuario (no toca email, rol ni permisos).
@@ -171,6 +184,20 @@ export async function usersRoutes(app: FastifyInstance) {
     sendMail({ to: user.email, subject: mail.subject, html: mail.html, text: mail.text }).catch(() => {});
 
     return reply.code(201).send({ user });
+  });
+
+  // POST /users/invitar — crea uno o varios usuarios y les envía la invitación
+  // por correo para que definan su propia contraseña (enlace válido 7 días).
+  app.post('/invitar', adminOnly, async (req, reply) => {
+    const parsed = inviteSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos', detalles: parsed.error.flatten() });
+
+    const resultados = [];
+    for (const u of parsed.data.usuarios) {
+      resultados.push(await inviteUser(u));
+    }
+    const creados = resultados.filter((r) => r.ok).length;
+    return reply.code(201).send({ resultados, creados });
   });
 
   // PATCH /users/:id

@@ -24,6 +24,8 @@ export interface UserFormData {
   permisos: string[];
   ocultarEnDM: boolean;
   copilotoHabilitado: boolean;
+  /** Solo al crear: enviar invitación por correo para que la persona cree su propia clave. */
+  invitar?: boolean;
 }
 
 interface Props {
@@ -43,6 +45,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
   const [permisos, setPermisos] = useState<string[]>([]);
   const [ocultarEnDM, setOcultarEnDM] = useState(false);
   const [copilotoHabilitado, setCopilotoHabilitado] = useState(false);
+  const [invitar, setInvitar] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -62,7 +65,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
       setPermisos(tienePersonalizados ? editing.permisos : defaultPermisos(editing.role));
     } else {
       setNombre(''); setEmail(''); setRole('RECEPCION'); setActivo(true); setOcultarEnDM(false);
-      setCopilotoHabilitado(false);
+      setCopilotoHabilitado(false); setInvitar(true);
       setCustom(false); setPermisos(defaultPermisos('RECEPCION'));
     }
   }, [open, editing]);
@@ -81,8 +84,8 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
     setError('');
     if (!nombre.trim()) return setError('El nombre es obligatorio');
     if (!email.trim()) return setError('El email es obligatorio');
-    if (!editing && password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres');
-    if (editing && password && password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres');
+    if (!editing && !invitar && password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres');
+    if ((editing || !invitar) && password && password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres');
 
     setBusy(true);
     try {
@@ -96,6 +99,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
         permisos: isAdmin || !custom ? [] : permisos,
         ocultarEnDM,
         copilotoHabilitado,
+        invitar: !editing && invitar,
       });
       onClose();
     } catch (e) {
@@ -143,15 +147,29 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
           )}
         </div>
 
-        <Field label={editing ? 'Contraseña (dejar en blanco para no cambiar)' : 'Contraseña'}>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={input}
-            placeholder={editing ? '••••••' : 'Mínimo 6 caracteres'}
-          />
-        </Field>
+        {!editing && (
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, cursor: 'pointer' }}>
+            <input type="checkbox" checked={invitar} onChange={(e) => setInvitar(e.target.checked)} style={{ marginTop: 2 }} />
+            <span>
+              <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>Enviar invitación por correo</span>
+              <span style={{ display: 'block', fontSize: 12, color: 'var(--muted-2)', marginTop: 2 }}>
+                La persona recibe un enlace (válido 7 días) para crear su propia contraseña. Desmarca para asignarle una tú.
+              </span>
+            </span>
+          </label>
+        )}
+
+        {(editing || !invitar) && (
+          <Field label={editing ? 'Contraseña (dejar en blanco para no cambiar)' : 'Contraseña'}>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={input}
+              placeholder={editing ? '••••••' : 'Mínimo 6 caracteres'}
+            />
+          </Field>
+        )}
 
         {/* Cuenta compartida / estación */}
         <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, cursor: 'pointer', borderTop: '1px solid var(--border-soft)', paddingTop: 12 }}>

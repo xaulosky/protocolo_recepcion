@@ -17,6 +17,7 @@ import { createSchema as reembolsoCreateSchema } from '../reembolsos/reembolsos.
 import { createQuote } from '../quotes/quotes.service.ts';
 import { createSchema as quoteCreateSchema } from '../quotes/quotes.routes.ts';
 import { saveUserDocument, TIPOS as DOCUMENTO_TIPOS } from '../documentos/documentos.service.ts';
+import { inviteUser } from '../users/users.service.ts';
 import type { ToolDef } from './deepseek.ts';
 
 export interface ArchivoAdjunto {
@@ -156,6 +157,31 @@ export const TOOLS: ToolDef[] = [
   {
     type: 'function',
     function: {
+      name: 'invitar_usuarios',
+      description: 'Crea cuentas nuevas en el sistema para una o varias personas y les envía por correo una invitación con un enlace para que cada una cree su propia contraseña. Solo administradores.',
+      parameters: {
+        type: 'object',
+        properties: {
+          usuarios: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                nombre: { type: 'string', description: 'Nombre y apellido de la persona.' },
+                email: { type: 'string', description: 'Correo electrónico (será su usuario).' },
+                rol: { type: 'string', enum: ['RECEPCION', 'PROFESIONAL', 'LECTURA'], description: 'Rol en el sistema. Por defecto RECEPCION.' },
+              },
+              required: ['nombre', 'email'],
+            },
+          },
+        },
+        required: ['usuarios'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'registrar_documento',
       description: 'Guarda el archivo adjunto de este mensaje como documento de un usuario. Requiere que el usuario haya adjuntado un archivo en este mismo mensaje.',
       parameters: {
@@ -283,6 +309,31 @@ export async function ejecutarTool(nombre: string, argsRaw: string, ctx: ToolCon
           return { ok: true, total: tratamientos.length, tratamientos };
         }
         return toolError('tipo debe ser "profesionales" o "tratamientos".');
+      }
+
+      case 'invitar_usuarios': {
+        if (ctx.role !== Role.ADMIN) {
+          return toolError('Solo un administrador puede invitar usuarios nuevos.');
+        }
+        const lista = Array.isArray(args.usuarios) ? (args.usuarios as { nombre?: string; email?: string; rol?: string }[]) : [];
+        if (lista.length === 0) return toolError('Debes indicar al menos una persona con nombre y email.');
+        if (lista.length > 20) return toolError('Máximo 20 invitaciones por vez.');
+
+        const ROLES_PERMITIDOS = ['RECEPCION', 'PROFESIONAL', 'LECTURA'] as const;
+        const resultados = [];
+        for (const u of lista) {
+          const nombre = String(u.nombre ?? '').trim();
+          const email = String(u.email ?? '').trim();
+          if (!nombre || !/^\S+@\S+\.\S+$/.test(email)) {
+            resultados.push({ ok: false, nombre, email, error: 'Nombre o email inválido' });
+            continue;
+          }
+          const rol = ROLES_PERMITIDOS.includes(u.rol as (typeof ROLES_PERMITIDOS)[number]) ? (u.rol as Role) : Role.RECEPCION;
+          resultados.push(await inviteUser({ nombre, email, role: rol }));
+        }
+        const creados = resultados.filter((r) => r.ok).length;
+        const sinCorreo = resultados.filter((r) => r.ok && !('emailEnviado' in r && r.emailEnviado)).length;
+        return { ok: true, creados, fallidos: resultados.length - creados, sinCorreo, resultados };
       }
 
       case 'registrar_documento': {

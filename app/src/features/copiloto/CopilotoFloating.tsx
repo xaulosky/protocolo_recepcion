@@ -14,6 +14,7 @@ function formatToolChip(m: CopilotoMensaje): string {
     case 'crear_reembolso': return `Reembolso registrado: ${r.paciente ?? ''} — ${r.motivo ?? ''}`;
     case 'crear_presupuesto': return `Presupuesto creado para ${r.paciente ?? ''}`;
     case 'registrar_documento': return `Documento "${r.titulo ?? ''}" guardado para ${r.usuario ?? ''}`;
+    case 'invitar_usuarios': return `${r.creados ?? 0} invitación(es) enviadas${Number(r.fallidos) > 0 ? ` · ${r.fallidos} fallidas` : ''}`;
     case 'consultar_tareas': return `${r.total ?? 0} tarea(s) encontradas`;
     case 'consultar_reembolsos': return `${r.total ?? 0} reembolso(s) encontrados`;
     case 'buscar_catalogo': return `${r.total ?? 0} resultado(s) en el catálogo`;

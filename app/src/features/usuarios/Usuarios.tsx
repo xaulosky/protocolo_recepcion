@@ -49,6 +49,23 @@ export function Usuarios() {
       if (data.password) body.password = data.password;
       await api.patch(`/users/${editing.id}`, body);
       toast('Usuario actualizado');
+    } else if (data.invitar) {
+      // Crear por invitación: la persona define su clave vía enlace por correo.
+      const res = await api.post<{ resultados: { ok: boolean; enlace?: string; emailEnviado?: boolean; error?: string }[] }>('/users/invitar', {
+        usuarios: [{
+          nombre: data.nombre, email: data.email, role: data.role,
+          permisos: data.permisos, ocultarEnDM: data.ocultarEnDM, copilotoHabilitado: data.copilotoHabilitado,
+        }],
+      });
+      const r = res.resultados[0];
+      if (!r?.ok) throw new Error(r?.error ?? 'No se pudo crear la invitación');
+      if (r.emailEnviado) {
+        toast('Usuario creado — invitación enviada por correo');
+      } else {
+        // SMTP caído o sin configurar: dejar el enlace a mano para compartirlo igual.
+        await navigator.clipboard.writeText(r.enlace ?? '').catch(() => {});
+        toast('Usuario creado, pero el correo no salió — enlace de invitación copiado al portapapeles');
+      }
     } else {
       await api.post('/users', {
         nombre: data.nombre, email: data.email, role: data.role,

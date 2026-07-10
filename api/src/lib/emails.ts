@@ -34,6 +34,19 @@ export function resetPasswordEmail(nombre: string, link: string): { subject: str
   };
 }
 
+export function inviteEmail(nombre: string, email: string, link: string): { subject: string; html: string; text: string } {
+  return {
+    subject: 'Te invitaron a Cialo Hub — crea tu contraseña',
+    html: layout('¡Bienvenido/a a Cialo Hub!', `
+      <p style="font-size:14px;line-height:1.6;color:#4A4540;margin:0 0 14px;">Hola ${nombre}, te crearon una cuenta en el sistema interno de Clínica Cialo.</p>
+      <p style="font-size:14px;line-height:1.6;color:#4A4540;margin:0 0 18px;"><strong>Tu usuario:</strong> ${email}</p>
+      <p style="font-size:14px;line-height:1.6;color:#4A4540;margin:0 0 18px;">Para empezar, crea tu contraseña con este botón. El enlace vence en 7 días.</p>
+      <p style="margin:0 0 20px;">${boton(link, 'Crear mi contraseña')}</p>
+      <p style="font-size:12.5px;line-height:1.6;color:#9A8F84;margin:0;">Si el enlace venció, usa la opción <strong>"¿Olvidaste tu contraseña?"</strong> en la pantalla de inicio con este mismo correo.</p>`),
+    text: `Hola ${nombre}, te crearon una cuenta en Cialo Hub. Usuario: ${email}. Crea tu contraseña aquí (vence en 7 días): ${link}`,
+  };
+}
+
 export function welcomeEmail(nombre: string, email: string, appUrl: string): { subject: string; html: string; text: string } {
   return {
     subject: 'Tu cuenta en Cialo Hub',
