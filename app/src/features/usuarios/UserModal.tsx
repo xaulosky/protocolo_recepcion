@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Modal } from '../../components/Modal';
 import { Icon } from '../../lib/icons';
+import { api } from '../../lib/api';
 import { VIEW_LABELS } from '../../lib/nav';
 import type { ViewId } from '../../lib/nav';
 import { PERMISSION_VIEWS, defaultPermisos } from '../../lib/permissions';
-import type { ManagedUser, Role } from '../../lib/types';
+import type { ManagedUser, Professional, Role } from '../../lib/types';
 
 const ROLES: { value: Role; label: string }[] = [
   { value: 'ADMIN', label: 'Administrador' },
@@ -24,6 +25,8 @@ export interface UserFormData {
   permisos: string[];
   ocultarEnDM: boolean;
   copilotoHabilitado: boolean;
+  /** Ficha de profesional vinculada (para cuentas de profesionales, con cualquier rol). */
+  professionalId: string | null;
   /** Solo al crear: enviar invitación por correo para que la persona cree su propia clave. */
   invitar?: boolean;
 }
@@ -46,8 +49,18 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
   const [ocultarEnDM, setOcultarEnDM] = useState(false);
   const [copilotoHabilitado, setCopilotoHabilitado] = useState(false);
   const [invitar, setInvitar] = useState(true);
+  const [professionalId, setProfessionalId] = useState('');
+  const [profesionales, setProfesionales] = useState<Pick<Professional, 'id' | 'nombreCompleto' | 'especialidad'>[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  // Fichas de profesionales para vincular la cuenta (cargadas al abrir el modal).
+  useEffect(() => {
+    if (!open || profesionales.length > 0) return;
+    api.get<{ professionals: Professional[] }>('/data/professionals')
+      .then((d) => setProfesionales(d.professionals.map((p) => ({ id: p.id, nombreCompleto: p.nombreCompleto, especialidad: p.especialidad }))))
+      .catch(() => {});
+  }, [open, profesionales.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -60,12 +73,13 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
       setActivo(editing.activo);
       setOcultarEnDM(editing.ocultarEnDM);
       setCopilotoHabilitado(editing.copilotoHabilitado);
+      setProfessionalId(editing.professionalId ?? '');
       const tienePersonalizados = editing.permisos && editing.permisos.length > 0;
       setCustom(!!tienePersonalizados);
       setPermisos(tienePersonalizados ? editing.permisos : defaultPermisos(editing.role));
     } else {
       setNombre(''); setEmail(''); setRole('RECEPCION'); setActivo(true); setOcultarEnDM(false);
-      setCopilotoHabilitado(false); setInvitar(true);
+      setCopilotoHabilitado(false); setInvitar(true); setProfessionalId('');
       setCustom(false); setPermisos(defaultPermisos('RECEPCION'));
     }
   }, [open, editing]);
@@ -99,6 +113,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
         permisos: isAdmin || !custom ? [] : permisos,
         ocultarEnDM,
         copilotoHabilitado,
+        professionalId: professionalId || null,
         invitar: !editing && invitar,
       });
       onClose();
@@ -146,6 +161,18 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
             </Field>
           )}
         </div>
+
+        <Field label="Ficha de profesional vinculada (opcional)">
+          <select value={professionalId} onChange={(e) => setProfessionalId(e.target.value)} style={input}>
+            <option value="">Sin vincular — no es profesional de la clínica</option>
+            {profesionales.map((p) => (
+              <option key={p.id} value={p.id}>{p.nombreCompleto} — {p.especialidad}</option>
+            ))}
+          </select>
+          <span style={{ display: 'block', fontSize: 11.5, color: 'var(--muted-2)', marginTop: 4 }}>
+            Conecta la cuenta con su ficha clínica. Independiente del rol: un profesional puede ser Administrador.
+          </span>
+        </Field>
 
         {!editing && (
           <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, cursor: 'pointer' }}>

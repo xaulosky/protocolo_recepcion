@@ -42,6 +42,7 @@ const inviteSchema = z.object({
     permisos: z.array(z.string()).optional(),
     ocultarEnDM: z.boolean().optional(),
     copilotoHabilitado: z.boolean().optional(),
+    professionalId: z.string().optional(),
   })).min(1).max(20),
 });
 

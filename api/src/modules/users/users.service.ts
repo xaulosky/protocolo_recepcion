@@ -29,6 +29,7 @@ export interface InviteUserInput {
   permisos?: string[];
   ocultarEnDM?: boolean;
   copilotoHabilitado?: boolean;
+  professionalId?: string | null;
 }
 
 export interface InviteUserResult {
@@ -57,6 +58,7 @@ export async function inviteUser(input: InviteUserInput): Promise<InviteUserResu
       permisos: input.permisos ?? [],
       ocultarEnDM: input.ocultarEnDM ?? false,
       copilotoHabilitado: input.copilotoHabilitado ?? false,
+      professionalId: input.professionalId ?? null,
       passwordHash: await hashPassword(randomBytes(24).toString('base64url')),
     },
     select: { id: true, email: true, nombre: true, role: true },
