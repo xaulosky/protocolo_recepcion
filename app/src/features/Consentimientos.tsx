@@ -880,7 +880,7 @@ function buildCuidadoPrintHtml(c: CuidadoPost, paciente: string, fecha: string):
     <div class="sign-line"><div class="line"></div><div class="lbl">Firma paciente · recibí las indicaciones</div></div>
     <div class="sign-line"><div class="line"></div><div class="lbl">Profesional tratante</div></div>
   </div>
-  <script>window.onload=function(){window.print();window.close();}</script>
+  <script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};}</script>
   </body></html>`;
 }
 
