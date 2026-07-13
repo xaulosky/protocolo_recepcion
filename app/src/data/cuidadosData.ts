@@ -92,4 +92,55 @@ export const cuidadosPostData: CuidadoPost[] = [
       },
     ],
   },
+  {
+    id: 'post-laser-vascular',
+    titulo: 'POST LÁSER VASCULAR',
+    tratamiento: 'Láser Vascular',
+    intro: 'A continuación encontrará las indicaciones para los días posteriores a su tratamiento de láser vascular. Seguir estas recomendaciones ayuda a mejorar los resultados y disminuir el riesgo de efectos indeseados.',
+    secciones: [
+      {
+        titulo: 'INDICACIONES',
+        items: [
+          'Cicalfate Post Acto 3 veces al día por 15 días.',
+          'Puede aplicar compresas frías sobre la zona durante 5 a 10 minutos, varias veces al día, si presenta sensación de calor o molestias. No aplicar hielo directamente sobre la piel.',
+          'Mantener la zona limpia y seca. Puede ducharse normalmente con agua tibia, evitando agua muy caliente.',
+          'Uso de medias compresivas. Esto mejorará el pronóstico del tratamiento y disminuirá los tiempos de recuperación.',
+          'Lavado en la zona con Eucerin Syndet Gel, evitar jabones en barra.',
+          'No rascar, frotar, masajear ni exfoliar la zona tratada.',
+          'No retirar costras ni romper ampollas en caso de que aparezcan.',
+          'Evitar cremas con retinol, ácidos, alcohol, exfoliantes o productos perfumados sobre la zona durante aproximadamente 15 días.',
+          'Usar protector solar de amplio espectro SPF 50+ (Eucerin Ultra 100) diariamente cuando las piernas estén expuestas. Evitar exposición solar directa y solárium durante al menos 4 semanas, debido al riesgo de hiperpigmentación postinflamatoria.',
+        ],
+      },
+      {
+        titulo: 'EVITAR',
+        items: [
+          'Ejercicio físico intenso.',
+          'Correr, bicicleta exigente o entrenamiento de piernas.',
+          'Sauna, jacuzzi, baños calientes o fuentes directas de calor.',
+          'Piscinas, termas o mar si existe irritación, costras o alguna alteración de la superficie cutánea.',
+          'Ropa muy ajustada o que genere roce sobre la zona tratada.',
+          'Masajes, drenajes linfáticos o procedimientos estéticos en las piernas.',
+        ],
+      },
+      {
+        titulo: 'EVOLUCIÓN DE LOS RESULTADOS',
+        items: [
+          'Los vasos no siempre desaparecen inmediatamente. Pueden oscurecerse, tornarse rojizos o violáceos y luego aclararse gradualmente durante las semanas siguientes.',
+          'Algunas telangiectasias requieren más de una sesión para obtener un resultado óptimo. Es ideal realizar las siguientes sesiones en un lapso de 3 a 4 semanas para evitar la regeneración total de la telangiectasia.',
+        ],
+      },
+      {
+        titulo: 'CONTACTAR A CLÍNICA CIALO SI PRESENTA',
+        items: [
+          'Dolor intenso o que aumenta progresivamente.',
+          'Ampollas extensas, heridas, ulceración o secreción.',
+          'Coloración blanca, grisácea o muy oscura persistente de la piel.',
+          'Inflamación importante o progresiva de la pierna.',
+          'Enrojecimiento que aumenta, calor local intenso o fiebre.',
+          'Cualquier reacción que genere preocupación.',
+        ],
+      },
+    ],
+  },
 ];
