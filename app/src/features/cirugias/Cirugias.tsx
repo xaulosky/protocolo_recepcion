@@ -8,6 +8,7 @@ import type { EtapaCirugia } from '../../lib/types';
 import { useCirugias } from './useCirugias';
 import { CirugiaCreateModal } from './CirugiaCreateModal';
 import { CirugiaDetailModal } from './CirugiaDetailModal';
+import { CirugiasCalendario } from './CirugiasCalendario';
 import {
   ETAPA_LABEL, ETAPA_STYLE, ETAPAS_ORDEN, PRESUPUESTO_LABEL, PRESUPUESTO_STYLE,
 } from './cirugiasStyles';
@@ -40,6 +41,7 @@ export function Cirugias() {
   const [createOpen, setCreateOpen]    = useState(false);
   const [detailId, setDetailId]        = useState<string | null>(null);
   const [page, setPage]                = useState(1);
+  const [viewMode, setViewMode]        = useState<'lista' | 'calendario'>('lista');
 
   const filtradas = cirugias.filter((c) => {
     if (etapaFiltro !== 'TODAS' && c.etapa !== etapaFiltro) return false;
@@ -61,11 +63,34 @@ export function Cirugias() {
           <h1 style={{ fontSize: 22, fontWeight: 600, color: 'var(--text)', margin: 0 }}>Cirugías</h1>
           <p style={{ fontSize: 13, color: 'var(--muted)', margin: '2px 0 0' }}>Seguimiento de procedimientos por paciente</p>
         </div>
-        {canWrite && (
-          <button className="btn btn-primary" onClick={() => setCreateOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <Icon name="plus" size={14} />Nueva cirugía
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', background: 'var(--border-softer)', borderRadius: 8, padding: 2, gap: 2 }}>
+            {([
+              { mode: 'lista' as const, icon: 'tasks', label: 'Lista' },
+              { mode: 'calendario' as const, icon: 'calendar', label: 'Calendario' },
+            ]).map(({ mode, icon, label }) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '5px 11px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer',
+                  background: viewMode === mode ? 'var(--surface)' : 'transparent',
+                  color: viewMode === mode ? 'var(--text)' : 'var(--muted)',
+                  boxShadow: viewMode === mode ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                  transition: 'all .15s',
+                }}
+              >
+                <Icon name={icon} size={13} /> {label}
+              </button>
+            ))}
+          </div>
+          {canWrite && (
+            <button className="btn btn-primary" onClick={() => setCreateOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Icon name="plus" size={14} />Nueva cirugía
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Búsqueda */}
@@ -116,7 +141,9 @@ export function Cirugias() {
       </div>
 
       <AsyncState loading={loading} error={error} onRetry={() => load()}>
-        {filtradas.length === 0
+        {viewMode === 'calendario' ? (
+          <CirugiasCalendario cirugias={filtradas} onClickCirugia={setDetailId} />
+        ) : filtradas.length === 0
           ? <p style={{ color: 'var(--muted)', fontSize: 14, padding: '32px 0', textAlign: 'center' }}>
               {cirugias.length === 0 ? 'No hay cirugías registradas.' : 'Sin resultados para el filtro actual.'}
             </p>
