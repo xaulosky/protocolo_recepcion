@@ -27,3 +27,10 @@ export function buildMonthGrid(year: number, month: number): DiaGrid[] {
 
 export const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 export const DIAS_SEMANA = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+
+/**
+ * Columnas de la grilla. `minmax(0, 1fr)` en vez de `1fr`: el mínimo de `1fr`
+ * es `auto`, así que un chip largo (una tarea con título extenso) ensancha su
+ * columna y descuadra la semana entera. Con mínimo 0 el chip se trunca.
+ */
+export const GRID_COLS_7 = 'repeat(7, minmax(0, 1fr))';

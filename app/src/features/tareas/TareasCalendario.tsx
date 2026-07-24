@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Task, Etapa } from '../../lib/types';
 import { Icon } from '../../lib/icons';
 import { ETAPA_STYLE } from './tareasStyles';
-import { buildMonthGrid, sameDay, MESES, DIAS_SEMANA } from '../../lib/calendarGrid';
+import { buildMonthGrid, sameDay, MESES, DIAS_SEMANA, GRID_COLS_7 } from '../../lib/calendarGrid';
 
 function toDateTimeLocal(date: Date, hour = 9): string {
   const p = (n: number) => String(n).padStart(2, '0');
@@ -54,7 +54,7 @@ export function TareasCalendario({ tasks, onClickTask, onClickDay }: Props) {
       {/* ── Grid del calendario ── */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
         {/* Cabecera días */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: GRID_COLS_7, borderBottom: '1px solid var(--border)' }}>
           {DIAS_SEMANA.map((d) => (
             <div key={d} style={{ padding: '8px 4px', textAlign: 'center', fontSize: 11, fontWeight: 600, color: 'var(--muted)', background: 'var(--border-softer)' }}>
               {d}
@@ -63,7 +63,7 @@ export function TareasCalendario({ tasks, onClickTask, onClickDay }: Props) {
         </div>
 
         {/* Semanas */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: GRID_COLS_7 }}>
           {grid.map(({ date, current }, idx) => {
             const isToday    = sameDay(date, now);
             const dayTasks   = withDue.filter((t) => sameDay(t.dueDate, date));
@@ -135,7 +135,7 @@ function DayCell({ date, current, isToday, isWeekend, dayTasks, idx, onClickTask
       onMouseLeave={() => setHovered(false)}
       title={`Crear tarea para el ${date.getDate()}/${date.getMonth() + 1}`}
       style={{
-        minHeight: 88, padding: '6px 6px 4px', position: 'relative', cursor: 'pointer',
+        minHeight: 88, minWidth: 0, padding: '6px 6px 4px', position: 'relative', cursor: 'pointer',
         borderRight: (idx + 1) % 7 !== 0 ? '1px solid var(--border-soft)' : 'none',
         borderBottom: idx < 35 ? '1px solid var(--border-soft)' : 'none',
         background: hovered

@@ -8,7 +8,7 @@ import { ETAPA_STYLE } from '../tareas/tareasStyles';
 import { EventoModal } from './EventoModal';
 import type { EventoDraft } from './EventoModal';
 import { Icon } from '../../lib/icons';
-import { buildMonthGrid, sameDay, MESES, DIAS_SEMANA } from '../../lib/calendarGrid';
+import { buildMonthGrid, sameDay, MESES, DIAS_SEMANA, GRID_COLS_7 } from '../../lib/calendarGrid';
 import type { CumpleanosData, Etapa, EventoCategoria, EventoInterno, Task } from '../../lib/types';
 
 const CATEGORIA_STYLE: Record<EventoCategoria, { bg: string; color: string }> = {
@@ -180,7 +180,7 @@ export function CalendarioGeneral() {
       </div>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: GRID_COLS_7, borderBottom: '1px solid var(--border)' }}>
           {DIAS_SEMANA.map((d) => (
             <div key={d} style={{ padding: '8px 4px', textAlign: 'center', fontSize: 11, fontWeight: 600, color: 'var(--muted)', background: 'var(--border-softer)' }}>
               {d}
@@ -188,7 +188,7 @@ export function CalendarioGeneral() {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: GRID_COLS_7 }}>
           {grid.map(({ date, current }, idx) => {
             const isToday = sameDay(date, now);
             const isWeekend = date.getDay() === 0 || date.getDay() === 6;
@@ -273,7 +273,7 @@ function DayCell({ date, current, isToday, isWeekend, idx, dayTasks, dayEventos,
       onMouseLeave={() => setHovered(false)}
       title={canWrite ? `Crear evento para el ${date.getDate()}/${date.getMonth() + 1}` : undefined}
       style={{
-        minHeight: 92, padding: '6px 6px 4px', position: 'relative', cursor: canWrite ? 'pointer' : 'default',
+        minHeight: 92, minWidth: 0, padding: '6px 6px 4px', position: 'relative', cursor: canWrite ? 'pointer' : 'default',
         borderRight: (idx + 1) % 7 !== 0 ? '1px solid var(--border-soft)' : 'none',
         borderBottom: idx < 35 ? '1px solid var(--border-soft)' : 'none',
         background: hovered && canWrite
