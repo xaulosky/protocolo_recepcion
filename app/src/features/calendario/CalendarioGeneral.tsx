@@ -264,7 +264,12 @@ interface DayCellProps {
 
 function DayCell({ date, current, isToday, isWeekend, idx, dayTasks, dayEventos, cumpleDia, canWrite, onClickTask, onClickEvento, onClickDay }: DayCellProps) {
   const [hovered, setHovered] = useState(false);
-  const items = [...dayEventos.map((e) => ({ kind: 'evento' as const, e })), ...dayTasks.map((t) => ({ kind: 'tarea' as const, t }))];
+  // Los cumpleaños van primero: son pocos y no deben caer bajo el "+N más".
+  const items = [
+    ...cumpleDia.map((c) => ({ kind: 'cumple' as const, c })),
+    ...dayEventos.map((e) => ({ kind: 'evento' as const, e })),
+    ...dayTasks.map((t) => ({ kind: 'tarea' as const, t })),
+  ];
 
   return (
     <div
@@ -293,9 +298,6 @@ function DayCell({ date, current, isToday, isWeekend, idx, dayTasks, dayEventos,
           {date.getDate()}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          {cumpleDia.length > 0 && (
-            <span title={`Cumpleaños: ${cumpleDia.map((c) => c.nombre).join(', ')}`} style={{ fontSize: 12 }}>🎂</span>
-          )}
           {hovered && canWrite && (
             <span style={{ fontSize: 14, color: 'var(--primary)', fontWeight: 300, lineHeight: 1, opacity: 0.7 }}>+</span>
           )}
@@ -303,6 +305,21 @@ function DayCell({ date, current, isToday, isWeekend, idx, dayTasks, dayEventos,
       </div>
 
       {items.slice(0, 3).map((item, i) => {
+        if (item.kind === 'cumple') {
+          return (
+            <div
+              key={`c-${item.c.id}`}
+              title={`Cumpleaños de ${item.c.nombre}`}
+              style={{
+                fontSize: 10, fontWeight: 600, padding: '2px 5px', borderRadius: 4,
+                background: '#FBF0F3', color: '#A05070', marginBottom: 2,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}
+            >
+              🎂 {item.c.nombre}
+            </div>
+          );
+        }
         if (item.kind === 'evento') {
           const s = CATEGORIA_STYLE[item.e.categoria];
           return (
