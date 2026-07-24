@@ -508,6 +508,16 @@ export interface CirugiaPresupuesto {
   notas: string | null;
 }
 
+export interface CirugiaAbono {
+  id: string;
+  monto: number;
+  metodo: MetodoPago;
+  fecha: string;
+  notas: string | null;
+  registradoPor: TaskUserRef | null;
+  createdAt: string;
+}
+
 export interface CirugiaInsumo {
   id: string;
   tipo: InsumoTipo;
@@ -548,14 +558,17 @@ export interface CirugiaListItem {
   professional: { id: string; nombreCompleto: string; especialidad: string } | null;
   creadoPor: TaskUserRef | null;
   presupuesto: { estado: PresupuestoEstado; monto: number; descuento: number } | null;
+  /** Suma de los abonos del paciente (el detalle trae el desglose en `abonos`). */
+  abonado: number;
   _count: { tareas: number; insumos: number };
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Cirugia extends Omit<CirugiaListItem, 'presupuesto' | '_count'> {
+export interface Cirugia extends Omit<CirugiaListItem, 'presupuesto' | 'abonado' | '_count'> {
   notas: string | null;
   presupuesto: CirugiaPresupuesto | null;
+  abonos: CirugiaAbono[];
   insumos: CirugiaInsumo[];
   comunicaciones: ComunicacionLog[];
   actividad: CirugiaActividad[];

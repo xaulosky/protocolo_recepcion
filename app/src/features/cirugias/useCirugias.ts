@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import type {
   Cirugia, CirugiaListItem, EtapaCirugia,
-  InsumoTipo, CanalComunicacion, PresupuestoEstado,
+  InsumoTipo, CanalComunicacion, PresupuestoEstado, MetodoPago,
 } from '../../lib/types';
 
 export interface NuevaCirugia {
@@ -70,6 +70,18 @@ export function useCirugias() {
     return presupuesto;
   }, []);
 
+  const agregarAbono = useCallback(async (
+    id: string,
+    data: { monto: number; metodo: MetodoPago; fecha?: string | null; notas?: string | null },
+  ) => {
+    const { abono } = await api.post<{ abono: unknown }>(`/cirugias/${id}/abonos`, data);
+    return abono;
+  }, []);
+
+  const eliminarAbono = useCallback(async (cirugiaId: string, abonoId: string) => {
+    await api.del(`/cirugias/${cirugiaId}/abonos/${abonoId}`);
+  }, []);
+
   const agregarInsumo = useCallback(async (
     id: string,
     data: { tipo: InsumoTipo; nombre: string; productId?: number | null; cantidad: number; unidad?: string | null },
@@ -102,6 +114,7 @@ export function useCirugias() {
     cirugias, loading, error,
     load, crear, actualizar, eliminar, getDetalle,
     upsertPresupuesto,
+    agregarAbono, eliminarAbono,
     agregarInsumo, toggleInsumo, eliminarInsumo,
     agregarComunicacion, eliminarComunicacion,
   };

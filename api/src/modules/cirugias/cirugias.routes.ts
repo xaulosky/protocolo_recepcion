@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { EtapaCirugia, PresupuestoEstado, InsumoTipo, CanalComunicacion, Role } from '@prisma/client';
+import { EtapaCirugia, PresupuestoEstado, InsumoTipo, CanalComunicacion, MetodoPago, Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
 
 const createSchema = z.object({
@@ -52,17 +52,34 @@ const comunicacionSchema = z.object({
   descripcion: z.string().min(1),
 });
 
+const abonoSchema = z.object({
+  monto:  z.number().int().min(1),
+  metodo: z.nativeEnum(MetodoPago).default(MetodoPago.EFECTIVO),
+  fecha:  z.string().datetime({ offset: true }).optional().nullable(),
+  notas:  z.string().optional().nullable(),
+});
+
 const incluyeListado = {
   professional:  { select: { id: true, nombreCompleto: true, especialidad: true } },
   creadoPor:     { select: { id: true, nombre: true } },
   presupuesto:   { select: { estado: true, monto: true, descuento: true } },
+  abonos:        { select: { monto: true } },
   _count:        { select: { tareas: true, insumos: true } },
 } as const;
+
+/** Reemplaza la lista de abonos por su total, para no engordar el listado. */
+function conAbonado<T extends { abonos: { monto: number }[] }>({ abonos, ...c }: T) {
+  return { ...c, abonado: abonos.reduce((s, a) => s + a.monto, 0) };
+}
 
 const incluyeDetalle = {
   professional:  { select: { id: true, nombreCompleto: true, especialidad: true } },
   creadoPor:     { select: { id: true, nombre: true } },
   presupuesto:   true,
+  abonos: {
+    orderBy: { fecha: 'desc' as const },
+    include: { registradoPor: { select: { id: true, nombre: true } } },
+  },
   insumos:       { orderBy: { createdAt: 'asc' as const } },
   comunicaciones: {
     orderBy: { createdAt: 'desc' as const },
@@ -92,6 +109,10 @@ const PRES_ES: Record<string, string> = {
   PENDIENTE: 'pendiente', APROBADO: 'aprobado', RECHAZADO: 'rechazado',
 };
 
+const METODO_ES: Record<string, string> = {
+  EFECTIVO: 'efectivo', TARJETA: 'tarjeta', TRANSFERENCIA: 'transferencia',
+};
+
 async function logActividad(cirugiaId: string, usuarioId: string, tipo: string, descripcion: string, datos?: object) {
   await prisma.cirugiaActividad.create({ data: { cirugiaId, usuarioId, tipo, descripcion, datos } });
 }
@@ -117,7 +138,7 @@ export async function cirugiasRoutes(app: FastifyInstance) {
     };
 
     const cirugias = await prisma.cirugia.findMany({ where, include: incluyeListado, orderBy: { updatedAt: 'desc' } });
-    return { cirugias };
+    return { cirugias: cirugias.map(conAbonado) };
   });
 
   // POST /cirugias
@@ -133,7 +154,7 @@ export async function cirugiasRoutes(app: FastifyInstance) {
       },
       include: incluyeListado,
     });
-    return reply.code(201).send({ cirugia });
+    return reply.code(201).send({ cirugia: conAbonado(cirugia) });
   });
 
   // GET /cirugias/:id
@@ -176,7 +197,7 @@ export async function cirugiasRoutes(app: FastifyInstance) {
       );
     }
 
-    return { cirugia };
+    return { cirugia: conAbonado(cirugia) };
   });
 
   // DELETE /cirugias/:id
@@ -216,6 +237,39 @@ export async function cirugiasRoutes(app: FastifyInstance) {
     }
 
     return { presupuesto };
+  });
+
+  // POST /cirugias/:id/abonos
+  app.post('/:id/abonos', canWrite, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const parsed = abonoSchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'Datos inválidos', detalles: parsed.error.flatten() });
+
+    const { fecha, ...rest } = parsed.data;
+    const abono = await prisma.cirugiaAbono.create({
+      data: { ...rest, cirugiaId: id, fecha: fecha ? new Date(fecha) : new Date(), registradoPorId: req.user.sub },
+      include: { registradoPor: { select: { id: true, nombre: true } } },
+    });
+    await prisma.cirugia.update({ where: { id }, data: {} });
+
+    await logActividad(id, req.user.sub, 'ABONO',
+      `Abono de $${abono.monto.toLocaleString('es-CL')} (${METODO_ES[abono.metodo]})`,
+      { monto: abono.monto, metodo: abono.metodo },
+    );
+
+    return reply.code(201).send({ abono });
+  });
+
+  // DELETE /cirugias/:id/abonos/:abonoId
+  app.delete('/:id/abonos/:abonoId', canWrite, async (req, reply) => {
+    const { id, abonoId } = req.params as { id: string; abonoId: string };
+    const abono = await prisma.cirugiaAbono.findUnique({ where: { id: abonoId }, select: { monto: true } });
+    if (!abono) return reply.code(404).send({ error: 'Abono no encontrado' });
+
+    await prisma.cirugiaAbono.delete({ where: { id: abonoId } });
+    await logActividad(id, req.user.sub, 'ABONO', `Abono de $${abono.monto.toLocaleString('es-CL')} eliminado`);
+
+    return reply.code(204).send();
   });
 
   // POST /cirugias/:id/insumos

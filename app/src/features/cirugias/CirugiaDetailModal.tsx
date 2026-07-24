@@ -4,7 +4,7 @@ import { Icon } from '../../lib/icons';
 import { fmtDate, fmtDateTime, money, clp } from '../../lib/format';
 import { useResource } from '../../lib/useResource';
 import { api } from '../../lib/api';
-import type { Cirugia, Professional, Product, EtapaCirugia, InsumoTipo, CanalComunicacion, PresupuestoEstado, Task, Prioridad, CirugiaActividad } from '../../lib/types';
+import type { Cirugia, Professional, Product, EtapaCirugia, InsumoTipo, CanalComunicacion, PresupuestoEstado, MetodoPago, Task, Prioridad, CirugiaActividad } from '../../lib/types';
 import type { NuevaCirugia } from './useCirugias';
 import {
   ETAPA_LABEL, ETAPA_STYLE, ETAPAS_ORDEN,
@@ -30,6 +30,8 @@ interface Props {
   onActualizar: (id: string, data: Partial<NuevaCirugia & { etapa: EtapaCirugia }>) => Promise<unknown>;
   onEliminar: (id: string) => Promise<void>;
   upsertPresupuesto: (id: string, data: { monto: number; descuento: number; estado: PresupuestoEstado; enviadoAt?: string | null; notas?: string | null }) => Promise<unknown>;
+  agregarAbono: (id: string, data: { monto: number; metodo: MetodoPago; fecha?: string | null; notas?: string | null }) => Promise<unknown>;
+  eliminarAbono: (cirugiaId: string, abonoId: string) => Promise<void>;
   agregarInsumo: (id: string, data: { tipo: InsumoTipo; nombre: string; productId?: number | null; cantidad: number; unidad?: string | null }) => Promise<unknown>;
   toggleInsumo: (cirugiaId: string, insumoId: string, listo: boolean) => Promise<void>;
   eliminarInsumo: (cirugiaId: string, insumoId: string) => Promise<void>;
@@ -39,14 +41,14 @@ interface Props {
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'resumen',         label: 'Resumen' },
-  { id: 'presupuesto',     label: 'Presupuesto' },
+  { id: 'presupuesto',     label: 'Presupuesto y pagos' },
   { id: 'insumos',         label: 'Insumos' },
   { id: 'tareas',          label: 'Tareas' },
   { id: 'comunicaciones',  label: 'Comunicaciones' },
 ];
 
 export function CirugiaDetailModal(props: Props) {
-  const { cirugiaId, onClose, onActualizar, onEliminar, upsertPresupuesto, agregarInsumo, toggleInsumo, eliminarInsumo, agregarComunicacion, eliminarComunicacion } = props;
+  const { cirugiaId, onClose, onActualizar, onEliminar, upsertPresupuesto, agregarAbono, eliminarAbono, agregarInsumo, toggleInsumo, eliminarInsumo, agregarComunicacion, eliminarComunicacion } = props;
 
   const [cirugia, setCirugia]       = useState<Cirugia | null>(null);
   const [loadingCirugia, setLoading] = useState(false);
@@ -89,6 +91,8 @@ export function CirugiaDetailModal(props: Props) {
               onActualizar={async (data) => { await onActualizar(cirugia.id, data); await recargar(); }}
               onEliminar={async () => { await onEliminar(cirugia.id); onClose(); }}
               upsertPresupuesto={async (data) => { await upsertPresupuesto(cirugia.id, data); await recargar(); }}
+              agregarAbono={async (data) => { await agregarAbono(cirugia.id, data); await recargar(); }}
+              eliminarAbono={async (abonoId) => { await eliminarAbono(cirugia.id, abonoId); await recargar(); }}
               agregarInsumo={async (data) => { await agregarInsumo(cirugia.id, data); await recargar(); }}
               toggleInsumo={async (insumoId, listo) => { await toggleInsumo(cirugia.id, insumoId, listo); await recargar(); }}
               eliminarInsumo={async (insumoId) => { await eliminarInsumo(cirugia.id, insumoId); await recargar(); }}
@@ -110,6 +114,8 @@ interface BodyProps {
   onActualizar: (data: Partial<NuevaCirugia & { etapa: EtapaCirugia }>) => Promise<void>;
   onEliminar: () => Promise<void>;
   upsertPresupuesto: (data: { monto: number; descuento: number; estado: PresupuestoEstado; enviadoAt?: string | null; notas?: string | null }) => Promise<void>;
+  agregarAbono: (data: { monto: number; metodo: MetodoPago; fecha?: string | null; notas?: string | null }) => Promise<void>;
+  eliminarAbono: (abonoId: string) => Promise<void>;
   agregarInsumo: (data: { tipo: InsumoTipo; nombre: string; productId?: number | null; cantidad: number; unidad?: string | null }) => Promise<void>;
   toggleInsumo: (insumoId: string, listo: boolean) => Promise<void>;
   eliminarInsumo: (insumoId: string) => Promise<void>;
@@ -117,7 +123,7 @@ interface BodyProps {
   eliminarComunicacion: (logId: string) => Promise<void>;
 }
 
-function CirugiaBody({ cirugia, tab, setTab, saving, setSaving, profesionales, productos, onActualizar, onEliminar, upsertPresupuesto, agregarInsumo, toggleInsumo, eliminarInsumo, agregarComunicacion, eliminarComunicacion }: BodyProps) {
+function CirugiaBody({ cirugia, tab, setTab, saving, setSaving, profesionales, productos, onActualizar, onEliminar, upsertPresupuesto, agregarAbono, eliminarAbono, agregarInsumo, toggleInsumo, eliminarInsumo, agregarComunicacion, eliminarComunicacion }: BodyProps) {
   const etapaActual = ETAPAS_ORDEN.indexOf(cirugia.etapa);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -127,6 +133,7 @@ function CirugiaBody({ cirugia, tab, setTab, saving, setSaving, profesionales, p
   };
 
   const tabCounts: Partial<Record<Tab, number>> = {
+    presupuesto:    cirugia.abonos.length,
     insumos:        cirugia.insumos.length,
     tareas:         cirugia.tareas.length,
     comunicaciones: cirugia.comunicaciones.length,
@@ -236,7 +243,7 @@ function CirugiaBody({ cirugia, tab, setTab, saving, setSaving, profesionales, p
 
       {/* Contenido del tab */}
       {tab === 'resumen'        && <TabResumen        cirugia={cirugia} profesionales={profesionales} saving={saving} setSaving={setSaving} onActualizar={onActualizar} onEliminar={onEliminar} confirmDelete={confirmDelete} setConfirmDelete={setConfirmDelete} />}
-      {tab === 'presupuesto'    && <TabPresupuesto    cirugia={cirugia} saving={saving} setSaving={setSaving} upsertPresupuesto={upsertPresupuesto} />}
+      {tab === 'presupuesto'    && <TabPresupuesto    cirugia={cirugia} saving={saving} setSaving={setSaving} upsertPresupuesto={upsertPresupuesto} agregarAbono={agregarAbono} eliminarAbono={eliminarAbono} />}
       {tab === 'insumos'        && <TabInsumos        cirugia={cirugia} productos={productos} saving={saving} setSaving={setSaving} agregarInsumo={agregarInsumo} toggleInsumo={toggleInsumo} eliminarInsumo={eliminarInsumo} />}
       {tab === 'tareas'         && <TabTareas         cirugia={cirugia} />}
       {tab === 'comunicaciones' && <TabComunicaciones cirugia={cirugia} saving={saving} setSaving={setSaving} agregarComunicacion={agregarComunicacion} eliminarComunicacion={eliminarComunicacion} />}
@@ -368,9 +375,11 @@ function TabResumen({ cirugia, profesionales, saving, setSaving, onActualizar, o
 interface TabPresupuestoProps {
   cirugia: Cirugia; saving: boolean; setSaving: (v: boolean) => void;
   upsertPresupuesto: (data: { monto: number; descuento: number; estado: PresupuestoEstado; enviadoAt?: string | null; notas?: string | null }) => Promise<void>;
+  agregarAbono: (data: { monto: number; metodo: MetodoPago; fecha?: string | null; notas?: string | null }) => Promise<void>;
+  eliminarAbono: (abonoId: string) => Promise<void>;
 }
 
-function TabPresupuesto({ cirugia, saving, setSaving, upsertPresupuesto }: TabPresupuestoProps) {
+function TabPresupuesto({ cirugia, saving, setSaving, upsertPresupuesto, agregarAbono, eliminarAbono }: TabPresupuestoProps) {
   const p = cirugia.presupuesto;
   const [draft, setDraft] = useState({
     monto:     p?.monto     ?? 0,
@@ -466,6 +475,158 @@ function TabPresupuesto({ cirugia, saving, setSaving, upsertPresupuesto }: TabPr
       <div style={{ paddingTop: 4 }}>
         <button className="btn btn-primary" onClick={guardar} disabled={saving}>{saving ? 'Guardando…' : 'Guardar presupuesto'}</button>
       </div>
+
+      <AbonosSection cirugia={cirugia} agregarAbono={agregarAbono} eliminarAbono={eliminarAbono} />
+    </div>
+  );
+}
+
+// ─── Abonos / saldo ──────────────────────────────────────────────────────────
+
+const METODO_LABEL: Record<MetodoPago, string> = {
+  EFECTIVO: 'Efectivo', TARJETA: 'Tarjeta', TRANSFERENCIA: 'Transferencia',
+};
+
+interface AbonosSectionProps {
+  cirugia: Cirugia;
+  agregarAbono: (data: { monto: number; metodo: MetodoPago; fecha?: string | null; notas?: string | null }) => Promise<void>;
+  eliminarAbono: (abonoId: string) => Promise<void>;
+}
+
+const EMPTY_ABONO = { monto: '', metodo: 'EFECTIVO' as MetodoPago, fecha: '', notas: '' };
+
+function AbonosSection({ cirugia, agregarAbono, eliminarAbono }: AbonosSectionProps) {
+  const [draft, setDraft]   = useState({ ...EMPTY_ABONO });
+  const [showForm, setShow] = useState(false);
+  const [savingA, setSaving] = useState(false);
+
+  const p       = cirugia.presupuesto;
+  const total   = p ? Math.round(p.monto * (1 - p.descuento / 100)) : 0;
+  const abonado = cirugia.abonos.reduce((s, a) => s + a.monto, 0);
+  const saldo   = total - abonado;
+  const pct     = total > 0 ? Math.min(100, Math.round((abonado / total) * 100)) : 0;
+
+  const registrar = async () => {
+    const monto = Number(draft.monto);
+    if (!monto || monto <= 0) return;
+    setSaving(true);
+    try {
+      await agregarAbono({
+        monto,
+        metodo: draft.metodo,
+        // Mediodía local: evita que la fecha se corra un día al pasar a UTC.
+        fecha:  draft.fecha ? new Date(`${draft.fecha}T12:00:00`).toISOString() : null,
+        notas:  draft.notas || null,
+      });
+      setDraft({ ...EMPTY_ABONO });
+      setShow(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ borderTop: '1px solid var(--border-soft)', paddingTop: 14, marginTop: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: 1 }}>
+          Abonos del paciente
+        </div>
+        <button className="btn btn-soft" style={{ fontSize: 11, padding: '3px 10px' }} onClick={() => setShow((v) => !v)}>
+          {showForm ? 'Cancelar' : '+ Registrar abono'}
+        </button>
+      </div>
+
+      {/* Resumen total / abonado / saldo */}
+      <div style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)', borderRadius: 8, padding: '12px 14px' }}>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Total a pagar</div>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>{total > 0 ? money(total) : '—'}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Abonado</div>
+            <div style={{ fontSize: 15, fontWeight: 600, color: '#3A6A4A' }}>{money(abonado)}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>Saldo pendiente</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: saldo > 0 ? 'var(--orange)' : '#3A6A4A' }}>
+              {total > 0 && saldo <= 0 ? 'Pagado ✓' : money(Math.max(0, saldo))}
+            </div>
+          </div>
+          {saldo < 0 && (
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 2 }}>A favor</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#3A6A4A' }}>{money(-saldo)}</div>
+            </div>
+          )}
+        </div>
+
+        {total > 0 && (
+          <div style={{ height: 5, background: 'var(--border-soft)', borderRadius: 3, marginTop: 12, overflow: 'hidden' }}>
+            <div style={{ width: `${pct}%`, height: '100%', background: pct >= 100 ? '#3A6A4A' : 'var(--primary)', transition: 'width .2s' }} />
+          </div>
+        )}
+        {total === 0 && (
+          <p style={{ fontSize: 11.5, color: 'var(--muted)', margin: '8px 0 0' }}>
+            Define el monto del presupuesto para calcular el saldo.
+          </p>
+        )}
+      </div>
+
+      {showForm && (
+        <div style={{ background: 'var(--bg)', border: '1px solid var(--border-soft)', borderRadius: 8, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+            <div>
+              <label className="label" style={{ fontSize: 10 }}>Monto (CLP)</label>
+              <input className="input" type="number" min={1} value={draft.monto} autoFocus
+                onChange={(e) => setDraft((d) => ({ ...d, monto: e.target.value }))} placeholder="0" />
+            </div>
+            <div>
+              <label className="label" style={{ fontSize: 10 }}>Método</label>
+              <select className="select" value={draft.metodo} onChange={(e) => setDraft((d) => ({ ...d, metodo: e.target.value as MetodoPago }))}>
+                {(Object.keys(METODO_LABEL) as MetodoPago[]).map((m) => <option key={m} value={m}>{METODO_LABEL[m]}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label" style={{ fontSize: 10 }}>Fecha</label>
+              <input type="date" className="input" value={draft.fecha} onChange={(e) => setDraft((d) => ({ ...d, fecha: e.target.value }))} />
+            </div>
+          </div>
+          <input className="input" value={draft.notas} onChange={(e) => setDraft((d) => ({ ...d, notas: e.target.value }))} placeholder="Notas (opcional): nº de comprobante, quién pagó…" />
+          {saldo > 0 && (
+            <button className="btn btn-soft" style={{ fontSize: 11, padding: '3px 10px', alignSelf: 'flex-start' }}
+              onClick={() => setDraft((d) => ({ ...d, monto: String(saldo) }))}>
+              Abonar el saldo completo ({money(saldo)})
+            </button>
+          )}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-primary" style={{ fontSize: 12, padding: '4px 14px' }} onClick={registrar} disabled={savingA || !Number(draft.monto)}>
+              {savingA ? '…' : 'Registrar abono'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {cirugia.abonos.length === 0
+        ? <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>Sin abonos registrados.</p>
+        : <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {cirugia.abonos.map((a) => (
+              <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 12px', background: 'var(--bg)', borderRadius: 6, border: '1px solid var(--border-soft)' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#3A6A4A', minWidth: 86 }}>{money(a.monto)}</span>
+                <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 10, background: 'var(--border-soft)', color: 'var(--text-2)' }}>
+                  {METODO_LABEL[a.metodo]}
+                </span>
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>{fmtDate(a.fecha)}</span>
+                {a.notas && <span style={{ fontSize: 12, color: 'var(--text-2)', flex: 1 }}>{a.notas}</span>}
+                <span style={{ fontSize: 11, color: 'var(--muted-2)', marginLeft: a.notas ? 0 : 'auto' }}>
+                  {a.registradoPor?.nombre ?? '—'}
+                </span>
+                <button onClick={() => eliminarAbono(a.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted-2)', padding: 2 }} title="Eliminar abono">
+                  <Icon name="trash" size={12} />
+                </button>
+              </div>
+            ))}
+          </div>}
     </div>
   );
 }
@@ -715,7 +876,7 @@ interface TabComunicacionesProps {
 }
 
 const ACTIVIDAD_ICON: Record<string, string> = {
-  ETAPA: 'arrow', PRESUPUESTO: 'tag', INSUMO: 'pkg', TAREA: 'tasks',
+  ETAPA: 'arrow', PRESUPUESTO: 'tag', ABONO: 'credit', INSUMO: 'pkg', TAREA: 'tasks',
 };
 
 function TabComunicaciones({ cirugia, saving, setSaving, agregarComunicacion, eliminarComunicacion }: TabComunicacionesProps) {

@@ -32,7 +32,8 @@ export function Cirugias() {
 
   const {
     cirugias, loading, error, load, crear, actualizar, eliminar,
-    upsertPresupuesto, agregarInsumo, toggleInsumo, eliminarInsumo,
+    upsertPresupuesto, agregarAbono, eliminarAbono,
+    agregarInsumo, toggleInsumo, eliminarInsumo,
     agregarComunicacion, eliminarComunicacion,
   } = useCirugias();
 
@@ -192,9 +193,20 @@ export function Cirugias() {
                     {/* Monto + contadores */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
                         {c.presupuesto && c.presupuesto.monto > 0
-                          ? <span style={{ fontSize: 13, fontWeight: 600, color: presSt?.color }}>
-                              ${clp(Math.round(c.presupuesto.monto * (1 - (c.presupuesto.descuento ?? 0) / 100)))}
-                            </span>
+                          ? (() => {
+                              const total = Math.round(c.presupuesto.monto * (1 - (c.presupuesto.descuento ?? 0) / 100));
+                              const saldo = total - c.abonado;
+                              return (
+                                <span style={{ fontSize: 13, fontWeight: 600, color: presSt?.color }}>
+                                  ${clp(total)}
+                                  {c.abonado > 0 && (
+                                    <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 6, color: saldo > 0 ? 'var(--orange)' : '#3A6A4A' }}>
+                                      {saldo > 0 ? `debe $${clp(saldo)}` : 'pagado ✓'}
+                                    </span>
+                                  )}
+                                </span>
+                              );
+                            })()
                           : <span />}
                         <div style={{ display: 'flex', gap: 8 }}>
                           {c._count.tareas > 0 && (
@@ -232,6 +244,8 @@ export function Cirugias() {
         onActualizar={async (id, data) => actualizar(id, data)}
         onEliminar={async (id) => { await eliminar(id); setDetailId(null); }}
         upsertPresupuesto={upsertPresupuesto}
+        agregarAbono={agregarAbono}
+        eliminarAbono={eliminarAbono}
         agregarInsumo={agregarInsumo}
         toggleInsumo={toggleInsumo}
         eliminarInsumo={eliminarInsumo}
