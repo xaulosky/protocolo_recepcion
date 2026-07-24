@@ -2,26 +2,7 @@ import { useState } from 'react';
 import type { CirugiaListItem, EtapaCirugia } from '../../lib/types';
 import { Icon } from '../../lib/icons';
 import { ETAPA_STYLE } from './cirugiasStyles';
-
-const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const DIAS  = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
-
-function sameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-function buildGrid(year: number, month: number) {
-  const first = new Date(year, month, 1);
-  const last  = new Date(year, month + 1, 0);
-  const days: { date: Date; current: boolean }[] = [];
-
-  const firstDow = (first.getDay() + 6) % 7; // lunes = 0
-  for (let i = firstDow - 1; i >= 0; i--) days.push({ date: new Date(year, month, -i), current: false });
-  for (let i = 1; i <= last.getDate(); i++) days.push({ date: new Date(year, month, i), current: true });
-  const remaining = 42 - days.length;
-  for (let i = 1; i <= remaining; i++) days.push({ date: new Date(year, month + 1, i), current: false });
-  return days;
-}
+import { buildMonthGrid, sameDay, MESES, DIAS_SEMANA } from '../../lib/calendarGrid';
 
 interface Props {
   cirugias: CirugiaListItem[];
@@ -36,7 +17,7 @@ export function CirugiasCalendario({ cirugias, onClickCirugia }: Props) {
   const prevMonth = () => { if (month === 0) { setYear(y => y - 1); setMonth(11); } else setMonth(m => m - 1); };
   const nextMonth = () => { if (month === 11) { setYear(y => y + 1); setMonth(0); } else setMonth(m => m + 1); };
 
-  const grid = buildGrid(year, month);
+  const grid = buildMonthGrid(year, month);
 
   // Cirugías con fechaCirugia como Date
   const conFecha = cirugias
@@ -67,7 +48,7 @@ export function CirugiasCalendario({ cirugias, onClickCirugia }: Props) {
       {/* ── Grid del calendario ── */}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--border)' }}>
-          {DIAS.map((d) => (
+          {DIAS_SEMANA.map((d) => (
             <div key={d} style={{ padding: '8px 4px', textAlign: 'center', fontSize: 11, fontWeight: 600, color: 'var(--muted)', background: 'var(--border-softer)' }}>
               {d}
             </div>

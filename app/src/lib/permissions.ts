@@ -3,7 +3,7 @@ import type { ViewId } from './nav';
 
 /** Todas las secciones que se pueden conceder como permiso (excluye 'usuarios', que es solo-admin). */
 export const PERMISSION_VIEWS: ViewId[] = [
-  'dashboard', 'tareas', 'chat', 'documentos',
+  'dashboard', 'tareas', 'calendario', 'chat', 'documentos',
   'protocolos', 'guiones', 'pagos', 'suspensiones',
   'pacientes', 'tratamientos', 'profesionales', 'consultas', 'boxes', 'cirugias',
   'inventario',
@@ -33,9 +33,9 @@ export function allowedViews(user: AuthUser | null): Set<ViewId> {
     ? (user.permisos as ViewId[]).filter((v) => PERMISSION_VIEWS.includes(v))
     : ROLE_DEFAULTS[user.role];
   const set = new Set(base);
-  // 'Mis Documentos' es personal: siempre visible aunque el usuario tenga
-  // permisos personalizados antiguos (solo las estaciones Box quedan fuera).
-  if (user.role !== 'BOX') set.add('documentos');
+  // 'Mis Documentos' y 'Calendario' son personales: siempre visibles aunque el
+  // usuario tenga permisos personalizados antiguos (salvo estaciones Box).
+  if (user.role !== 'BOX') { set.add('documentos'); set.add('calendario'); }
   return set;
 }
 

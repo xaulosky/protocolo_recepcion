@@ -72,6 +72,7 @@ model User {
   turnosCerrados        Turno[]                @relation("TurnoCerradoPor")
   ventasVendedor        Venta[]                @relation("VentaVendedor")
   ventasAnuladas        Venta[]                @relation("VentaAnuladaPor")
+  eventosCreados        EventoInterno[]
   // Si el usuario es una estación Box, su buzón privado con Recepción.
   buzon             Conversation? @relation("BuzonBox")
 
@@ -383,6 +384,31 @@ model ReembolsoActividad {
   createdAt   DateTime           @default(now())
 
   @@index([reembolsoId])
+}
+
+// ───────────────────────────── Calendario general ─────────────────────────────
+
+enum EventoCategoria {
+  REUNION
+  FERIADO
+  OTRO
+}
+
+// Evento interno visible para todo el equipo en el Calendario general
+// (reuniones, capacitaciones, feriados/cierres de la clínica, u otro).
+model EventoInterno {
+  id          String          @id @default(cuid())
+  titulo      String
+  descripcion String?
+  categoria   EventoCategoria @default(OTRO)
+  fecha       DateTime        // inicio (o único día si fechaFin es null)
+  fechaFin    DateTime?       // fin, para eventos de varios días (ej. cierre de clínica)
+  todoElDia   Boolean         @default(true)
+  creadoPor   User            @relation(fields: [creadoPorId], references: [id])
+  creadoPorId String
+  createdAt   DateTime        @default(now())
+
+  @@index([fecha])
 }
 
 // ───────────────────────────── Caja / Punto de venta ─────────────────────────────

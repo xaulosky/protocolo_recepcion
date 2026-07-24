@@ -66,6 +66,24 @@ export interface UserDocument {
 export interface CumpleanosData {
   hoy: { id: string; nombre: string }[];
   proximos: { id: string; nombre: string; fecha: string; dias: number }[];
+  /** Lista completa (mes-día "MM-DD"), para pintar en cualquier mes del calendario. */
+  todos: { id: string; nombre: string; mesDia: string }[];
+}
+
+// ── Calendario general: eventos internos ──
+
+export type EventoCategoria = 'REUNION' | 'FERIADO' | 'OTRO';
+
+export interface EventoInterno {
+  id: string;
+  titulo: string;
+  descripcion: string | null;
+  categoria: EventoCategoria;
+  fecha: string;
+  fechaFin: string | null;
+  todoElDia: boolean;
+  creadoPor: TaskUserRef | null;
+  createdAt: string;
 }
 
 export interface Treatment {

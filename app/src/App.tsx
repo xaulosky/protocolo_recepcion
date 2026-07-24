@@ -13,6 +13,7 @@ import { useGlobalSearch } from './hooks/useGlobalSearch';
 import { Dashboard } from './features/Dashboard';
 import { Documentos } from './features/Documentos';
 import { Tareas } from './features/tareas/Tareas';
+import { CalendarioGeneral } from './features/calendario/CalendarioGeneral';
 import { Chat } from './features/chat/Chat';
 import { ChatProvider } from './features/chat/ChatProvider';
 import { ChatFloating } from './features/chat/ChatFloating';
@@ -46,6 +47,7 @@ import { canView } from './lib/permissions';
 const VIEWS: Record<ViewId, ComponentType> = {
   dashboard: Dashboard,
   tareas: Tareas,
+  calendario: CalendarioGeneral,
   chat: Chat,
   documentos: Documentos,
   protocolos: Protocolos,

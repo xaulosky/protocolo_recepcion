@@ -1,7 +1,7 @@
 import type { IconName } from './icons';
 
 export type ViewId =
-  | 'dashboard' | 'tareas' | 'chat' | 'documentos'
+  | 'dashboard' | 'tareas' | 'chat' | 'documentos' | 'calendario'
   | 'protocolos' | 'guiones' | 'pagos' | 'suspensiones'
   | 'pacientes' | 'tratamientos' | 'profesionales' | 'consultas' | 'boxes' | 'cirugias'
   | 'inventario'
@@ -16,6 +16,7 @@ export const NAV: NavSection[] = [
   { section: 'Principal', items: [
     { id: 'dashboard', label: 'Dashboard', icon: 'home' },
     { id: 'tareas', label: 'Tareas', icon: 'tasks' },
+    { id: 'calendario', label: 'Calendario', icon: 'calendar' },
     { id: 'chat', label: 'Chat interno', icon: 'msg' },
     { id: 'documentos', label: 'Mis Documentos', icon: 'doc' },
   ]},
@@ -56,6 +57,7 @@ export const NAV: NavSection[] = [
 export const VIEW_LABELS: Record<ViewId, string> = {
   dashboard: 'Dashboard',
   tareas: 'Tareas',
+  calendario: 'Calendario',
   chat: 'Chat interno',
   documentos: 'Mis Documentos',
   protocolos: 'Protocolos Base',

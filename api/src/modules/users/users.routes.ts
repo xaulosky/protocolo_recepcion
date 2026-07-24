@@ -155,7 +155,11 @@ export async function usersRoutes(app: FastifyInstance) {
       }
     }
 
-    return { hoy, proximos };
+    // Lista completa (mes-día), para pintar cumpleaños en cualquier mes del
+    // Calendario general — no solo "hoy" / "próximos 30 días".
+    const todos = conFecha.map((u) => ({ id: u.id, nombre: u.nombre, mesDia: u.fechaNacimiento!.slice(5) }));
+
+    return { hoy, proximos, todos };
   });
 
   // GET /users
