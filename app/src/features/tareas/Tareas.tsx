@@ -244,7 +244,13 @@ function KanbanView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggle
   const [dragOver, setDragOver] = useState<Etapa | null>(null);
   const enterCount = useRef<Partial<Record<Etapa, number>>>({});
 
-  const handleDragStart = (id: string) => setDragId(id);
+  // Firefox exige dataTransfer.setData en dragstart o directamente no inicia
+  // el arrastre (Chrome es más permisivo y por eso el bug pasaba desapercibido).
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
+    setDragId(id);
+  };
   const handleDragEnd   = () => { setDragId(null); setDragOver(null); enterCount.current = {}; };
 
   const handleDragEnter = (etapa: Etapa) => {
@@ -256,10 +262,14 @@ function KanbanView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggle
     enterCount.current[etapa] = count;
     if (count <= 0) setDragOver(null);
   };
-  const handleDrop = (etapa: Etapa) => {
-    if (dragId) {
-      const task = tasks.find((t) => t.id === dragId);
-      if (task && task.etapa !== etapa) onMover(dragId, etapa);
+  const handleDrop = (e: React.DragEvent, etapa: Etapa) => {
+    e.preventDefault();
+    // dataTransfer es la fuente de verdad (más robusta que el estado de React
+    // si el drop viene de otra ventana/pestaña o el estado se perdió).
+    const id = e.dataTransfer.getData('text/plain') || dragId;
+    if (id) {
+      const task = tasks.find((t) => t.id === id);
+      if (task && task.etapa !== etapa) onMover(id, etapa);
     }
     setDragId(null); setDragOver(null); enterCount.current = {};
   };
@@ -276,7 +286,7 @@ function KanbanView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggle
             onDragEnter={() => handleDragEnter(etapa)}
             onDragLeave={() => handleDragLeave(etapa)}
             onDragOver={(e) => e.preventDefault()}
-            onDrop={() => handleDrop(etapa)}
+            onDrop={(e) => handleDrop(e, etapa)}
             style={{
               width: 230, minWidth: 230, maxWidth: 230, flexShrink: 0, borderRadius: 10,
               border: isOver && !sameCol ? '2px dashed var(--primary)' : '2px solid transparent',
@@ -297,7 +307,7 @@ function KanbanView({ tasks, onMover, onEliminar, onClickTask, bulkSel, onToggle
                   t={t}
                   isDragging={dragId === t.id}
                   isSelected={bulkSel.has(t.id)}
-                  onDragStart={() => handleDragStart(t.id)}
+                  onDragStart={(e) => handleDragStart(e, t.id)}
                   onDragEnd={handleDragEnd}
                   onMover={() => onMover(t.id, NEXT[t.etapa])}
                   onEliminar={() => onEliminar(t.id)}
@@ -355,7 +365,7 @@ function AvatarStack({ users }: { users: { id: string; nombre: string }[] }) {
 
 function KanbanCard({ t, isDragging, isSelected, onDragStart, onDragEnd, onMover, onEliminar, onClick, onToggleBulk }: {
   t: Task; isDragging: boolean; isSelected: boolean;
-  onDragStart: () => void; onDragEnd: () => void;
+  onDragStart: (e: React.DragEvent) => void; onDragEnd: () => void;
   onMover: () => void; onEliminar: () => void; onClick: () => void; onToggleBulk: () => void;
 }) {
   const prio = PRIO_STYLE[t.prioridad];
