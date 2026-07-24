@@ -30,6 +30,7 @@ export interface InviteUserInput {
   ocultarEnDM?: boolean;
   copilotoHabilitado?: boolean;
   professionalId?: string | null;
+  fechaNacimiento?: string | null;
 }
 
 export interface InviteUserResult {
@@ -59,6 +60,7 @@ export async function inviteUser(input: InviteUserInput): Promise<InviteUserResu
       ocultarEnDM: input.ocultarEnDM ?? false,
       copilotoHabilitado: input.copilotoHabilitado ?? false,
       professionalId: input.professionalId ?? null,
+      fechaNacimiento: input.fechaNacimiento ?? null,
       passwordHash: await hashPassword(randomBytes(24).toString('base64url')),
     },
     select: { id: true, email: true, nombre: true, role: true },

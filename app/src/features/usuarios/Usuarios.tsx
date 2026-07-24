@@ -45,7 +45,7 @@ export function Usuarios() {
       const body: Record<string, unknown> = {
         nombre: data.nombre, email: data.email, role: data.role, activo: data.activo, permisos: data.permisos,
         ocultarEnDM: data.ocultarEnDM, copilotoHabilitado: data.copilotoHabilitado,
-        professionalId: data.professionalId,
+        professionalId: data.professionalId, fechaNacimiento: data.fechaNacimiento,
       };
       if (data.password) body.password = data.password;
       await api.patch(`/users/${editing.id}`, body);
@@ -57,6 +57,7 @@ export function Usuarios() {
           nombre: data.nombre, email: data.email, role: data.role,
           permisos: data.permisos, ocultarEnDM: data.ocultarEnDM, copilotoHabilitado: data.copilotoHabilitado,
           professionalId: data.professionalId ?? undefined,
+          fechaNacimiento: data.fechaNacimiento,
         }],
       });
       const r = res.resultados[0];
@@ -74,6 +75,7 @@ export function Usuarios() {
         password: data.password, permisos: data.permisos, ocultarEnDM: data.ocultarEnDM,
         copilotoHabilitado: data.copilotoHabilitado,
         professionalId: data.professionalId ?? undefined,
+        fechaNacimiento: data.fechaNacimiento,
       });
       toast('Usuario creado');
     }

@@ -27,6 +27,8 @@ export interface UserFormData {
   copilotoHabilitado: boolean;
   /** Ficha de profesional vinculada (para cuentas de profesionales, con cualquier rol). */
   professionalId: string | null;
+  /** "YYYY-MM-DD"; alimenta el calendario de cumpleaños y el aviso del día. */
+  fechaNacimiento: string | null;
   /** Solo al crear: enviar invitación por correo para que la persona cree su propia clave. */
   invitar?: boolean;
 }
@@ -50,6 +52,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
   const [copilotoHabilitado, setCopilotoHabilitado] = useState(false);
   const [invitar, setInvitar] = useState(true);
   const [professionalId, setProfessionalId] = useState('');
+  const [fechaNacimiento, setFechaNacimiento] = useState('');
   const [profesionales, setProfesionales] = useState<Pick<Professional, 'id' | 'nombreCompleto' | 'especialidad'>[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -74,12 +77,13 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
       setOcultarEnDM(editing.ocultarEnDM);
       setCopilotoHabilitado(editing.copilotoHabilitado);
       setProfessionalId(editing.professionalId ?? '');
+      setFechaNacimiento(editing.fechaNacimiento ?? '');
       const tienePersonalizados = editing.permisos && editing.permisos.length > 0;
       setCustom(!!tienePersonalizados);
       setPermisos(tienePersonalizados ? editing.permisos : defaultPermisos(editing.role));
     } else {
       setNombre(''); setEmail(''); setRole('RECEPCION'); setActivo(true); setOcultarEnDM(false);
-      setCopilotoHabilitado(false); setInvitar(true); setProfessionalId('');
+      setCopilotoHabilitado(false); setInvitar(true); setProfessionalId(''); setFechaNacimiento('');
       setCustom(false); setPermisos(defaultPermisos('RECEPCION'));
     }
   }, [open, editing]);
@@ -114,6 +118,7 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
         ocultarEnDM,
         copilotoHabilitado,
         professionalId: professionalId || null,
+        fechaNacimiento: fechaNacimiento || null,
         invitar: !editing && invitar,
       });
       onClose();
@@ -161,6 +166,13 @@ export function UserModal({ open, onClose, onSubmit, editing }: Props) {
             </Field>
           )}
         </div>
+
+        <Field label="Fecha de nacimiento (opcional)">
+          <input type="date" value={fechaNacimiento} onChange={(e) => setFechaNacimiento(e.target.value)} style={input} />
+          <span style={{ display: 'block', fontSize: 11.5, color: 'var(--muted-2)', marginTop: 4 }}>
+            Aparece en el Calendario 🎂 y genera el aviso del día. La persona también puede cargarla desde su perfil.
+          </span>
+        </Field>
 
         <Field label="Ficha de profesional vinculada (opcional)">
           <select value={professionalId} onChange={(e) => setProfessionalId(e.target.value)} style={input}>

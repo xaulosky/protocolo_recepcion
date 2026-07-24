@@ -19,6 +19,7 @@ const createSchema = z.object({
   permisos: z.array(z.string()).optional(),
   ocultarEnDM: z.boolean().optional(),
   copilotoHabilitado: z.boolean().optional(),
+  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
 });
 
 const updateSchema = z.object({
@@ -31,6 +32,7 @@ const updateSchema = z.object({
   permisos: z.array(z.string()).optional(),
   ocultarEnDM: z.boolean().optional(),
   copilotoHabilitado: z.boolean().optional(),
+  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
 });
 
 // Invitación: usuarios nuevos sin contraseña (la crean ellos vía enlace por correo).
@@ -43,6 +45,7 @@ const inviteSchema = z.object({
     ocultarEnDM: z.boolean().optional(),
     copilotoHabilitado: z.boolean().optional(),
     professionalId: z.string().optional(),
+    fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
   })).min(1).max(20),
 });
 
