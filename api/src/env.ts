@@ -76,6 +76,11 @@ const schema = z.object({
   SII_CIUDAD_ORIGEN: z.string().default(''),     // ciudad de la casa matriz (max 20)
   SII_NOMBRE_SOFTWARE: z.string().default('ADMINISTRACION.CIALO.CL'),
 
+  // Certificado digital de firma (.pfx/.p12). Vive FUERA del repositorio: la
+  // ruta se configura por entorno y el archivo nunca se versiona.
+  SII_CERT_PATH: z.string().default(''),
+  SII_CERT_PASS: z.string().default(''),
+
   // Durante la certificacion cada documento debe referenciar su caso del set
   // (<CodRef>SET, <RazonRef>CASO-N). En produccion esa referencia no va.
   SII_SET_PRUEBAS: boolEnv(false),

@@ -29,3 +29,13 @@ Thumbs.db
 
 # Archivos subidos (documentos personales) — viven solo en el servidor
 api/uploads/
+
+# Credenciales de firma electronica — NUNCA versionar.
+# El repositorio es publico: un .pfx aqui expone la llave que firma
+# documentos tributarios con validez legal.
+*.pfx
+*.p12
+*.pem
+*.key
+secrets/
+api/secrets/
