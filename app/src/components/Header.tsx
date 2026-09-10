@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useApp } from '../store/app-context';
 import { useAuth } from '../store/auth-context';
 import { VIEW_LABELS } from '../lib/nav';
+import type { ViewId } from '../lib/nav';
+import { canView } from '../lib/permissions';
 import { Icon } from '../lib/icons';
 import { initials, colorFromString } from '../lib/format';
 import { api } from '../lib/api';
@@ -10,8 +12,19 @@ import { NotificationBell } from '../features/notifications/NotificationBell';
 import { useDarkMode } from '../hooks/useDarkMode';
 import type { AuthUser } from '../lib/types';
 
+/**
+ * Accesos directos del header a lo que recepción usa a diario. Se filtran por
+ * permisos: quien no puede ver la caja tampoco ve el botón de cobrar.
+ */
+const QUICK_ACTIONS: { view: ViewId; label: string; icon: string; title: string }[] = [
+  { view: 'caja',            label: 'Cobrar',    icon: 'credit', title: 'Ir a la caja y cobrar' },
+  { view: 'tratamientos',    label: 'Tratamientos', icon: 'act', title: 'Catálogo de tratamientos' },
+  { view: 'consentimientos', label: 'Documentos', icon: 'pen',   title: 'Consentimientos y documentos clínicos' },
+  { view: 'reembolso',       label: 'Reembolso', icon: 'ref',    title: 'Solicitud de reembolso' },
+];
+
 export function Header({ onOpenMobile, onOpenSearch }: { onOpenMobile: () => void; onOpenSearch?: () => void }) {
-  const { view } = useApp();
+  const { view, go } = useApp();
   const { user } = useAuth();
   const { dark, toggle } = useDarkMode();
   const [perfilOpen, setPerfilOpen] = useState(false);
@@ -33,9 +46,35 @@ export function Header({ onOpenMobile, onOpenSearch }: { onOpenMobile: () => voi
       >
         <Icon name="menu" size={17} />
       </button>
-      <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)', flex: 1, letterSpacing: '-0.2px' }}>
+      <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)', letterSpacing: '-0.2px' }}>
         {VIEW_LABELS[view]}
       </span>
+
+      {/* Acciones rápidas */}
+      <div className="quick-actions" style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, marginLeft: 8 }}>
+        {QUICK_ACTIONS.filter((a) => canView(user, a.view)).map((a) => {
+          const activo = view === a.view;
+          return (
+            <button
+              key={a.view}
+              onClick={() => go(a.view)}
+              title={a.title}
+              className="quick-action"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 10px',
+                borderRadius: 7, cursor: 'pointer', fontSize: 12.5, fontWeight: 500,
+                border: activo ? '1px solid var(--primary)' : '1px solid var(--border)',
+                background: activo ? 'var(--primary-soft)' : 'none',
+                color: activo ? 'var(--primary)' : 'var(--muted)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Icon name={a.icon} size={14} />
+              <span className="quick-action-label">{a.label}</span>
+            </button>
+          );
+        })}
+      </div>
       {onOpenSearch && (
         <button
           onClick={onOpenSearch}

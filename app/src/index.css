@@ -233,3 +233,13 @@ button { cursor: pointer; }
 /* Hide scrollbar on stage bar */
 .stage-bar { display: flex; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
 .stage-bar::-webkit-scrollbar { display: none; }
+
+/* Acciones rápidas del header: bajo 900px quedan solo los iconos y bajo 560px
+   desaparecen, porque ahí el menú lateral ya cubre la navegación. */
+.quick-action:hover { background: var(--primary-soft); color: var(--primary); }
+@media (max-width: 900px) {
+  .quick-action-label { display: none; }
+}
+@media (max-width: 560px) {
+  .quick-actions { display: none !important; }
+}
