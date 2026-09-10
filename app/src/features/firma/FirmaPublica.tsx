@@ -14,7 +14,12 @@ async function cargarFirma(token: string): Promise<FirmaPublicData> {
   return body.firma;
 }
 
-async function enviarFirma(token: string, data: { firmaImagen: string; firmanteNombre: string; fotoAuth: boolean }) {
+type Relacion = 'TITULAR' | 'MADRE' | 'PADRE' | 'TUTOR' | 'APODERADO' | 'OTRO';
+
+async function enviarFirma(token: string, data: {
+  firmaImagen: string; firmanteNombre: string; fotoAuth: boolean;
+  firmanteRelacion: Relacion; firmanteRut?: string;
+}) {
   const r = await fetch(`${API}/firma/${token}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -159,6 +164,8 @@ export function FirmaPublica() {
   // Datos de la firma que llena el paciente.
   const [nombre, setNombre] = useState('');
   const [fotoAuth, setFotoAuth] = useState<boolean | null>(null);
+  const [relacion, setRelacion] = useState<Relacion>('TITULAR');
+  const [firmanteRut, setFirmanteRut] = useState('');
   const [firma, setFirma] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
@@ -200,14 +207,26 @@ export function FirmaPublica() {
   const avanzar = () => setIdx((i) => Math.min(i + 1, TOTAL - 1));
   const retroceder = () => setIdx((i) => Math.max(i - 1, 0));
 
-  const puedeFirmar = Boolean(firma && nombre.trim().length >= 2 && fotoAuth !== null);
+  const esTitular = relacion === 'TITULAR';
+  // Si firma un representante, su RUT es obligatorio: es lo que permite
+  // acreditar quien consintio en nombre del paciente.
+  const puedeFirmar = Boolean(
+    firma && nombre.trim().length >= 2 && fotoAuth !== null &&
+    (esTitular || firmanteRut.trim().length >= 7),
+  );
 
   const firmar = async () => {
     if (!puedeFirmar || !firma) return;
     setEnviando(true);
     setErrEnvio(null);
     try {
-      await enviarFirma(token, { firmaImagen: firma, firmanteNombre: nombre.trim(), fotoAuth: fotoAuth! });
+      await enviarFirma(token, {
+        firmaImagen: firma,
+        firmanteNombre: nombre.trim(),
+        fotoAuth: fotoAuth!,
+        firmanteRelacion: relacion,
+        ...(esTitular ? {} : { firmanteRut: firmanteRut.trim() }),
+      });
       setEnviado(true);
     } catch (e) {
       setErrEnvio(e instanceof Error ? e.message : 'No se pudo registrar la firma');
@@ -305,8 +324,42 @@ export function FirmaPublica() {
             <p style={{ fontSize: 13.5, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 16 }}>
               Confirma tu nombre y dibuja tu firma. Al firmar declaras que leíste y comprendiste este consentimiento.
             </p>
-            <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>Nombre completo</label>
-            <input className="input" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Tu nombre completo" style={{ marginBottom: 16 }} />
+            <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>¿Quién firma?</label>
+            <select
+              className="input"
+              value={relacion}
+              onChange={(e) => {
+                const v = e.target.value as Relacion;
+                setRelacion(v);
+                // El nombre viene precargado con el del paciente: al pasar a un
+                // representante hay que escribir el suyo, no el del titular.
+                setNombre(v === 'TITULAR' ? data.paciente : '');
+                if (v === 'TITULAR') setFirmanteRut('');
+              }}
+              style={{ marginBottom: 16, width: '100%' }}
+            >
+              <option value="TITULAR">El paciente</option>
+              <option value="MADRE">Madre</option>
+              <option value="PADRE">Padre</option>
+              <option value="TUTOR">Tutor legal</option>
+              <option value="APODERADO">Apoderado</option>
+              <option value="OTRO">Otro representante legal</option>
+            </select>
+
+            <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>
+              {esTitular ? 'Nombre completo' : 'Nombre completo del representante'}
+            </label>
+            <input className="input" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre completo" style={{ marginBottom: 16 }} />
+
+            {/* Para menores o personas con incapacidad, la ley exige identificar
+                a quien consiente en su representación. */}
+            {!esTitular && (
+              <>
+                <label style={{ fontSize: 12, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>RUT del representante</label>
+                <input className="input" value={firmanteRut} onChange={(e) => setFirmanteRut(e.target.value)} placeholder="12.345.678-9" style={{ marginBottom: 16 }} />
+              </>
+            )}
+
             <SignaturePad onChange={setFirma} />
             {errEnvio && (
               <div style={{ marginTop: 14, fontSize: 13, color: 'var(--orange)', background: 'var(--danger-soft)', border: '1px solid #F0E0D8', borderRadius: 8, padding: '9px 12px' }}>{errEnvio}</div>

@@ -6,13 +6,29 @@ import { Icon } from '../../lib/icons';
 import type { MetodoPago, Product, Venta } from '../../lib/types';
 import { Comprobante } from './Comprobante';
 
+/**
+ * Un ítem del carrito es un producto (con stock que limita la cantidad) o un
+ * tratamiento (sin stock; su precio lo fija quien vende, porque el catálogo
+ * guarda un rango valorDesde/valorHasta).
+ */
 interface CartItem {
-  productId: number;
+  key: string;            // 'p:12' | 't:toxina-tercio-superior'
+  tipo: 'PRODUCTO' | 'TRATAMIENTO';
+  productId?: number;
+  treatmentId?: string;
   nombre: string;
   precio: number;
   cantidad: number;
-  stock: number;
+  stock: number | null;   // null = sin límite (tratamiento)
   unidad: string;
+}
+
+interface TratamientoVendible {
+  id: string;
+  nombre: string;
+  categoria: string;
+  valorDesde: number | null;
+  valorHasta: number | null;
 }
 
 const METODOS: { id: MetodoPago; label: string }[] = [
@@ -26,6 +42,8 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
   const { toast } = useApp();
   // Carga directa (sin useResource): el stock debe refrescarse tras cada venta.
   const [productos, setProductos] = useState<Product[]>([]);
+  const [tratamientos, setTratamientos] = useState<TratamientoVendible[]>([]);
+  const [pestana, setPestana] = useState<'PRODUCTO' | 'TRATAMIENTO'>('PRODUCTO');
   const [busqueda, setBusqueda] = useState('');
   const [carrito, setCarrito] = useState<CartItem[]>([]);
   const [metodoPago, setMetodoPago] = useState<MetodoPago>('EFECTIVO');
@@ -45,6 +63,20 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
 
   useEffect(() => { void cargarProductos(); }, [cargarProductos]);
 
+  // El catálogo de tratamientos no cambia con la venta: basta cargarlo una vez.
+  useEffect(() => {
+    api.get<{ treatments: TratamientoVendible[] }>('/data/treatments')
+      .then((d) => setTratamientos(d.treatments))
+      .catch(() => toast('Error al cargar tratamientos'));
+  }, [toast]);
+
+  const tratamientosVendibles = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    return tratamientos
+      .filter((t) => !q || t.nombre.toLowerCase().includes(q) || (t.categoria ?? '').toLowerCase().includes(q))
+      .slice(0, 30);
+  }, [tratamientos, busqueda]);
+
   const vendibles = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     return productos
@@ -55,16 +87,19 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
 
   const agregar = (p: Product) => {
     const stock = p.inventarioItem?.stock ?? 0;
+    const key = `p:${p.id}`;
     setCarrito((prev) => {
-      const existe = prev.find((c) => c.productId === p.id);
+      const existe = prev.find((c) => c.key === key);
       if (existe) {
         if (existe.cantidad >= stock) {
           toast(`Stock máximo: ${stock}`);
           return prev;
         }
-        return prev.map((c) => c.productId === p.id ? { ...c, cantidad: c.cantidad + 1 } : c);
+        return prev.map((c) => c.key === key ? { ...c, cantidad: c.cantidad + 1 } : c);
       }
       return [...prev, {
+        key,
+        tipo: 'PRODUCTO' as const,
         productId: p.id,
         nombre: `${p.brand} ${p.name}`.trim(),
         precio: p.price,
@@ -75,33 +110,58 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
     });
   };
 
-  const setCantidad = (productId: number, cantidad: number) => {
+  const agregarTratamiento = (t: TratamientoVendible) => {
+    const key = `t:${t.id}`;
+    setCarrito((prev) => {
+      const existe = prev.find((c) => c.key === key);
+      if (existe) return prev.map((c) => c.key === key ? { ...c, cantidad: c.cantidad + 1 } : c);
+      return [...prev, {
+        key,
+        tipo: 'TRATAMIENTO' as const,
+        treatmentId: t.id,
+        nombre: t.nombre,
+        // Sugerencia desde el catálogo; quien vende confirma el valor final.
+        precio: t.valorDesde ?? 0,
+        cantidad: 1,
+        stock: null,
+        unidad: 'sesión',
+      }];
+    });
+  };
+
+  const setCantidad = (key: string, cantidad: number) => {
     setCarrito((prev) => prev.map((c) => {
-      if (c.productId !== productId) return c;
-      return { ...c, cantidad: Math.max(1, Math.min(cantidad, c.stock)) };
+      if (c.key !== key) return c;
+      const tope = c.stock ?? Number.MAX_SAFE_INTEGER;
+      return { ...c, cantidad: Math.max(1, Math.min(cantidad, tope)) };
     }));
   };
 
-  const setPrecio = (productId: number, precio: number) => {
-    setCarrito((prev) => prev.map((c) => c.productId === productId ? { ...c, precio: Math.max(0, precio) } : c));
+  const setPrecio = (key: string, precio: number) => {
+    setCarrito((prev) => prev.map((c) => c.key === key ? { ...c, precio: Math.max(0, precio) } : c));
   };
 
-  const quitar = (productId: number) => {
-    setCarrito((prev) => prev.filter((c) => c.productId !== productId));
+  const quitar = (key: string) => {
+    setCarrito((prev) => prev.filter((c) => c.key !== key));
   };
 
   const subtotal = carrito.reduce((s, c) => s + c.precio * c.cantidad, 0);
   const total = Math.round(subtotal * (1 - descuento / 100));
 
   const cobrar = async () => {
-    if (carrito.length === 0) { toast('Agrega al menos un producto'); return; }
+    if (carrito.length === 0) { toast('Agrega al menos un producto o tratamiento'); return; }
+    // El backend tambien lo valida, pero avisar aqui evita perder la venta.
+    const sinPrecio = carrito.find((c) => c.tipo === 'TRATAMIENTO' && c.precio <= 0);
+    if (sinPrecio) { toast(`Indica el precio de "${sinPrecio.nombre}"`); return; }
     setCobrando(true);
     try {
       const d = await api.post<{ venta: Venta }>('/caja/ventas', {
         cliente: cliente.trim() || null,
         metodoPago,
         descuento,
-        items: carrito.map((c) => ({ productId: c.productId, cantidad: c.cantidad, precioUnitario: c.precio })),
+        items: carrito.map((c) => c.tipo === 'TRATAMIENTO'
+          ? { tipo: 'TRATAMIENTO', treatmentId: c.treatmentId, cantidad: c.cantidad, precioUnitario: c.precio }
+          : { tipo: 'PRODUCTO', productId: c.productId, cantidad: c.cantidad, precioUnitario: c.precio }),
       });
       setVentaOk(d.venta);
       setCarrito([]);
@@ -123,14 +183,74 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
 
   return (
     <div className="no-print" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start' }}>
-      {/* Picker de productos */}
+      {/* Picker: productos con stock o tratamientos del catálogo */}
       <div className="card" style={{ padding: 18 }}>
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          {([['PRODUCTO', 'Productos'], ['TRATAMIENTO', 'Tratamientos']] as const).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => { setPestana(id); setBusqueda(''); }}
+              style={{
+                flex: 1, padding: '7px 4px', fontSize: 12, fontWeight: 600, borderRadius: 7, cursor: 'pointer',
+                border: pestana === id ? '1.5px solid var(--primary)' : '1px solid var(--border)',
+                background: pestana === id ? 'var(--primary-soft)' : 'var(--surface)',
+                color: pestana === id ? 'var(--primary)' : 'var(--muted)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div style={{ position: 'relative', marginBottom: 12 }}>
           <span style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-2)', display: 'flex' }}>
             <Icon name="search" size={14} />
           </span>
-          <input className="input" style={{ paddingLeft: 32 }} placeholder="Buscar producto..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <input
+            className="input"
+            style={{ paddingLeft: 32 }}
+            placeholder={pestana === 'PRODUCTO' ? 'Buscar producto...' : 'Buscar tratamiento...'}
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
         </div>
+
+        {pestana === 'TRATAMIENTO' && (
+          tratamientosVendibles.length === 0 ? (
+            <div style={{ fontSize: 12.5, color: 'var(--muted)', textAlign: 'center', padding: '24px 0' }}>
+              {tratamientos.length === 0 ? 'Cargando tratamientos...' : 'Sin tratamientos que coincidan.'}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 480, overflowY: 'auto' }}>
+              {tratamientosVendibles.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => agregarTratamiento(t)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', textAlign: 'left',
+                    border: '1px solid var(--border-soft)', borderRadius: 9, background: 'var(--surface)', cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {t.nombre}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 1 }}>{t.categoria}</div>
+                  </div>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--primary)', flexShrink: 0 }}>
+                    {t.valorDesde
+                      ? (t.valorHasta && t.valorHasta !== t.valorDesde
+                          ? `${money(t.valorDesde)} – ${money(t.valorHasta)}`
+                          : money(t.valorDesde))
+                      : 'A convenir'}
+                  </div>
+                  <span style={{ color: 'var(--muted-2)', display: 'flex', flexShrink: 0 }}><Icon name="plus" size={14} /></span>
+                </button>
+              ))}
+            </div>
+          )
+        )}
+
+        {pestana === 'PRODUCTO' && (<>
         {vendibles.length === 0 ? (
           <div style={{ fontSize: 12.5, color: 'var(--muted)', textAlign: 'center', padding: '24px 0' }}>
             {productos.length === 0
@@ -162,6 +282,7 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
             ))}
           </div>
         )}
+        </>)}
       </div>
 
       {/* Carrito */}
@@ -174,22 +295,24 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {carrito.map((c) => (
-              <div key={c.productId} style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid var(--border-soft)', borderRadius: 8, padding: '8px 10px' }}>
+              <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid var(--border-soft)', borderRadius: 8, padding: '8px 10px' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nombre}</div>
-                  <div style={{ fontSize: 10.5, color: 'var(--muted-2)' }}>máx {c.stock}</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--muted-2)' }}>
+                    {c.stock === null ? 'Tratamiento · fija el precio' : `máx ${c.stock}`}
+                  </div>
                 </div>
                 <input
-                  type="number" min={1} max={c.stock} value={c.cantidad}
-                  onChange={(e) => setCantidad(c.productId, Number(e.target.value))}
+                  type="number" min={1} max={c.stock ?? undefined} value={c.cantidad}
+                  onChange={(e) => setCantidad(c.key, Number(e.target.value))}
                   style={{ width: 52, padding: '4px 6px', fontSize: 12.5, border: '1px solid var(--border)', borderRadius: 6, textAlign: 'center', background: 'var(--surface)', color: 'var(--text)' }}
                 />
                 <input
                   type="number" min={0} value={c.precio}
-                  onChange={(e) => setPrecio(c.productId, Number(e.target.value))}
+                  onChange={(e) => setPrecio(c.key, Number(e.target.value))}
                   style={{ width: 84, padding: '4px 6px', fontSize: 12.5, border: '1px solid var(--border)', borderRadius: 6, textAlign: 'right', background: 'var(--surface)', color: 'var(--text)' }}
                 />
-                <button onClick={() => quitar(c.productId)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', display: 'flex', padding: 2 }}>
+                <button onClick={() => quitar(c.key)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', display: 'flex', padding: 2 }}>
                   <Icon name="trash" size={13} />
                 </button>
               </div>

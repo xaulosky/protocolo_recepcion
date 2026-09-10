@@ -646,6 +646,8 @@ function Enviados({ refreshKey, onQr, onDetalle, onEditar, onVerFirmado }: {
   const [filtroEstado, setFiltroEstado] = useState<'TODOS' | 'PENDIENTE' | 'FIRMADO' | 'ANULADO'>('TODOS');
   const [busqueda, setBusqueda] = useState('');
   const [emailEstados, setEmailEstados] = useState<Map<string, 'sending' | 'ok' | 'error'>>(new Map());
+  // Acción que espera justificación (anular / firmar en papel).
+  const [pedido, setPedido] = useState<{ id: string; paciente: string; tipo: 'ANULAR' | 'PAPEL' } | null>(null);
   const copy = useCopy();
 
   const cargar = () => {
@@ -664,13 +666,19 @@ function Enviados({ refreshKey, onQr, onDetalle, onEditar, onVerFirmado }: {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
-  const anular = async (id: string) => {
-    await api.del(`/consentimientos/${id}`).catch(() => {});
+  // Anular y firmar en papel exigen justificación: quedan registrados con autor
+  // y motivo, así que se piden por modal en vez de ejecutarse de inmediato.
+  const anular = async (motivo: string) => {
+    if (!pedido) return;
+    await api.del(`/consentimientos/${pedido.id}`, { motivo });
+    setPedido(null);
     cargar();
   };
 
-  const firmarManual = async (id: string) => {
-    await api.post(`/consentimientos/${id}/firmar-manual`, {}).catch(() => {});
+  const firmarManual = async (observacion: string) => {
+    if (!pedido) return;
+    await api.post(`/consentimientos/${pedido.id}/firmar-manual`, { observacion });
+    setPedido(null);
     cargar();
   };
 
@@ -803,14 +811,14 @@ function Enviados({ refreshKey, onQr, onDetalle, onEditar, onVerFirmado }: {
                 {it.estado === 'PENDIENTE' && (
                   <>
                     <button
-                      onClick={() => { if (confirm(`¿Marcar como firmado en papel para ${it.paciente}?`)) firmarManual(it.id); }}
+                      onClick={() => setPedido({ id: it.id, paciente: it.paciente, tipo: 'PAPEL' })}
                       className="btn btn-soft"
                       title="Marcar como firmado en papel"
                       style={{ padding: '7px 10px', color: 'var(--green)' }}
                     >
                       <Icon name="file" size={15} />
                     </button>
-                    <button onClick={() => { if (confirm(`¿Anular el consentimiento de ${it.paciente}?`)) anular(it.id); }} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}>
+                    <button onClick={() => setPedido({ id: it.id, paciente: it.paciente, tipo: 'ANULAR' })} className="btn btn-soft" title="Anular" style={{ padding: '7px 10px', color: 'var(--orange)' }}>
                       <Icon name="trash" size={15} />
                     </button>
                   </>
@@ -827,7 +835,82 @@ function Enviados({ refreshKey, onQr, onDetalle, onEditar, onVerFirmado }: {
         })}
       </div>
 
+      {pedido && (
+        <JustificacionModal
+          pedido={pedido}
+          onClose={() => setPedido(null)}
+          onConfirmar={(texto) => (pedido.tipo === 'ANULAR' ? anular(texto) : firmarManual(texto))}
+        />
+      )}
     </>
+  );
+}
+
+/**
+ * Pide la justificación obligatoria antes de anular un consentimiento o de
+ * declararlo firmado en papel. Ambas acciones quedan registradas en el
+ * documento con su autor, así que no pueden ejecutarse "a ciegas".
+ */
+function JustificacionModal({ pedido, onClose, onConfirmar }: {
+  pedido: { id: string; paciente: string; tipo: 'ANULAR' | 'PAPEL' };
+  onClose: () => void;
+  onConfirmar: (texto: string) => Promise<void>;
+}) {
+  const [texto, setTexto] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const esAnular = pedido.tipo === 'ANULAR';
+  const valido = texto.trim().length >= 5;
+
+  const confirmar = async () => {
+    if (!valido) return;
+    setGuardando(true);
+    setError(null);
+    try {
+      await onConfirmar(texto.trim());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo completar la acción');
+      setGuardando(false);
+    }
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 14, padding: 28, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,.18)' }}>
+        <div style={{ fontSize: 11, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
+          {esAnular ? 'Anular consentimiento' : 'Firmado en papel'}
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 14 }}>{pedido.paciente}</div>
+
+        <div style={{ fontSize: 12.5, color: 'var(--muted)', marginBottom: 14, lineHeight: 1.5 }}>
+          {esAnular
+            ? 'Queda registrado quién anula, cuándo y por qué. El consentimiento no se borra: conserva su valor como registro.'
+            : 'Indica dónde queda archivado el documento firmado. Sin esa referencia el registro no puede exhibirse ante una fiscalización.'}
+        </div>
+
+        <label style={{ fontSize: 11.5, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>
+          {esAnular ? 'Motivo de la anulación' : 'Ubicación del documento en papel'}
+        </label>
+        <textarea
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          rows={3}
+          autoFocus
+          placeholder={esAnular ? 'Ej. El paciente reprogramó a otro procedimiento' : 'Ej. Carpeta de consentimientos 2026, box 3'}
+          style={{ width: '100%', padding: '8px 10px', fontSize: 13.5, border: '1px solid var(--border)', borderRadius: 7, outline: 'none', fontFamily: 'inherit', background: 'var(--surface)', color: 'var(--text)', resize: 'vertical' }}
+        />
+
+        {error && <div style={{ fontSize: 12.5, color: 'var(--orange)', marginTop: 10 }}>{error}</div>}
+
+        <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
+          <button onClick={onClose} className="btn btn-soft" style={{ flex: 1 }} disabled={guardando}>Cancelar</button>
+          <button onClick={confirmar} className="btn btn-primary" style={{ flex: 2 }} disabled={!valido || guardando}>
+            {guardando ? 'Guardando…' : esAnular ? 'Anular' : 'Marcar como firmado'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
