@@ -1,4 +1,6 @@
-import { SignedXml } from 'xml-crypto';
+import { createHash } from 'node:crypto';
+import { C14nCanonicalization } from 'xml-crypto';
+import { DOMParser, XMLSerializer, type Node as XNode } from '@xmldom/xmldom';
 import { env } from '../../env.ts';
 import { datosEmisor } from './emisor.ts';
 import { firmarSha1, type Caf, type Certificado } from './firma.ts';
@@ -151,6 +153,11 @@ export function construirDocumento(datos: DatosBoleta, caf: Caf): { xml: string;
       ? `<Referencia><NroLinRef>1</NroLinRef><CodRef>SET</CodRef><RazonRef>${esc(recortar(datos.casoSet, 90))}</RazonRef></Referencia>`
       : '';
 
+  // Sólo el namespace por defecto, ningún prefijo. La c14n inclusiva emite en
+  // cada nodo firmado TODOS los namespaces en alcance, y xml-crypto canonicaliza
+  // el SignedInfo antes de insertarlo, sin ver los que heredaría de sus
+  // ancestros. Un xmlns:xsi en alcance hace que firma y verificación (la del
+  // SII incluida) canonicalicen bytes distintos y la firma RSA no valide.
   const xml =
     `<DTE version="1.0" xmlns="http://www.sii.cl/SiiDte">` +
     `<Documento ID="${id}">` +
@@ -175,34 +182,77 @@ export function construirDocumento(datos: DatosBoleta, caf: Caf): { xml: string;
   return { xml, id };
 }
 
+const NS_DSIG = 'http://www.w3.org/2000/09/xmldsig#';
+
 /**
- * Firma un fragmento XML con XMLDSig, como lo exige el SII: SHA-1, RSA-SHA1 y
- * transformación enveloped. La firma queda como hermana del nodo firmado.
+ * Canonicalización inclusiva (C14N 1.0) de un nodo, como la hará el SII.
+ *
+ * Se re-serializa el nodo en un documento propio (xmldom le agrega la
+ * declaración de namespace que hereda) y se canonicaliza como raíz. Equivale a
+ * la c14n en contexto porque en estos documentos no hay ningún prefijo en
+ * alcance: sólo el namespace por defecto, que el nodo pasa a declarar él mismo.
+ */
+function canonicalizar(nodo: XNode): string {
+  const solo = new DOMParser().parseFromString(new XMLSerializer().serializeToString(nodo), 'text/xml');
+  return new C14nCanonicalization().process(solo.documentElement as XNode, {}) as string;
+}
+
+/**
+ * Firma un fragmento XML con XMLDSig según el perfil del SII: SHA-1, RSA-SHA1,
+ * C14N 1.0 y un ÚNICO transform enveloped-signature por referencia. La firma
+ * queda como último hijo de `nodoPadre`, hermana del nodo referenciado.
+ *
+ * Se arma a mano en vez de delegar en SignedXml.computeSignature por un
+ * comportamiento de xml-crypto que el SII no perdona: cuando la referencia
+ * lleva sólo enveloped-signature, hashea la serialización CRUDA del nodo en
+ * vez de aplicar la C14N 1.0 implícita que exige XMLDSig (atributos sin
+ * ordenar tras el xmlns, declaraciones redundantes conservadas). Con un
+ * transform c14n explícito lo hace bien, pero xmldsignature_v10.xsd admite un
+ * solo <Transform>. La clase C14nCanonicalization sí es correcta —produce los
+ * mismos bytes que libxml2—, así que se usa directamente.
  */
 export function firmarXml(xml: string, referenciaId: string, cert: Certificado, nodoPadre: string): string {
-  const sig = new SignedXml({
-    privateKey: cert.key,
-    signatureAlgorithm: 'http://www.w3.org/2000/09/xmldsig#rsa-sha1',
-    canonicalizationAlgorithm: 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315',
-  });
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  const referenciado = Array.from(doc.getElementsByTagName('*')).find((e) => e.getAttribute('ID') === referenciaId);
+  if (!referenciado) throw new Error(`No existe un nodo con ID="${referenciaId}" para firmar`);
 
-  sig.addReference({
-    xpath: `//*[@ID='${referenciaId}']`,
-    digestAlgorithm: 'http://www.w3.org/2000/09/xmldsig#sha1',
-    transforms: ['http://www.w3.org/2000/09/xmldsig#enveloped-signature'],
-    uri: `#${referenciaId}`,
-  });
+  // La firma será hermana del nodo referenciado, así que enveloped-signature
+  // no tiene nada que quitar de su subárbol: el digest va sobre el nodo tal cual.
+  const digest = createHash('sha1').update(canonicalizar(referenciado as XNode), 'utf8').digest('base64');
 
-  // El SII espera el certificado y la llave pública dentro de <KeyInfo>.
-  sig.getKeyInfoContent = () =>
+  const signedInfo =
+    `<SignedInfo>` +
+    `<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>` +
+    `<SignatureMethod Algorithm="${NS_DSIG}rsa-sha1"/>` +
+    `<Reference URI="#${referenciaId}">` +
+    `<Transforms><Transform Algorithm="${NS_DSIG}enveloped-signature"/></Transforms>` +
+    `<DigestMethod Algorithm="${NS_DSIG}sha1"/>` +
+    `<DigestValue>${digest}</DigestValue>` +
+    `</Reference>` +
+    `</SignedInfo>`;
+
+  // Se canonicaliza con el namespace que heredará de <Signature> en el documento
+  // final: es exactamente lo que canonicalizará el verificador.
+  const signedInfoCanon = canonicalizar(
+    new DOMParser().parseFromString(signedInfo.replace('<SignedInfo>', `<SignedInfo xmlns="${NS_DSIG}">`), 'text/xml')
+      .documentElement as XNode,
+  );
+  const firma = firmarSha1(signedInfoCanon, cert.key);
+
+  const signature =
+    `<Signature xmlns="${NS_DSIG}">` +
+    signedInfo +
+    `<SignatureValue>${firma}</SignatureValue>` +
+    `<KeyInfo>` +
     `<KeyValue><RSAKeyValue><Modulus>${cert.modulusBase64}</Modulus><Exponent>${cert.exponentBase64}</Exponent></RSAKeyValue></KeyValue>` +
-    `<X509Data><X509Certificate>${cert.certBase64}</X509Certificate></X509Data>`;
+    `<X509Data><X509Certificate>${cert.certBase64}</X509Certificate></X509Data>` +
+    `</KeyInfo>` +
+    `</Signature>`;
 
-  sig.computeSignature(xml, {
-    location: { reference: `//*[local-name(.)='${nodoPadre}']`, action: 'append' },
-  });
-
-  return sig.getSignedXml();
+  const cierre = `</${nodoPadre}>`;
+  const pos = xml.lastIndexOf(cierre);
+  if (pos < 0) throw new Error(`No se encontró el cierre de <${nodoPadre}> para insertar la firma`);
+  return xml.slice(0, pos) + signature + xml.slice(pos);
 }
 
 export interface Caratula {
@@ -227,8 +277,10 @@ export function construirEnvio(
 
   const sobre =
     `<?xml version="1.0" encoding="ISO-8859-1"?>` +
-    `<EnvioBOLETA xmlns="http://www.sii.cl/SiiDte" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ` +
-    `xsi:schemaLocation="http://www.sii.cl/SiiDte EnvioBOLETA_v11.xsd" version="1.0">` +
+    // Sin xmlns:xsi ni xsi:schemaLocation, por la misma razón que en el DTE:
+    // un prefijo en alcance descuadra la c14n del SignedInfo entre quien firma
+    // y quien verifica. schemaLocation es sólo una pista: el XSD valida igual.
+    `<EnvioBOLETA xmlns="http://www.sii.cl/SiiDte" version="1.0">` +
     `<SetDTE ID="SetDoc">` +
     `<Caratula version="1.0">` +
     `<RutEmisor>${e.rut}</RutEmisor>` +
@@ -239,7 +291,15 @@ export function construirEnvio(
     `<TmstFirmaEnv>${marcaDeTiempo()}</TmstFirmaEnv>` +
     `<SubTotDTE><TpoDTE>${tipoDte}</TpoDTE><NroDTE>${dtesFirmados.length}</NroDTE></SubTotDTE>` +
     `</Caratula>` +
-    dtesFirmados.map((d) => d.replace(/^<\?xml[^>]*\?>/, '')).join('') +
+    // Cada DTE se firmó suelto declarando el namespace por defecto; dentro del
+    // sobre esa declaración es redundante (la hereda de EnvioBOLETA). Se quita
+    // para que no queden declaraciones superfluas: C14N 1.0 las omite y así no
+    // hay margen para que dos canonicalizadores discrepen. La firma del DTE
+    // sigue válida porque sus digests dependen de los namespaces EN ALCANCE,
+    // que son los mismos.
+    dtesFirmados
+      .map((d) => d.replace(/^<\?xml[^>]*\?>/, '').replace(/^<DTE([^>]*)\sxmlns="http:\/\/www\.sii\.cl\/SiiDte"/, '<DTE$1'))
+      .join('') +
     `</SetDTE>` +
     `</EnvioBOLETA>`;
 
