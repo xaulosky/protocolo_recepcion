@@ -94,10 +94,14 @@ export async function cajaRoutes(app: FastifyInstance) {
     }
   });
 
-  // GET /caja/ventas?turnoId= — historial (por turno o general)
-  app.get('/ventas', operarCaja, async (req) => {
-    const { turnoId } = req.query as { turnoId?: string };
-    const ventas = await listVentas({ turnoId });
+  // GET /caja/ventas?turnoId=&periodo=YYYY-MM&q= — historial por turno, por mes
+  // o búsqueda por cliente / N° de venta.
+  app.get('/ventas', operarCaja, async (req, reply) => {
+    const { turnoId, periodo, q } = req.query as { turnoId?: string; periodo?: string; q?: string };
+    if (periodo && !/^\d{4}-\d{2}$/.test(periodo)) {
+      return reply.code(400).send({ error: 'periodo debe tener formato YYYY-MM' });
+    }
+    const ventas = await listVentas({ turnoId, periodo, q });
     return { ventas };
   });
 

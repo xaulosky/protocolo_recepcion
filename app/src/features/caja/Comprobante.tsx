@@ -1,5 +1,5 @@
 import { useApp } from '../../store/app-context';
-import { money, fmtDateTime } from '../../lib/format';
+import { money, fmtDateTime, fmtDate } from '../../lib/format';
 import { Icon } from '../../lib/icons';
 import type { Venta, VentaItem } from '../../lib/types';
 
@@ -31,9 +31,16 @@ function profesionalDe(it: VentaItem): string | null {
  * El resto de la UI de Caja va envuelto en `no-print`, así `window.print()`
  * deja solo este recibo.
  */
-export function Comprobante({ venta, onNueva }: { venta: Venta; onNueva: () => void }) {
+export function Comprobante({ venta, onNueva, accionLabel = 'Nueva venta', accionIcon = 'plus' }: {
+  venta: Venta;
+  /** Acción principal: iniciar otra venta, o volver al listado que lo abrió. */
+  onNueva: () => void;
+  accionLabel?: string;
+  accionIcon?: string;
+}) {
   const { toast } = useApp();
   const doc = venta.documento ?? null;
+  const anulada = Boolean(venta.anuladaAt);
 
   // Profesionales distintos que participaron, para el encabezado.
   const profesionales = Array.from(
@@ -42,6 +49,7 @@ export function Comprobante({ venta, onNueva }: { venta: Venta; onNueva: () => v
 
   const texto = () => [
     'CLÍNICA CIALO',
+    anulada ? '*** VENTA ANULADA ***' : null,
     doc
       ? `${TIPO_DTE_LABEL[doc.tipo]} N° ${doc.folio}`
       : `Comprobante de venta N° ${venta.numero}`,
@@ -61,6 +69,7 @@ export function Comprobante({ venta, onNueva }: { venta: Venta; onNueva: () => v
     doc && doc.neto > 0 ? `Neto: ${money(doc.neto)}` : null,
     doc && doc.iva > 0 ? `IVA (19%): ${money(doc.iva)}` : null,
     `TOTAL: ${money(venta.total)} (${METODO_LABEL[venta.metodoPago]})`,
+    anulada ? `Anulada el ${fmtDate(venta.anuladaAt!)}${venta.motivoAnulacion ? ` — ${venta.motivoAnulacion}` : ''}` : null,
   ].filter((l) => l !== null).join('\n');
 
   const copiar = () => {
@@ -74,6 +83,25 @@ export function Comprobante({ venta, onNueva }: { venta: Venta; onNueva: () => v
   return (
     <div className="comprobante-wrap" style={{ maxWidth: 460, margin: '0 auto' }}>
       <div className="card comprobante" style={{ padding: 26 }}>
+        {/* Una venta anulada tiene que verse anulada, tambien impresa. */}
+        {anulada && (
+          <div style={{
+            border: '1.5px solid var(--orange)', borderRadius: 8, padding: '8px 10px',
+            marginBottom: 14, textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--orange)', letterSpacing: 0.5 }}>
+              VENTA ANULADA
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
+              {fmtDate(venta.anuladaAt!)}
+              {venta.anuladaPor ? ` · ${venta.anuladaPor.nombre}` : ''}
+            </div>
+            {venta.motivoAnulacion && (
+              <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>{venta.motivoAnulacion}</div>
+            )}
+          </div>
+        )}
+
         {/* Encabezado */}
         <div style={{ textAlign: 'center', borderBottom: '1px dashed var(--border)', paddingBottom: 14, marginBottom: 14 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Clínica Cialo</div>
@@ -161,14 +189,16 @@ export function Comprobante({ venta, onNueva }: { venta: Venta; onNueva: () => v
           </div>
         )}
 
-        <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--muted-2)', marginTop: 10 }}>
-          ¡Gracias por su compra!
-        </div>
+        {!anulada && (
+          <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--muted-2)', marginTop: 10 }}>
+            ¡Gracias por su compra!
+          </div>
+        )}
       </div>
 
       <div className="no-print" style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
         <button className="btn btn-primary" style={{ padding: '9px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }} onClick={onNueva}>
-          <Icon name="plus" size={14} /> Nueva venta
+          <Icon name={accionIcon} size={14} /> {accionLabel}
         </button>
         <button className="btn btn-soft" style={{ padding: '9px 14px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }} onClick={copiar}>
           <Icon name="copy" size={13} /> Copiar

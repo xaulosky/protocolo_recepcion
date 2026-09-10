@@ -333,13 +333,49 @@ export async function anularVenta(ventaId: string, motivo: string | null, userId
   });
 }
 
-export async function listVentas(filtro: { turnoId?: string }) {
-  return prisma.venta.findMany({
-    where: filtro.turnoId ? { turnoId: filtro.turnoId } : {},
+/**
+ * Historial de ventas. Sin filtros trae las últimas; con `periodo` (YYYY-MM)
+ * trae las de ese mes en horario de Chile, que es lo que necesita el reporte
+ * mensual para poder abrir cada venta y revisarla.
+ *
+ * El mes se resuelve igual que en `resumenVentas`: se pide el rango ampliado
+ * ±1 día y se filtra en memoria, para que una venta de las 23:00 del día 31 no
+ * se cuele al mes siguiente por la diferencia con UTC.
+ */
+export async function listVentas(filtro: { turnoId?: string; periodo?: string; q?: string }) {
+  const where: Record<string, unknown> = {};
+
+  if (filtro.turnoId) where.turnoId = filtro.turnoId;
+
+  if (filtro.periodo) {
+    const [y, m] = filtro.periodo.split('-').map(Number);
+    where.createdAt = {
+      gte: new Date(Date.UTC(y, m - 1, 1) - 24 * 60 * 60 * 1000),
+      lt: new Date(Date.UTC(y, m, 1) + 24 * 60 * 60 * 1000),
+    };
+  }
+
+  if (filtro.q?.trim()) {
+    const q = filtro.q.trim();
+    const comoNumero = Number(q);
+    where.OR = [
+      { cliente: { contains: q, mode: 'insensitive' } },
+      ...(Number.isInteger(comoNumero) && comoNumero > 0 ? [{ numero: comoNumero }] : []),
+    ];
+  }
+
+  const ventas = await prisma.venta.findMany({
+    where,
     include: ventaInclude,
     orderBy: { createdAt: 'desc' },
-    take: 200,
+    take: filtro.periodo ? 500 : 200,
   });
+
+  // Las ventas anuladas SÍ se devuelven: revisar el historial incluye poder ver
+  // qué se anuló y por qué.
+  return filtro.periodo
+    ? ventas.filter((v) => mesChile(v.createdAt) === filtro.periodo)
+    : ventas;
 }
 
 /**

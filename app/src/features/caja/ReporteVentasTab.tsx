@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import { useApp } from '../../store/app-context';
-import { money } from '../../lib/format';
+import { money, fmtDateTime } from '../../lib/format';
 import { exportCsv } from '../../lib/exportCsv';
 import { Icon } from '../../lib/icons';
-import type { VentasResumenMes } from '../../lib/types';
+import type { Venta, VentasResumenMes } from '../../lib/types';
+import { Comprobante } from './Comprobante';
 
 function currentPeriodo(): string {
   const d = new Date();
@@ -22,6 +23,10 @@ export function ReporteVentasTab() {
   const [periodo, setPeriodo] = useState(currentPeriodo());
   const [data, setData] = useState<VentasResumenMes | null>(null);
   const [loading, setLoading] = useState(false);
+  // Ventas del mes, para poder abrir cualquiera y revisarla.
+  const [ventas, setVentas] = useState<Venta[] | null>(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [abierta, setAbierta] = useState<Venta | null>(null);
 
   useEffect(() => {
     let activo = true;
@@ -32,6 +37,30 @@ export function ReporteVentasTab() {
       .finally(() => { if (activo) setLoading(false); });
     return () => { activo = false; };
   }, [periodo, toast]);
+
+  // El detalle del mes va en su propia petición: el resumen es liviano y se
+  // muestra al tiro, mientras el listado completo llega detrás.
+  useEffect(() => {
+    let activo = true;
+    setVentas(null);
+    api.get<{ ventas: Venta[] }>(`/caja/ventas?periodo=${periodo}`)
+      .then((d) => { if (activo) setVentas(d.ventas); })
+      .catch(() => { if (activo) toast('Error al cargar las ventas del mes'); });
+    return () => { activo = false; };
+  }, [periodo, toast]);
+
+  // Al cambiar de mes, cerrar el detalle abierto: es de otro periodo.
+  useEffect(() => { setAbierta(null); setBusqueda(''); }, [periodo]);
+
+  const ventasFiltradas = (ventas ?? []).filter((v) => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      String(v.numero).includes(q) ||
+      (v.cliente ?? '').toLowerCase().includes(q) ||
+      v.items.some((i) => i.nombre.toLowerCase().includes(q))
+    );
+  });
 
   const exportar = () => {
     if (!data) return;
@@ -49,6 +78,19 @@ export function ReporteVentasTab() {
       ['Transferencia', data.resumen.porMetodoPago.TRANSFERENCIA],
     ]);
   };
+
+  // Al abrir una venta se reemplaza la vista: el comprobante necesita quedar
+  // solo en la página para que window.print() imprima unicamente el recibo.
+  if (abierta) {
+    return (
+      <Comprobante
+        venta={abierta}
+        onNueva={() => setAbierta(null)}
+        accionLabel="Volver al reporte"
+        accionIcon="colL"
+      />
+    );
+  }
 
   return (
     <div style={{ maxWidth: 760 }}>
@@ -112,6 +154,71 @@ export function ReporteVentasTab() {
                   <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{money(v.total)}</div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Detalle: cada venta del mes, abrible */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '24px 0 10px', flexWrap: 'wrap' }}>
+            <div className="eyebrow">Ventas del mes</div>
+            <input
+              className="input"
+              style={{ width: 'auto', marginLeft: 'auto', fontSize: 12.5 }}
+              placeholder="Buscar por N°, cliente o producto…"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
+
+          {ventas === null ? (
+            <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>Cargando ventas…</div>
+          ) : ventasFiltradas.length === 0 ? (
+            <div style={{ fontSize: 12.5, color: 'var(--muted)' }}>
+              {ventas.length === 0
+                ? `Sin ventas registradas en ${fmtPeriodo(periodo)}.`
+                : 'Ninguna venta coincide con la búsqueda.'}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {ventasFiltradas.map((v) => {
+                const anulada = Boolean(v.anuladaAt);
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => setAbierta(v)}
+                    className="card"
+                    style={{
+                      padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12,
+                      cursor: 'pointer', textAlign: 'left', width: '100%',
+                      border: '1px solid var(--border-soft)',
+                      opacity: anulada ? 0.6 : 1,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        N° {v.numero}
+                        {v.cliente && <span style={{ fontWeight: 400, color: 'var(--muted)' }}>· {v.cliente}</span>}
+                        {anulada && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--orange)', border: '1px solid var(--orange)', borderRadius: 4, padding: '0 4px' }}>
+                            ANULADA
+                          </span>
+                        )}
+                        {v.documento && (
+                          <span style={{ fontSize: 10.5, fontWeight: 500, color: 'var(--muted-2)' }}>
+                            · Folio {v.documento.folio}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: 'var(--muted-2)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {fmtDateTime(v.createdAt)} · {v.items.length} ítem{v.items.length === 1 ? '' : 's'} · {v.vendedor?.nombre ?? '—'}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', flexShrink: 0, textDecoration: anulada ? 'line-through' : undefined }}>
+                      {money(v.total)}
+                    </div>
+                    <Icon name="colR" size={14} style={{ color: 'var(--muted-3)', flexShrink: 0 }} />
+                  </button>
+                );
+              })}
             </div>
           )}
         </>
