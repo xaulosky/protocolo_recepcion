@@ -63,7 +63,21 @@ const schema = z.object({
   PRECIOS_INCLUYEN_IVA: boolEnv(true),
   // Ambiente del SII: 'certificacion' mientras se valida, 'produccion' despues.
   SII_AMBIENTE: z.enum(['certificacion', 'produccion']).default('certificacion'),
-  SII_RUT_EMISOR: z.string().default(''),
+
+  // Datos del emisor que exige el encabezado del DTE. Se sacan de "Mi SII";
+  // no se hardcodean porque el ambiente de certificacion y el de produccion
+  // pueden diferir y porque cambian si la empresa se traslada.
+  SII_RUT_EMISOR: z.string().default(''),        // 78155814-1
+  SII_RAZON_SOCIAL: z.string().default(''),      // CENTRO MEDICO CIALO SPA
+  SII_GIRO: z.string().default(''),              // giro registrado, sin abreviar
+  SII_ACTECO: z.string().default(''),            // codigo de actividad economica
+  SII_DIR_ORIGEN: z.string().default(''),        // direccion de la casa matriz
+  SII_CMNA_ORIGEN: z.string().default(''),       // comuna de la casa matriz
+  SII_NOMBRE_SOFTWARE: z.string().default('ADMINISTRACION.CIALO.CL'),
+
+  // Durante la certificacion cada documento debe referenciar su caso del set
+  // (<CodRef>SET, <RazonRef>CASO-N). En produccion esa referencia no va.
+  SII_SET_PRUEBAS: boolEnv(false),
 
   // Copiloto IA (chat con function-calling sobre DeepSeek, API compatible con OpenAI).
   DEEPSEEK_API_KEY: z.string().default(''),
