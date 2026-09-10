@@ -5,6 +5,7 @@ import { money } from '../../lib/format';
 import { Icon } from '../../lib/icons';
 import type { MetodoPago, Product, Venta } from '../../lib/types';
 import { Comprobante } from './Comprobante';
+import { SearchSelect } from '../../components/SearchSelect';
 
 /**
  * Un ítem del carrito es un producto (con stock que limita la cantidad) o un
@@ -85,6 +86,11 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
       .then((d) => setProfesionales(d.professionals))
       .catch(() => toast('Error al cargar profesionales'));
   }, [toast]);
+
+  const opcionesProfesionales = useMemo(
+    () => profesionales.map((p) => ({ id: p.id, label: p.nombreCompleto, sublabel: p.especialidad })),
+    [profesionales],
+  );
 
   const tratamientosVendibles = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -338,23 +344,20 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
                 </button>
                 </div>
 
-                {/* Quién atendió: sólo aplica a prestaciones, no a productos. */}
+                {/* Quién atendió: sólo aplica a prestaciones, no a productos.
+                    Con buscador, porque la lista de profesionales es larga y en
+                    caja se necesita encontrarlos escribiendo, no desplazando. */}
                 {c.tipo === 'TRATAMIENTO' && (
-                  <select
-                    value={c.professionalId ?? ''}
-                    onChange={(e) => setProfesional(c.key, e.target.value)}
-                    style={{
-                      marginTop: 6, width: '100%', padding: '4px 6px', fontSize: 12,
-                      border: '1px solid var(--border)', borderRadius: 6,
-                      background: 'var(--surface)',
-                      color: c.professionalId ? 'var(--text)' : 'var(--muted-2)',
-                    }}
-                  >
-                    <option value="">¿Quién atendió? (opcional)</option>
-                    {profesionales.map((p) => (
-                      <option key={p.id} value={p.id}>{p.nombreCompleto} — {p.especialidad}</option>
-                    ))}
-                  </select>
+                  <div style={{ marginTop: 6 }}>
+                    <SearchSelect
+                      compact
+                      options={opcionesProfesionales}
+                      value={c.professionalId ?? null}
+                      onChange={(id) => setProfesional(c.key, id ?? '')}
+                      placeholder="¿Quién atendió? (opcional)"
+                      clearLabel="Sin asignar"
+                    />
+                  </div>
                 )}
               </div>
             ))}
