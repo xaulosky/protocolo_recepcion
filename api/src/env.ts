@@ -72,7 +72,8 @@ const schema = z.object({
   SII_GIRO: z.string().default(''),              // giro registrado, sin abreviar
   SII_ACTECO: z.string().default(''),            // codigo de actividad economica
   SII_DIR_ORIGEN: z.string().default(''),        // direccion de la casa matriz
-  SII_CMNA_ORIGEN: z.string().default(''),       // comuna de la casa matriz
+  SII_CMNA_ORIGEN: z.string().default(''),       // comuna de la casa matriz (max 20)
+  SII_CIUDAD_ORIGEN: z.string().default(''),     // ciudad de la casa matriz (max 20)
   SII_NOMBRE_SOFTWARE: z.string().default('ADMINISTRACION.CIALO.CL'),
 
   // Durante la certificacion cada documento debe referenciar su caso del set

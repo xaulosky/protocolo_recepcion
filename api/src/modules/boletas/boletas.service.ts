@@ -3,6 +3,7 @@ import { prisma } from '../../db.ts';
 import { env } from '../../env.ts';
 import { calcularMontos, type LineaMonto } from './montos.ts';
 import { reservarFolio, foliosDisponibles } from './folios.ts';
+import { validarEmisor, datosEmisor } from './emisor.ts';
 
 /**
  * Emisión de boletas electrónicas asociadas a las ventas de caja.
@@ -98,9 +99,16 @@ export async function estadoBoletas() {
     prisma.documentoTributario.count({ where: { estado: 'RECHAZADA' } }),
   ]);
 
+  const problemasEmisor = validarEmisor();
+
   return {
     habilitado: env.BOLETAS_HABILITADAS,
     preciosIncluyenIva: env.PRECIOS_INCLUYEN_IVA,
+    ambiente: env.SII_AMBIENTE,
+    setPruebas: env.SII_SET_PRUEBAS,
+    emisor: datosEmisor(),
+    // Vacío = la configuración del emisor está lista para emitir.
+    problemasEmisor,
     foliosDisponibles: { boletaAfecta: afectas, boletaExenta: exentas },
     pendientesDeEnvio: pendientes,
     rechazadas,
