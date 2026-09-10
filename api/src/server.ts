@@ -12,6 +12,10 @@ import { chatRoutes } from './modules/chat/chat.routes.ts';
 import { cirugiasRoutes } from './modules/cirugias/cirugias.routes.ts';
 import { consentsRoutes } from './modules/consents/consents.routes.ts';
 import { firmaRoutes } from './modules/firma/firma.routes.ts';
+import { citasRoutes } from './modules/citas/citas.routes.ts';
+import { boletasRoutes } from './modules/boletas/boletas.routes.ts';
+import { sincronizarAgenda } from './modules/citas/citas.service.ts';
+import { iso } from './lib/reservo.ts';
 import { quotesRoutes } from './modules/quotes/quotes.routes.ts';
 import { giftcardsRoutes } from './modules/giftcards/giftcards.routes.ts';
 import { reembolsosRoutes } from './modules/reembolsos/reembolsos.routes.ts';
@@ -46,6 +50,8 @@ await app.register(chatRoutes, { prefix: '/chat' });
 await app.register(cirugiasRoutes, { prefix: '/cirugias' });
 await app.register(consentsRoutes, { prefix: '/consentimientos' });
 await app.register(firmaRoutes, { prefix: '/firma' });
+await app.register(citasRoutes, { prefix: '/citas' });
+await app.register(boletasRoutes, { prefix: '/boletas' });
 await app.register(quotesRoutes, { prefix: '/quotes' });
 await app.register(giftcardsRoutes, { prefix: '/gift-cards' });
 await app.register(reembolsosRoutes, { prefix: '/reembolsos' });
@@ -56,6 +62,26 @@ await app.register(documentosRoutes, { prefix: '/documentos' });
 await app.register(copilotoRoutes, { prefix: '/copiloto' });
 await app.register(cajaRoutes, { prefix: '/caja' });
 await app.register(eventosRoutes, { prefix: '/eventos' });
+
+// Sincronización periódica de la agenda de Reservo. Apagada salvo que se
+// defina RESERVO_SYNC_INTERVAL_MIN. Sólo copia la agenda: nunca envía correos
+// ni crea consentimientos por su cuenta.
+if (env.RESERVO_SYNC_INTERVAL_MIN > 0 && env.RESERVO_API_URL) {
+  const cadaMs = env.RESERVO_SYNC_INTERVAL_MIN * 60_000;
+  const correr = async () => {
+    try {
+      const hoy = new Date();
+      const fin = new Date(hoy);
+      fin.setDate(fin.getDate() + 14);
+      const r = await sincronizarAgenda(iso(hoy), iso(fin));
+      app.log.info({ sync: r }, 'agenda de Reservo sincronizada');
+    } catch (e) {
+      app.log.error({ err: (e as Error)?.message }, 'falló la sincronización con Reservo');
+    }
+  };
+  setTimeout(correr, 30_000).unref(); // primera pasada tras arrancar
+  setInterval(correr, cadaMs).unref();
+}
 
 try {
   // En producción la API vive detrás de nginx: solo localhost. En dev, accesible en la red.

@@ -21,11 +21,23 @@ const ventaSchema = z.object({
   metodoPago: z.enum(['EFECTIVO', 'TARJETA', 'TRANSFERENCIA']),
   descuento: z.number().int().min(0).max(100).default(0),
   notas: z.string().optional().nullable(),
-  items: z.array(z.object({
-    productId: z.number().int(),
-    cantidad: z.number().int().min(1),
-    precioUnitario: z.number().int().min(0).optional(),
-  })).min(1).max(50),
+  items: z.array(
+    z.discriminatedUnion('tipo', [
+      z.object({
+        tipo: z.literal('PRODUCTO'),
+        productId: z.number().int(),
+        cantidad: z.number().int().min(1),
+        precioUnitario: z.number().int().min(0).optional(),
+      }),
+      z.object({
+        tipo: z.literal('TRATAMIENTO'),
+        treatmentId: z.string().min(1),
+        cantidad: z.number().int().min(1),
+        // Obligatorio: el catálogo guarda un rango, no un precio único.
+        precioUnitario: z.number().int().min(1),
+      }),
+    ]),
+  ).min(1).max(50),
 });
 
 const anularSchema = z.object({

@@ -56,6 +56,10 @@ model User {
   cirugiaActividad  CirugiaActividad[] @relation("CirugiaActividadUsuario")
   cirugiaAbonos     CirugiaAbono[]     @relation("AbonoRegistradoPor")
   signedConsents    SignedConsent[]    @relation("ConsentCreador")
+  reglasConsentimiento ReglaConsentimiento[] @relation("ReglaConsentimientoCreador")
+  consentsFirmaManual  SignedConsent[]    @relation("ConsentFirmaManualPor")
+  consentsAnulados     SignedConsent[]    @relation("ConsentAnuladoPor")
+  cafsCargados         Caf[]              @relation("CafCargadoPor")
   chatMemberships   ConversationMember[]
   mensajes          Message[]
   reacciones        MessageReaction[]
@@ -471,6 +475,7 @@ model Venta {
   anuladaPor      User?      @relation("VentaAnuladaPor", fields: [anuladaPorId], references: [id], onDelete: SetNull)
   anuladaPorId    String?
   motivoAnulacion String?
+  documento       DocumentoTributario?
   createdAt       DateTime   @default(now())
 
   @@index([turnoId])
@@ -487,6 +492,10 @@ model VentaItem {
   productId        Int?
   inventarioItem   InventarioItem? @relation(fields: [inventarioItemId], references: [id], onDelete: SetNull)
   inventarioItemId String?
+  // Venta de un tratamiento clinico: no mueve stock y su precio se fija al
+  // vender, porque el catalogo maneja un rango (valorDesde/valorHasta).
+  treatment        Treatment?      @relation("VentaItemTratamiento", fields: [treatmentId], references: [id], onDelete: SetNull)
+  treatmentId      String?
   nombre           String // snapshot del nombre al momento de vender
   precioUnitario   Int    // snapshot del precio al momento de vender
   cantidad         Int
@@ -495,6 +504,7 @@ model VentaItem {
   @@index([ventaId])
   @@index([productId])
   @@index([inventarioItemId])
+  @@index([treatmentId])
 }
 
 // Pago de honorarios a un profesional. Registro central: varios por profesional/mes.
@@ -611,6 +621,7 @@ model Treatment {
   extra             Json?
 
   profesionales TreatmentProfessional[]
+  ventaItems    VentaItem[] @relation("VentaItemTratamiento")
 
   @@index([categoria])
 }
@@ -699,9 +710,20 @@ model Consent {
   extra             Json?
 
   firmas SignedConsent[]
+  reglas ReglaConsentimiento[]
 }
 
 // ─────────────────── Consentimientos enviados a firma digital ───────────────────
+
+/** Quién estampa la firma: el paciente o su representante legal. */
+enum FirmanteRelacion {
+  TITULAR   // el propio paciente
+  MADRE
+  PADRE
+  TUTOR
+  APODERADO
+  OTRO
+}
 
 enum ConsentEstado {
   PENDIENTE // enviado, esperando firma del paciente
@@ -741,6 +763,27 @@ model SignedConsent {
   firmaIp        String?            // evidencia de auditoría
   firmaUserAgent String?
 
+  // Representante legal: para menores de edad o personas con incapacidad, la
+  // Ley 20.584 exige el consentimiento de quien los representa. `TITULAR`
+  // significa que firmó el propio paciente.
+  firmanteRelacion FirmanteRelacion @default(TITULAR)
+  firmanteRut      String?          // RUT de quien firma (paciente o representante)
+
+  // Firma en papel: quién la declara y el respaldo escaneado. Sin esto, un
+  // consentimiento marcado como firmado no puede exhibirse ante fiscalización.
+  firmaManualPor   User?    @relation("ConsentFirmaManualPor", fields: [firmaManualPorId], references: [id], onDelete: SetNull)
+  firmaManualPorId String?
+  firmaManualObs   String?  // dónde está el papel / observaciones
+  respaldoPath     String?  // ruta relativa dentro de uploads/ (escaneo del papel)
+  respaldoMime     String?
+  respaldoSize     Int?
+
+  // Anulación trazable: un registro legal no puede cambiar de estado sin huella.
+  anuladoPor      User?     @relation("ConsentAnuladoPor", fields: [anuladoPorId], references: [id], onDelete: SetNull)
+  anuladoPorId    String?
+  anuladoAt       DateTime?
+  motivoAnulacion String?
+
   creadoPor   User?         @relation("ConsentCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
   creadoPorId String?
 
@@ -753,6 +796,83 @@ model SignedConsent {
 
   @@index([estado])
   @@index([createdAt])
+}
+
+// ─────────────── Documentos tributarios electronicos (SII) ───────────────
+
+/** Tipos de DTE que emite la clinica. El numero es el codigo oficial del SII. */
+enum TipoDte {
+  BOLETA_AFECTA // 39 - lleva IVA; puede incluir lineas exentas adentro
+  BOLETA_EXENTA // 41 - venta completamente exenta (solo tratamientos)
+}
+
+enum EstadoDte {
+  PENDIENTE // folio asignado y documento emitido; falta enviarlo al SII
+  ENVIADA   // enviada al SII, esperando resolucion
+  ACEPTADA
+  RECHAZADA
+  ANULADA
+}
+
+/**
+ * CAF (Codigo de Autorizacion de Folios): archivo que entrega el SII con un
+ * rango de folios y la llave privada para timbrarlos. `siguiente` avanza de a
+ * uno y nunca retrocede; repetir un folio es un problema tributario, asi que la
+ * asignacion se hace con un UPDATE atomico (ver folios.ts).
+ */
+model Caf {
+  id          String    @id @default(cuid())
+  tipo        TipoDte
+  desde       Int
+  hasta       Int
+  siguiente   Int       // proximo folio disponible dentro del rango
+  xml         String    // CAF tal como lo entrega el SII
+  activo      Boolean   @default(true)
+  vencimiento DateTime?
+  notas       String?
+  cargadoPor   User?    @relation("CafCargadoPor", fields: [cargadoPorId], references: [id], onDelete: SetNull)
+  cargadoPorId String?
+  documentos  DocumentoTributario[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([tipo, activo])
+}
+
+/** Boleta electronica asociada a una venta de caja. Una venta, un documento. */
+model DocumentoTributario {
+  id      String    @id @default(cuid())
+  venta   Venta     @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  ventaId String    @unique
+  tipo    TipoDte
+  folio   Int
+  caf     Caf?      @relation(fields: [cafId], references: [id], onDelete: SetNull)
+  cafId   String?
+
+  fechaEmision DateTime @default(now())
+
+  // Montos en pesos. Invariante: neto + iva + exento == total == Venta.total
+  neto   Int @default(0)
+  exento Int @default(0)
+  iva    Int @default(0)
+  total  Int
+
+  estado       EstadoDte @default(PENDIENTE)
+  xml          String?   // DTE firmado
+  ted          String?   // timbre electronico
+  trackId      String?   // id de seguimiento que devuelve el SII
+  respuestaSii String?
+  enviadoAt    DateTime?
+  resueltoAt   DateTime?
+  intentos     Int       @default(0)
+  ultimoError  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tipo, folio])
+  @@index([estado])
+  @@index([fechaEmision])
 }
 
 model FaqItem {
@@ -1015,4 +1135,78 @@ model InventarioMovimiento {
   @@index([tipo])
   @@index([ventaItemId])
   @@index([ubicacionId])
+}
+
+// ─────────────────── Citas sincronizadas desde Reservo ───────────────────
+
+/**
+ * Espejo local de la agenda de reservo.cl. Se rellena con `GET /agenda` de la
+ * API reservo-api (mismo VPS, 127.0.0.1:4000) y se refresca en cada sync.
+ *
+ * Reservo no expone un id de cita, así que la identidad se deriva de los datos
+ * que no cambian dentro de un mismo bloque (`claveReservo`). Si recepción mueve
+ * la hora o cambia el servicio en Reservo, la cita entra como una nueva y la
+ * anterior queda marcada `vigente = false` en el sync de ese día.
+ */
+model Cita {
+  id           String   @id @default(cuid())
+  claveReservo String   @unique // sha1(fecha|hora|idPaciente|profesional|servicio)
+
+  fecha       DateTime // día de la cita (a medianoche, hora local)
+  hora        String   // "09:00 - 10:00" tal como lo entrega Reservo
+  paciente    String
+  rut         String?
+  rutNorm     String?  // RUT sin puntos ni guion, para cruzar con consentimientos
+  ficha       String?
+  idPaciente  String?  // id de Reservo, para /finanzas/paciente/:id
+  servicio    String
+  comentario  String?
+  profesional String
+  box         String?
+  contacto    String?
+
+  estado     String // Atendido | Confirmado | No llegó | Suspendió | ...
+  estadoPago String // Pagado | No pagado | Plan
+  atendido   Boolean @default(false)
+  pagado     Boolean @default(false)
+
+  // false = ya no aparece en la agenda de Reservo para ese día (movida o borrada).
+  vigente    Boolean  @default(true)
+  sincronizadoAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([fecha, vigente])
+  @@index([rutNorm])
+  @@index([profesional])
+}
+
+/**
+ * Protocolo: qué consentimiento corresponde a qué servicio de la agenda.
+ *
+ * `patron` se compara contra el nombre del servicio de Reservo normalizado
+ * (minúsculas, sin tildes), por coincidencia parcial: el patrón "embody" calza
+ * con "1 sesión Embody" y con "Embody x3".
+ */
+model ReglaConsentimiento {
+  id        String  @id @default(cuid())
+  patron    String  // texto a buscar dentro del servicio de la cita
+  consent   Consent @relation(fields: [consentId], references: [id], onDelete: Cascade)
+  consentId String
+
+  activo Boolean @default(true)
+  // Días de anticipación con que se prepara el consentimiento antes de la cita.
+  diasAnticipacion Int @default(3)
+  // false = sólo se avisa a recepción; true = se crea y envía el correo solo.
+  autoEnviar Boolean @default(false)
+
+  creadoPor   User?   @relation("ReglaConsentimientoCreador", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([patron, consentId])
+  @@index([activo])
 }

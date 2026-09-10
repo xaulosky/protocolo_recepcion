@@ -23,9 +23,27 @@ interface PrintData {
   estado: string;
   firmadoAt: string | null;
   firmanteNombre: string | null;
+  firmanteRelacion: string | null;
+  firmanteRut: string | null;
   firmaImagen: string | null;
   fotoAuth: boolean | null;
   firmaManual: boolean;
+}
+
+/** Como se lee el vinculo de quien firma, para el pie de la firma. */
+const RELACION_LABEL: Record<string, string> = {
+  MADRE:     'madre',
+  PADRE:     'padre',
+  TUTOR:     'tutor legal',
+  APODERADO: 'apoderado',
+  OTRO:      'representante legal',
+};
+
+/** Texto del representante, o null si firmo el propio paciente. */
+function textoRepresentante(d: { firmanteRelacion: string | null; firmanteRut: string | null }): string | null {
+  if (!d.firmanteRelacion || d.firmanteRelacion === 'TITULAR') return null;
+  const vinculo = RELACION_LABEL[d.firmanteRelacion] ?? 'representante legal';
+  return d.firmanteRut ? `En representacion del paciente · ${vinculo} · RUT ${d.firmanteRut}` : `En representacion del paciente · ${vinculo}`;
 }
 
 function Checkbox({ checked }: { checked: boolean }) {
@@ -182,9 +200,14 @@ function DocumentoConsentimiento({ d }: { d: PrintData }) {
                 </div>
                 <div style={{ borderTop: '1px solid #111', paddingTop: 5 }}>
                   <div style={{ fontSize: 12, fontWeight: 700 }}>{d.firmanteNombre || d.paciente}</div>
-                  <div style={{ fontSize: 10, color: '#666', marginTop: 1 }}>RUT {d.rut}</div>
+                  <div style={{ fontSize: 10, color: '#666', marginTop: 1 }}>
+                    {textoRepresentante(d) ? `Paciente: ${d.paciente} · RUT ${d.rut}` : `RUT ${d.rut}`}
+                  </div>
+                  {textoRepresentante(d) && (
+                    <div style={{ fontSize: 10, color: '#666', marginTop: 1 }}>{textoRepresentante(d)}</div>
+                  )}
                   <div style={{ fontSize: 10, color: '#999', marginTop: 2, fontFamily: 'Arial, sans-serif' }}>
-                    {d.firmaManual ? 'Firmado en papel · presencial' : 'Firma paciente · firmado digitalmente'}
+                    {d.firmaManual ? 'Firmado en papel · presencial' : 'Firma · documento firmado digitalmente'}
                   </div>
                 </div>
               </>
@@ -210,7 +233,9 @@ function DocumentoConsentimiento({ d }: { d: PrintData }) {
       {/* Auditoría (solo firma digital) */}
       {firmado && !d.firmaManual && d.firmadoAt && (
         <div style={{ marginTop: 16, fontSize: 9.5, color: '#888', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-          Firmado electrónicamente por {d.firmanteNombre || d.paciente} el {fmtFechaLarga(d.firmadoAt)}. Firma electrónica simple — Ley N° 19.799.
+          Firmado electrónicamente por {d.firmanteNombre || d.paciente}
+          {textoRepresentante(d) ? `, ${RELACION_LABEL[d.firmanteRelacion!] ?? 'representante legal'} del paciente ${d.paciente},` : ''}
+          {' '}el {fmtFechaLarga(d.firmadoAt)}. Firma electrónica simple — Ley N° 19.799.
         </div>
       )}
 

@@ -7,6 +7,17 @@ try {
   /* .env opcional */
 }
 
+/**
+ * Booleano de variable de entorno. NO usar z.coerce.boolean(): aplica Boolean()
+ * sobre el string, y Boolean('false') es true — activaria justo lo que se
+ * intenta apagar.
+ */
+const boolEnv = (porDefecto: boolean) =>
+  z
+    .string()
+    .default(porDefecto ? 'true' : 'false')
+    .transform((v) => ['1', 'true', 'yes', 'si', 'sí'].includes(v.trim().toLowerCase()));
+
 const schema = z.object({
   DATABASE_URL: z.string().url(),
   PORT: z.coerce.number().default(4000),
@@ -32,6 +43,27 @@ const schema = z.object({
 
   SEED_ADMIN_EMAIL: z.string().default('admin@cialo.cl'),
   SEED_ADMIN_PASSWORD: z.string().default('admin1234'),
+
+  // Integración con reservo-api (agenda). En el VPS ambas apps son vecinas, así
+  // que apunta al loopback y los datos de pacientes nunca salen del servidor.
+  // Vacío = integración apagada; el módulo de citas queda inerte.
+  RESERVO_API_URL: z.string().default(''),
+  RESERVO_API_KEY: z.string().default(''),
+  // Opcional: sólo si esta instancia consulta una cuenta de reservo.cl distinta
+  // a la configurada en el .env de reservo-api.
+  RESERVO_USER: z.string().default(''),
+  RESERVO_PASS: z.string().default(''),
+  // Minutos entre sincronizaciones automáticas. 0 = sólo sync manual.
+  RESERVO_SYNC_INTERVAL_MIN: z.coerce.number().default(0),
+
+  // Boletas electronicas (SII). Apagado por defecto: mientras no haya CAF ni
+  // certificado, la caja funciona igual y no se emite ningun documento.
+  BOLETAS_HABILITADAS: boolEnv(false),
+  // Convencion al consumidor final: los precios mostrados ya traen el IVA.
+  PRECIOS_INCLUYEN_IVA: boolEnv(true),
+  // Ambiente del SII: 'certificacion' mientras se valida, 'produccion' despues.
+  SII_AMBIENTE: z.enum(['certificacion', 'produccion']).default('certificacion'),
+  SII_RUT_EMISOR: z.string().default(''),
 
   // Copiloto IA (chat con function-calling sobre DeepSeek, API compatible con OpenAI).
   DEEPSEEK_API_KEY: z.string().default(''),

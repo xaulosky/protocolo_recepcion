@@ -6,6 +6,10 @@ import { prisma } from '../../db.ts';
 import { env } from '../../env.ts';
 import { sendMail } from '../../lib/notify.ts';
 import { consentimientoEmail } from '../../lib/emails.ts';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { UPLOADS_ROOT, sanitizeFilename } from '../documentos/documentos.service.ts';
 
 /** Genera el token secreto del enlace público (urlsafe, ~32 chars). */
 function nuevoToken() {
@@ -41,6 +45,25 @@ const editarSchema = z.object({
   fecha:    z.string().optional().nullable(),
 });
 
+const RELACIONES = ['TITULAR', 'MADRE', 'PADRE', 'TUTOR', 'APODERADO', 'OTRO'] as const;
+
+const firmaManualSchema = z
+  .object({
+    // Dónde queda archivado el papel: sin esto el registro no es verificable.
+    observacion:      z.string().min(5).max(500),
+    firmanteRelacion: z.enum(RELACIONES).default('TITULAR'),
+    firmanteNombre:   z.string().min(2).max(120).optional(),
+    firmanteRut:      z.string().min(7).max(20).optional(),
+  })
+  .refine((d) => d.firmanteRelacion === 'TITULAR' || Boolean(d.firmanteRut), {
+    message: 'Falta el RUT del representante legal',
+    path: ['firmanteRut'],
+  });
+
+const anularSchema = z.object({
+  motivo: z.string().min(5).max(500),
+});
+
 // Campos visibles en el listado de recepción (sin el snapshot ni la imagen de firma).
 const seleccionListado = {
   id: true, token: true, titulo: true, tratamiento: true,
@@ -48,7 +71,12 @@ const seleccionListado = {
   telefono: true, email: true, fecha: true, estado: true,
   firmadoAt: true, createdAt: true,
   emailEnviadoAt: true, firmaManual: true, expiresAt: true,
-  creadoPor: { select: { id: true, nombre: true } },
+  firmanteRelacion: true, firmanteRut: true, firmanteNombre: true,
+  firmaManualObs: true, respaldoPath: true,
+  anuladoAt: true, motivoAnulacion: true,
+  creadoPor:      { select: { id: true, nombre: true } },
+  firmaManualPor: { select: { id: true, nombre: true } },
+  anuladoPor:     { select: { id: true, nombre: true } },
 } as const;
 
 /** Rutas autenticadas: recepción crea, lista y administra los envíos a firma. */
@@ -166,9 +194,21 @@ export async function consentsRoutes(app: FastifyInstance) {
     return { sent };
   });
 
-  // POST /consentimientos/:id/firmar-manual — marcar como firmado en papel (presencial)
+  // POST /consentimientos/:id/firmar-manual — marcar como firmado en papel.
+  //
+  // Un consentimiento en papel sin responsable ni ubicación del documento es una
+  // afirmación que nadie puede sostener ante una fiscalización: exigimos indicar
+  // dónde queda archivado y registramos qué usuario lo declara.
   app.post('/:id/firmar-manual', canWrite, async (req, reply) => {
     const { id } = req.params as { id: string };
+    const parsed = firmaManualSchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: 'Indique dónde queda archivado el documento en papel (mínimo 5 caracteres)',
+        detalles: parsed.error.flatten(),
+      });
+    }
+
     const firma = await prisma.signedConsent.findUnique({ where: { id }, select: { estado: true } });
     if (!firma) return reply.code(404).send({ error: 'No encontrado' });
     if (firma.estado === 'ANULADO') return reply.code(409).send({ error: 'El consentimiento está anulado' });
@@ -176,16 +216,96 @@ export async function consentsRoutes(app: FastifyInstance) {
 
     const actualizado = await prisma.signedConsent.update({
       where: { id },
-      data: { estado: 'FIRMADO', firmaManual: true, firmadoAt: new Date() },
+      data: {
+        estado:           'FIRMADO',
+        firmaManual:      true,
+        firmadoAt:        new Date(),
+        firmaManualPorId: req.user.sub,
+        firmaManualObs:   parsed.data.observacion.trim(),
+        firmanteRelacion: parsed.data.firmanteRelacion,
+        firmanteNombre:   parsed.data.firmanteNombre ?? null,
+        firmanteRut:      parsed.data.firmanteRut ?? null,
+      },
       select: seleccionListado,
     });
     return { firma: actualizado };
   });
 
-  // DELETE /consentimientos/:id — anular (soft: conserva el registro legal)
+  // POST /consentimientos/:id/respaldo — adjuntar el escaneo del papel firmado
+  app.post('/:id/respaldo', canWrite, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    if (!req.isMultipart()) return reply.code(400).send({ error: 'Se espera multipart/form-data' });
+
+    const firma = await prisma.signedConsent.findUnique({ where: { id }, select: { id: true } });
+    if (!firma) return reply.code(404).send({ error: 'No encontrado' });
+
+    const parte = await req.file();
+    if (!parte) return reply.code(400).send({ error: 'Falta el archivo' });
+
+    const permitidos = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    if (!permitidos.includes(parte.mimetype)) {
+      return reply.code(415).send({ error: 'Formato no admitido (use PDF, JPG, PNG o WEBP)' });
+    }
+
+    const buf = await parte.toBuffer();
+    const rel = ['consentimientos', id, `${randomUUID()}-${sanitizeFilename(parte.filename)}`].join('/');
+    const abs = path.join(UPLOADS_ROOT, rel);
+    await mkdir(path.dirname(abs), { recursive: true });
+    await writeFile(abs, buf);
+
+    const actualizado = await prisma.signedConsent.update({
+      where: { id },
+      data: { respaldoPath: rel, respaldoMime: parte.mimetype, respaldoSize: buf.length },
+      select: seleccionListado,
+    });
+    return { firma: actualizado };
+  });
+
+  // GET /consentimientos/:id/respaldo — descargar el escaneo (sólo autenticados)
+  app.get('/:id/respaldo', { preHandler: app.authenticate }, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const firma = await prisma.signedConsent.findUnique({
+      where: { id },
+      select: { respaldoPath: true, respaldoMime: true },
+    });
+    if (!firma?.respaldoPath) return reply.code(404).send({ error: 'Sin respaldo adjunto' });
+
+    const abs = path.join(UPLOADS_ROOT, firma.respaldoPath);
+    const buf = await readFile(abs).catch(() => null);
+    if (!buf) return reply.code(404).send({ error: 'El archivo no está disponible' });
+
+    return reply.type(firma.respaldoMime ?? 'application/octet-stream').send(buf);
+  });
+
+  // DELETE /consentimientos/:id — anular (soft: conserva el registro legal).
+  //
+  // Exige motivo y deja constancia de quién y cuándo. Anular uno ya FIRMADO
+  // invalida una firma válida, así que queda reservado a ADMIN.
   app.delete('/:id', canWrite, async (req, reply) => {
     const { id } = req.params as { id: string };
-    await prisma.signedConsent.update({ where: { id }, data: { estado: 'ANULADO' } });
+    const parsed = anularSchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Indique el motivo de la anulación (mínimo 5 caracteres)' });
+    }
+
+    const firma = await prisma.signedConsent.findUnique({ where: { id }, select: { estado: true } });
+    if (!firma) return reply.code(404).send({ error: 'No encontrado' });
+    if (firma.estado === 'ANULADO') return reply.code(409).send({ error: 'Ya está anulado' });
+    if (firma.estado === 'FIRMADO' && req.user.role !== Role.ADMIN) {
+      return reply.code(403).send({
+        error: 'Sólo un administrador puede anular un consentimiento ya firmado',
+      });
+    }
+
+    await prisma.signedConsent.update({
+      where: { id },
+      data: {
+        estado:          'ANULADO',
+        anuladoPorId:    req.user.sub,
+        anuladoAt:       new Date(),
+        motivoAnulacion: parsed.data.motivo.trim(),
+      },
+    });
     return reply.code(204).send();
   });
 }
