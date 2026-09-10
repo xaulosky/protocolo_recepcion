@@ -81,6 +81,12 @@ const schema = z.object({
   SII_CERT_PATH: z.string().default(''),
   SII_CERT_PASS: z.string().default(''),
 
+  // Resolucion del SII que autoriza a emitir, para la caratula del sobre y
+  // del RCOF. En certificacion el numero es 0 y la fecha es la de la
+  // autorizacion; en produccion son los de la resolucion definitiva.
+  SII_FCH_RESOL: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default('2026-09-10'),
+  SII_NRO_RESOL: z.coerce.number().int().min(0).default(0),
+
   // Durante la certificacion cada documento debe referenciar su caso del set
   // (<CodRef>SET, <RazonRef>CASO-N). En produccion esa referencia no va.
   SII_SET_PRUEBAS: boolEnv(false),

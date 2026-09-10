@@ -39,3 +39,10 @@ api/uploads/
 *.key
 secrets/
 api/secrets/
+
+# Sobres y RCOF generados para el SII (contienen folios y firmas reales)
+salida-sii/
+api/salida-sii/
+
+# Python
+__pycache__/

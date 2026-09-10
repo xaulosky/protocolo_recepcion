@@ -1,8 +1,11 @@
-"""Uso: python verificar-envio.py <EnvioBOLETA.xml>
+"""Uso: python verificar-envio.py <documento.xml> [esquema.xsd]
 
-Verificador independiente, por el estándar, de un sobre EnvioBOLETA antes de
-subirlo al SII: valida contra el XSD oficial y, para cada firma, recalcula el
+Verificador independiente, por el estándar, de un documento firmado para el SII
+antes de subirlo: valida contra el XSD oficial y, para cada firma, recalcula el
 digest de la referencia y verifica la firma RSA-SHA1 sobre el SignedInfo.
+
+Sin segundo argumento valida como EnvioBOLETA. Para el reporte de consumo de
+folios: python verificar-envio.py RCOF.xml ConsumoFolio_v10.xsd
 
 Cómo canonicaliza: cada nodo se re-serializa con sus namespaces declarados y se
 canonicaliza COMO RAÍZ con libxml2 (C14N 1.0). Equivale a la c14n inclusiva en
@@ -17,7 +20,10 @@ import sys, base64, hashlib, subprocess, tempfile, os, shutil
 from lxml import etree
 
 DS = 'http://www.w3.org/2000/09/xmldsig#'
-XSD = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'EnvioBOLETA_v11.xsd')
+AQUI = os.path.dirname(os.path.abspath(__file__))
+# El XSD puede venir como segundo argumento (ruta absoluta o nombre dentro de docs/sii).
+_xsd_arg = sys.argv[2] if len(sys.argv) > 2 else 'EnvioBOLETA_v11.xsd'
+XSD = _xsd_arg if os.path.isabs(_xsd_arg) else os.path.join(AQUI, _xsd_arg)
 OPENSSL = next(
     (p for p in [shutil.which('openssl'),
                  r'C:\Program Files\Git\mingw64\bin\openssl.exe',
