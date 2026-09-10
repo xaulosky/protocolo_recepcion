@@ -35,6 +35,7 @@ const ventaSchema = z.object({
         cantidad: z.number().int().min(1),
         // Obligatorio: el catálogo guarda un rango, no un precio único.
         precioUnitario: z.number().int().min(1),
+        professionalId: z.string().min(1).optional().nullable(),
       }),
     ]),
   ).min(1).max(50),

@@ -21,6 +21,8 @@ interface CartItem {
   cantidad: number;
   stock: number | null;   // null = sin límite (tratamiento)
   unidad: string;
+  /** Sólo tratamientos: profesional que realiza la prestación. */
+  professionalId?: string;
 }
 
 interface TratamientoVendible {
@@ -29,6 +31,12 @@ interface TratamientoVendible {
   categoria: string;
   valorDesde: number | null;
   valorHasta: number | null;
+}
+
+interface ProfesionalRef {
+  id: string;
+  nombreCompleto: string;
+  especialidad: string;
 }
 
 const METODOS: { id: MetodoPago; label: string }[] = [
@@ -43,6 +51,7 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
   // Carga directa (sin useResource): el stock debe refrescarse tras cada venta.
   const [productos, setProductos] = useState<Product[]>([]);
   const [tratamientos, setTratamientos] = useState<TratamientoVendible[]>([]);
+  const [profesionales, setProfesionales] = useState<ProfesionalRef[]>([]);
   const [pestana, setPestana] = useState<'PRODUCTO' | 'TRATAMIENTO'>('PRODUCTO');
   const [busqueda, setBusqueda] = useState('');
   const [carrito, setCarrito] = useState<CartItem[]>([]);
@@ -68,6 +77,13 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
     api.get<{ treatments: TratamientoVendible[] }>('/data/treatments')
       .then((d) => setTratamientos(d.treatments))
       .catch(() => toast('Error al cargar tratamientos'));
+  }, [toast]);
+
+  // Los profesionales alimentan el selector de "quién atendió" del carrito.
+  useEffect(() => {
+    api.get<{ professionals: ProfesionalRef[] }>('/data/professionals')
+      .then((d) => setProfesionales(d.professionals))
+      .catch(() => toast('Error al cargar profesionales'));
   }, [toast]);
 
   const tratamientosVendibles = useMemo(() => {
@@ -137,6 +153,10 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
     }));
   };
 
+  const setProfesional = (key: string, professionalId: string) => {
+    setCarrito((prev) => prev.map((c) => c.key === key ? { ...c, professionalId: professionalId || undefined } : c));
+  };
+
   const setPrecio = (key: string, precio: number) => {
     setCarrito((prev) => prev.map((c) => c.key === key ? { ...c, precio: Math.max(0, precio) } : c));
   };
@@ -160,7 +180,7 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
         metodoPago,
         descuento,
         items: carrito.map((c) => c.tipo === 'TRATAMIENTO'
-          ? { tipo: 'TRATAMIENTO', treatmentId: c.treatmentId, cantidad: c.cantidad, precioUnitario: c.precio }
+          ? { tipo: 'TRATAMIENTO', treatmentId: c.treatmentId, cantidad: c.cantidad, precioUnitario: c.precio, professionalId: c.professionalId ?? null }
           : { tipo: 'PRODUCTO', productId: c.productId, cantidad: c.cantidad, precioUnitario: c.precio }),
       });
       setVentaOk(d.venta);
@@ -295,7 +315,8 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {carrito.map((c) => (
-              <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid var(--border-soft)', borderRadius: 8, padding: '8px 10px' }}>
+              <div key={c.key} style={{ border: '1px solid var(--border-soft)', borderRadius: 8, padding: '8px 10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nombre}</div>
                   <div style={{ fontSize: 10.5, color: 'var(--muted-2)' }}>
@@ -315,6 +336,26 @@ export function VenderTab({ onVenta }: { onVenta: () => void }) {
                 <button onClick={() => quitar(c.key)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', display: 'flex', padding: 2 }}>
                   <Icon name="trash" size={13} />
                 </button>
+                </div>
+
+                {/* Quién atendió: sólo aplica a prestaciones, no a productos. */}
+                {c.tipo === 'TRATAMIENTO' && (
+                  <select
+                    value={c.professionalId ?? ''}
+                    onChange={(e) => setProfesional(c.key, e.target.value)}
+                    style={{
+                      marginTop: 6, width: '100%', padding: '4px 6px', fontSize: 12,
+                      border: '1px solid var(--border)', borderRadius: 6,
+                      background: 'var(--surface)',
+                      color: c.professionalId ? 'var(--text)' : 'var(--muted-2)',
+                    }}
+                  >
+                    <option value="">¿Quién atendió? (opcional)</option>
+                    {profesionales.map((p) => (
+                      <option key={p.id} value={p.id}>{p.nombreCompleto} — {p.especialidad}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             ))}
           </div>

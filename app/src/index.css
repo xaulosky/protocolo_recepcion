@@ -217,6 +217,40 @@ button { cursor: pointer; }
 @media print {
   .no-print, .sidebar, header { display: none !important; }
   .main-area { margin-left: 0 !important; }
+
+  /* Comprobante de caja. No se fuerza el tamano de pagina: asi sale bien
+     tanto en impresora termica (llena el rollo) como en una hoja carta o A4
+     (queda un ticket angosto y centrado, en vez de estirarse a todo el
+     ancho). La tinta va negra plana: los grises de la interfaz se pierden
+     al imprimir, y en termica quedan ilegibles. */
+  @page { margin: 8mm; }
+
+  html, body { background: #fff !important; }
+
+  .comprobante-wrap { width: 76mm !important; max-width: 76mm !important; margin: 0 auto !important; }
+
+  .comprobante {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    width: 100% !important;
+  }
+
+  /* Todo a negro: las variables de color de la UI no imprimen bien. */
+  .comprobante, .comprobante * {
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Los separadores punteados si deben verse. */
+  .comprobante [style*="dashed"] { border-color: #000 !important; }
+  .comprobante [style*="solid"] { border-color: #000 !important; }
+
+  /* Evita cortar una linea del detalle entre dos paginas. */
+  .comprobante > div { break-inside: avoid; }
 }
 
 /* Responsive 2-column form grid — stacks to 1 col on mobile */

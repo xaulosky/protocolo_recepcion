@@ -26,6 +26,7 @@ const ventaInclude = {
   vendedor: { select: { id: true, nombre: true } },
   anuladaPor: { select: { id: true, nombre: true } },
   items: true,
+  documento: true,
 } as const;
 
 const turnoInclude = {
@@ -113,7 +114,14 @@ export async function cerrarTurno(turnoId: string, input: { montoContado: number
  */
 export type ItemVentaInput =
   | { tipo: 'PRODUCTO'; productId: number; cantidad: number; precioUnitario?: number }
-  | { tipo: 'TRATAMIENTO'; treatmentId: string; cantidad: number; precioUnitario: number };
+  | {
+      tipo: 'TRATAMIENTO';
+      treatmentId: string;
+      cantidad: number;
+      precioUnitario: number;
+      /** Profesional que realizó la prestación; aparece en el comprobante. */
+      professionalId?: string | null;
+    };
 
 export interface CreateVentaInput {
   cliente?: string | null;
@@ -133,7 +141,11 @@ export async function createVenta(input: CreateVentaInput, vendedorId: string) {
     const idsProductos = input.items.flatMap((i) => (i.tipo === 'PRODUCTO' ? [i.productId] : []));
     const idsTratamientos = input.items.flatMap((i) => (i.tipo === 'TRATAMIENTO' ? [i.treatmentId] : []));
 
-    const [products, treatments] = await Promise.all([
+    const idsProfesionales = input.items.flatMap((i) =>
+      i.tipo === 'TRATAMIENTO' && i.professionalId ? [i.professionalId] : [],
+    );
+
+    const [products, treatments, profesionales] = await Promise.all([
       idsProductos.length
         ? tx.product.findMany({
             where: { id: { in: idsProductos } },
@@ -146,9 +158,16 @@ export async function createVenta(input: CreateVentaInput, vendedorId: string) {
             select: { id: true, nombre: true, categoria: true },
           })
         : [],
+      idsProfesionales.length
+        ? tx.professional.findMany({
+            where: { id: { in: idsProfesionales } },
+            select: { id: true, nombreCompleto: true, especialidad: true },
+          })
+        : [],
     ]);
     const byId = new Map(products.map((p) => [p.id, p]));
     const byTratamiento = new Map(treatments.map((t) => [t.id, t]));
+    const byProfesional = new Map(profesionales.map((p) => [p.id, p]));
 
     let subtotal = 0;
     const itemsData = input.items.map((it) => {
@@ -158,11 +177,17 @@ export async function createVenta(input: CreateVentaInput, vendedorId: string) {
         if (!Number.isFinite(it.precioUnitario) || it.precioUnitario <= 0) {
           throw new CajaError(`Indica el precio de "${t.nombre}"`, 400);
         }
+        const prof = it.professionalId ? byProfesional.get(it.professionalId) : null;
+        if (it.professionalId && !prof) {
+          throw new CajaError(`Profesional ${it.professionalId} no encontrado`, 404);
+        }
         subtotal += it.precioUnitario * it.cantidad;
         return {
           treatmentId: t.id,
           productId: null,
           inventarioItemId: null,
+          professionalId: prof?.id ?? null,
+          profesionalNombre: prof?.nombreCompleto ?? null,
           nombre: t.nombre,
           precioUnitario: it.precioUnitario,
           cantidad: it.cantidad,
@@ -175,6 +200,8 @@ export async function createVenta(input: CreateVentaInput, vendedorId: string) {
       subtotal += precio * it.cantidad;
       return {
         treatmentId: null,
+        professionalId: null,
+        profesionalNombre: null,
         productId: p.id,
         inventarioItemId: p.inventarioItemId,
         nombre: `${p.brand} ${p.name}`.trim(),
@@ -289,6 +316,14 @@ export async function anularVenta(ventaId: string, motivo: string | null, userId
         },
       });
     }
+
+    // Si la venta tenía boleta, el documento queda anulado junto con ella. El
+    // folio NO se reutiliza: el SII exige que la numeración sea continua, así
+    // que un folio anulado se declara anulado, no se recicla.
+    await tx.documentoTributario.updateMany({
+      where: { ventaId, estado: { not: 'ANULADA' } },
+      data: { estado: 'ANULADA', resueltoAt: new Date() },
+    });
 
     return tx.venta.update({
       where: { id: ventaId },

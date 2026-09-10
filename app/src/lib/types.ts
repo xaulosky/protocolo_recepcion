@@ -431,9 +431,26 @@ export interface VentaItem {
   id: string;
   productId: number | null;
   inventarioItemId: string | null;
+  treatmentId: string | null;
+  professionalId: string | null;
+  /** Nombre del profesional al momento de vender (snapshot). */
+  profesionalNombre: string | null;
   nombre: string;
   precioUnitario: number;
   cantidad: number;
+}
+
+/** Boleta electrónica asociada a la venta (si la emisión está habilitada). */
+export interface DocumentoTributario {
+  id: string;
+  tipo: 'BOLETA_AFECTA' | 'BOLETA_EXENTA';
+  folio: number;
+  fechaEmision: string;
+  neto: number;
+  exento: number;
+  iva: number;
+  total: number;
+  estado: 'PENDIENTE' | 'ENVIADA' | 'ACEPTADA' | 'RECHAZADA' | 'ANULADA';
 }
 
 export interface Venta {
@@ -450,6 +467,7 @@ export interface Venta {
   anuladaAt: string | null;
   anuladaPor: TaskUserRef | null;
   motivoAnulacion: string | null;
+  documento?: DocumentoTributario | null;
   createdAt: string;
 }
 

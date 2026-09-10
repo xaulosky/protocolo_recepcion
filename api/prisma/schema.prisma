@@ -496,6 +496,12 @@ model VentaItem {
   // vender, porque el catalogo maneja un rango (valorDesde/valorHasta).
   treatment        Treatment?      @relation("VentaItemTratamiento", fields: [treatmentId], references: [id], onDelete: SetNull)
   treatmentId      String?
+  // Profesional que realizo la prestacion. Se guarda ademas su nombre como
+  // snapshot: el comprobante debe seguir siendo fiel aunque despues cambie la
+  // ficha del profesional o se elimine.
+  professional     Professional?   @relation("VentaItemProfesional", fields: [professionalId], references: [id], onDelete: SetNull)
+  professionalId   String?
+  profesionalNombre String?
   nombre           String // snapshot del nombre al momento de vender
   precioUnitario   Int    // snapshot del precio al momento de vender
   cantidad         Int
@@ -505,6 +511,7 @@ model VentaItem {
   @@index([productId])
   @@index([inventarioItemId])
   @@index([treatmentId])
+  @@index([professionalId])
 }
 
 // Pago de honorarios a un profesional. Registro central: varios por profesional/mes.
@@ -642,6 +649,7 @@ model Professional {
   cirugias     Cirugia[]
   inventarioMovimientos InventarioMovimiento[] @relation("InventarioMovProfesional")
   pagos        PagoProfesional[]
+  ventaItems   VentaItem[] @relation("VentaItemProfesional")
 
   @@index([especialidad])
 }
