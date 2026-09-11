@@ -12,6 +12,9 @@ Descargados desde la documentación pública del SII (diciembre 2024):
   aparte del envío de boletas; incluye a `SiiTypes_v10.xsd`.
 - `SiiTypes_v10.xsd` — tipos comunes (RUT, folio, montos) que usa el RCOF.
 
+`certificacion-boletas.md` describe el trámite ante el SII (es distinto al de
+factura: el avance se informa por correo, no por el menú de postulación).
+
 ## Herramientas
 
 - `verificar-envio.py <xml> [xsd]` — verificador independiente antes de subir:
