@@ -75,6 +75,9 @@ const schema = z.object({
   SII_CMNA_ORIGEN: z.string().default(''),       // comuna de la casa matriz (max 20)
   SII_CIUDAD_ORIGEN: z.string().default(''),     // ciudad de la casa matriz (max 20)
   SII_NOMBRE_SOFTWARE: z.string().default('ADMINISTRACION.CIALO.CL'),
+  // Sitio donde el cliente consulta su boleta. Va impreso bajo el timbre y el
+  // SII verifica que exista antes de autorizar por resolucion.
+  SII_URL_CONSULTA: z.string().default('https://administracion.cialo.cl/boleta'),
 
   // Certificado digital de firma (.pfx/.p12). Vive FUERA del repositorio: la
   // ruta se configura por entorno y el archivo nunca se versiona.

@@ -29,6 +29,12 @@ factura: el avance se informa por correo, no por el menú de postulación).
   por el uploader web clásico de facturas: ese responde SCH-00001 a un
   `EnvioBOLETA`. Hosts según `SII_AMBIENTE`: certificación `apicert.sii.cl` +
   `pangal.sii.cl`; producción `api.sii.cl` + `rahue.sii.cl`.
+- `npm run sii:muestras -- set <EnvioBOLETA.xml> [salida]` y
+  `npm run sii:muestras -- reales <CAF.xml> <folio-inicial> [cuantas] [salida]` —
+  representación impresa (HTML + PDF por Edge/Chrome headless) con el timbre
+  PDF417 del TED y la leyenda del sitio de consulta. Son los adjuntos 3 y 5 del
+  correo de certificación. Verificar que el timbre se lea antes de mandarlo:
+  rasterizar el PDF y decodificarlo debe devolver el TED tal cual.
 - `npm run sii:enviar -- rvd <RCOF.xml>` — Resumen de Ventas Diarias (ex RCOF)
   por el canal clásico: token SOAP (`CrSeed`/`GetTokenFromSeed`) y multipart a
   `cgi_dte/UPL/DTEUpload` en maullin (certificación) o palena (producción).
