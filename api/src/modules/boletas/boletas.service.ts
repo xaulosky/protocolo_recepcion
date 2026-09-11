@@ -32,6 +32,8 @@ const CODIGO_TIPO: Record<39 | 41, TipoDte> = {
 export interface ItemFacturable {
   /** Un tratamiento es exento; un producto es afecto. */
   treatmentId?: string | null;
+  /** Explícito en ventas importadas; si falta, tratamiento = exento. */
+  exento?: boolean;
   /** Nombre tal como se imprime en el detalle del documento. */
   nombre: string;
   precioUnitario: number;
@@ -57,7 +59,7 @@ export async function emitirBoletaDeVenta(
 
   const lineas: LineaMonto[] = venta.items.map((i) => ({
     // La regla tributaria de la clínica: tratamientos exentos, productos afectos.
-    exento: Boolean(i.treatmentId),
+    exento: i.exento ?? Boolean(i.treatmentId),
     precioUnitario: i.precioUnitario,
     cantidad: i.cantidad,
   }));

@@ -476,6 +476,13 @@ model Venta {
   anuladaPorId    String?
   motivoAnulacion String?
   documento       DocumentoTributario?
+  // Ventas hechas en otro sistema e importadas (hoy, Reservo vía la extensión
+  // de Chrome). idExterno hace idempotente la importación: la extensión
+  // reintenta ante cualquier corte y la misma venta no puede entrar dos veces.
+  origen            String?
+  idExterno         String?  @unique
+  referenciaExterna String?
+  datosExternos     Json?
   createdAt       DateTime   @default(now())
 
   @@index([turnoId])
@@ -504,6 +511,10 @@ model VentaItem {
   profesionalNombre String?
   nombre           String // snapshot del nombre al momento de vender
   precioUnitario   Int    // snapshot del precio al momento de vender
+  // Explícito sólo en ventas importadas, donde no hay ficha de tratamiento o
+  // producto de la cual deducirlo. null = se deduce como siempre: tratamiento
+  // exento, producto afecto.
+  exento           Boolean?
   cantidad         Int
   movimientos      InventarioMovimiento[]
 

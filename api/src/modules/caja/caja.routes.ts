@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { Role } from '@prisma/client';
 import {
   CajaError, getTurnoActual, abrirTurno, cerrarTurno,
-  createVenta, anularVenta, listVentas, resumenVentas,
+  createVenta,
+  createVentaExterna, anularVenta, listVentas, resumenVentas,
 } from './caja.service.ts';
 
 const abrirSchema = z.object({
@@ -39,6 +40,32 @@ const ventaSchema = z.object({
       }),
     ]),
   ).min(1).max(50),
+});
+
+// Venta hecha en Reservo que trae la extensión de Chrome. Los ítems vienen con
+// el nombre y precio que tenían allá: no hay ficha de tratamiento que exigir.
+const ventaExternaSchema = z.object({
+  origen: z.literal('RESERVO'),
+  idExterno: z.string().min(8).max(100),
+  referencia: z.string().max(300).optional().nullable(),
+  cliente: z.string().max(200).optional().nullable(),
+  metodoPago: z.enum(['EFECTIVO', 'TARJETA', 'TRANSFERENCIA']),
+  descuento: z.number().int().min(0).max(100).default(0),
+  totalReservo: z.number().int().min(0).optional().nullable(),
+  notas: z.string().max(1000).optional().nullable(),
+  items: z
+    .array(
+      z.object({
+        nombre: z.string().trim().min(1).max(200),
+        cantidad: z.number().int().min(1).max(1000),
+        precioUnitario: z.number().int().min(0),
+        profesional: z.string().max(200).optional().nullable(),
+        exento: z.boolean(),
+      }),
+    )
+    .min(1)
+    .max(50),
+  datosReservo: z.record(z.string(), z.unknown()).optional().nullable(),
 });
 
 const anularSchema = z.object({
@@ -89,6 +116,21 @@ export async function cajaRoutes(app: FastifyInstance) {
     try {
       const venta = await createVenta(body, req.user.sub);
       return reply.code(201).send({ venta });
+    } catch (err) {
+      return handleCajaError(err, reply);
+    }
+  });
+
+  // POST /caja/ventas/externa — venta hecha en Reservo (extensión de Chrome).
+  // Idempotente por idExterno: un reintento devuelve 200 con la venta existente.
+  app.post('/ventas/externa', operarCaja, async (req, reply) => {
+    const parsed = ventaExternaSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Datos inválidos', detalles: parsed.error.flatten() });
+    }
+    try {
+      const r = await createVentaExterna(parsed.data, req.user.sub);
+      return reply.code(r.duplicada ? 200 : 201).send(r);
     } catch (err) {
       return handleCajaError(err, reply);
     }

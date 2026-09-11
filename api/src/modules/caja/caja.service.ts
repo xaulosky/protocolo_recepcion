@@ -10,8 +10,10 @@
  * - Anulación lógica (nunca DELETE): repone stock con movimientos ENTRADA y
  *   la venta sale del reporte mensual pero queda en el historial.
  */
-import type { MetodoPago } from '@prisma/client';
+import type { MetodoPago, Prisma } from '@prisma/client';
 import { prisma } from '../../db.ts';
+import { env } from '../../env.ts';
+import { normalizarTexto } from '../citas/citas.service.ts';
 import { emitirBoletaDeVenta, type ResultadoEmision } from '../boletas/boletas.service.ts';
 
 export class CajaError extends Error {
@@ -269,18 +271,29 @@ export async function createVenta(input: CreateVentaInput, vendedorId: string) {
     return venta;
   });
 
-  // Boleta electrónica: DESPUÉS de que la venta está confirmada, y en su propia
-  // transacción. Si fuera parte de la anterior, un error de emisión abortaría
-  // la transacción en Postgres y se perdería la venta ya cobrada. Aquí, lo peor
-  // que puede pasar es una venta sin documento, que es recuperable.
-  let boleta: ResultadoEmision = { emitida: false, motivo: 'No evaluada' };
+  const boleta = await emitirBoleta(venta);
+  return { ...venta, boleta };
+}
+
+/**
+ * Boleta electrónica de una venta ya confirmada, en su propia transacción. Si
+ * fuera parte de la de la venta, un error de emisión abortaría la transacción
+ * en Postgres y se perdería la venta ya cobrada. Aquí, lo peor que puede pasar
+ * es una venta sin documento, que es recuperable.
+ */
+async function emitirBoleta(venta: {
+  id: string;
+  descuento: number;
+  items: { treatmentId: string | null; exento: boolean | null; nombre: string; precioUnitario: number; cantidad: number }[];
+}): Promise<ResultadoEmision> {
   try {
-    boleta = await prisma.$transaction((tx) =>
+    return await prisma.$transaction((tx) =>
       emitirBoletaDeVenta(tx, {
         id: venta.id,
         descuento: venta.descuento,
         items: venta.items.map((vi) => ({
           treatmentId: vi.treatmentId,
+          exento: vi.exento ?? undefined,
           nombre: vi.nombre,
           precioUnitario: vi.precioUnitario,
           cantidad: vi.cantidad,
@@ -288,10 +301,151 @@ export async function createVenta(input: CreateVentaInput, vendedorId: string) {
       }),
     );
   } catch (e) {
-    boleta = { emitida: false, motivo: (e as Error)?.message ?? 'Error al emitir la boleta' };
+    return { emitida: false, motivo: (e as Error)?.message ?? 'Error al emitir la boleta' };
+  }
+}
+
+// ───────────────────── Ventas importadas (Reservo) ─────────────────────
+
+export interface VentaExternaInput {
+  origen: 'RESERVO';
+  /** Generado por la extensión al capturar la venta; hace idempotente el envío. */
+  idExterno: string;
+  /** URL a la que Reservo llevó tras confirmar, para ubicar la venta allá. */
+  referencia?: string | null;
+  cliente?: string | null;
+  metodoPago: MetodoPago;
+  descuento?: number;
+  /** Total que cobró Reservo, para detectar descuadres. */
+  totalReservo?: number | null;
+  notas?: string | null;
+  items: { nombre: string; cantidad: number; precioUnitario: number; profesional?: string | null; exento: boolean }[];
+  datosReservo?: Record<string, unknown> | null;
+}
+
+/** "Dra. Mariane Kiss Molina - Estética Facial" → ["mariane", "kiss", "molina"]. */
+export function palabrasDeNombre(nombre: string): string[] {
+  return normalizarTexto(nombre.split(' - ')[0])
+    .replace(/^(dra?|enf|klg[ao]|tens|mat|nut|ps|psic)\.?\s+/, '')
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter((p) => p.length > 1);
+}
+
+/** ¿Están todas las palabras de `a` en `b`, contando repeticiones? */
+function contenido(a: string[], b: string[]): boolean {
+  const resto = [...b];
+  return a.every((p) => {
+    const i = resto.indexOf(p);
+    if (i < 0) return false;
+    resto.splice(i, 1);
+    return true;
+  });
+}
+
+/**
+ * Ficha de Cialo Hub del profesional que muestra Reservo.
+ *
+ * Los nombres no coinciden tal cual: Reservo agrega título y especialidad y a
+ * veces abrevia ("Dra. M. Laura Villarroel Reyes"), Cialo Hub guarda el
+ * completo ("María Laura Villarroel Reyes"). Calza si uno contiene al otro
+ * palabra por palabra, contando repeticiones —"Francisca Gonzalez Gonzalez" no
+ * es "Francisca González Saldivia"—. Con cero o más de un candidato no se
+ * adivina: queda sólo el nombre de Reservo como texto.
+ */
+export function emparejarProfesional<T extends { id: string; nombreCompleto: string }>(nombre: string, fichas: T[]): T | null {
+  const buscado = palabrasDeNombre(nombre);
+  if (buscado.length < 2) return null;
+  const candidatos = fichas.filter((f) => {
+    const ficha = palabrasDeNombre(f.nombreCompleto);
+    return contenido(buscado, ficha) || contenido(ficha, buscado);
+  });
+  return candidatos.length === 1 ? candidatos[0] : null;
+}
+
+/**
+ * Registra en la caja una venta hecha en Reservo.
+ *
+ * Los servicios de Reservo no corresponden uno a uno con el catálogo de Cialo
+ * Hub (cientos de variantes contra un catálogo agrupado), así que los ítems
+ * entran con el nombre y el precio que tenían allá, sin ficha de tratamiento,
+ * y con el exento que dice la extensión. No mueve stock: Reservo no dice qué
+ * ítem de inventario se vendió.
+ */
+export async function createVentaExterna(input: VentaExternaInput, vendedorId: string) {
+  const previa = await prisma.venta.findUnique({ where: { idExterno: input.idExterno }, include: ventaInclude });
+  if (previa) return { venta: previa, duplicada: true, boleta: null };
+
+  const fichas = await prisma.professional.findMany({ select: { id: true, nombreCompleto: true } });
+
+  let venta;
+  try {
+    venta = await prisma.$transaction(async (tx) => {
+      const turno = await tx.turno.findFirst({ where: { estado: 'ABIERTO' }, select: { id: true } });
+      if (!turno) {
+        throw new CajaError('No hay una caja abierta en Cialo Hub. La venta queda en cola hasta que se abra.', 409);
+      }
+
+      let subtotal = 0;
+      const itemsData = input.items.map((it) => {
+        const prof = it.profesional ? emparejarProfesional(it.profesional, fichas) : null;
+        subtotal += it.precioUnitario * it.cantidad;
+        return {
+          treatmentId: null,
+          productId: null,
+          inventarioItemId: null,
+          professionalId: prof?.id ?? null,
+          // Sin ficha, igual queda en el comprobante el nombre que venía de Reservo.
+          profesionalNombre: prof?.nombreCompleto ?? (it.profesional?.trim() || null),
+          nombre: it.nombre.trim(),
+          precioUnitario: it.precioUnitario,
+          cantidad: it.cantidad,
+          exento: it.exento,
+        };
+      });
+      const descuento = input.descuento ?? 0;
+      const total = Math.round(subtotal * (1 - descuento / 100));
+
+      // Un descuadre con lo que cobró Reservo no bloquea: la venta ya ocurrió.
+      // Queda anotado para que alguien lo revise.
+      const descuadre =
+        input.totalReservo != null && Math.abs(input.totalReservo - total) > 1
+          ? ` REVISAR: el total calculado ($${total}) no coincide con el de Reservo ($${input.totalReservo}).`
+          : '';
+
+      return tx.venta.create({
+        data: {
+          turnoId: turno.id,
+          cliente: input.cliente?.trim() || null,
+          metodoPago: input.metodoPago,
+          subtotal,
+          descuento,
+          total,
+          notas: `${input.notas ?? ''}${descuadre}`.trim() || null,
+          vendedorId,
+          origen: input.origen,
+          idExterno: input.idExterno,
+          referenciaExterna: input.referencia ?? null,
+          datosExternos: (input.datosReservo ?? undefined) as Prisma.InputJsonValue | undefined,
+          items: { create: itemsData },
+        },
+        include: ventaInclude,
+      });
+    });
+  } catch (e) {
+    // Dos reintentos simultáneos de la misma venta: gana uno, el otro la encuentra.
+    if ((e as { code?: string })?.code === 'P2002') {
+      const existente = await prisma.venta.findUnique({ where: { idExterno: input.idExterno }, include: ventaInclude });
+      if (existente) return { venta: existente, duplicada: true, boleta: null };
+    }
+    throw e;
   }
 
-  return { ...venta, boleta };
+  const boleta: ResultadoEmision = env.BOLETAS_VENTAS_EXTERNAS
+    ? await emitirBoleta(venta)
+    : { emitida: false, motivo: 'Las ventas importadas desde Reservo no emiten boleta (BOLETAS_VENTAS_EXTERNAS)' };
+
+  return { venta, duplicada: false, boleta };
 }
 
 export async function anularVenta(ventaId: string, motivo: string | null, userId: string) {

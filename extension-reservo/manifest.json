@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Cialo Hub · Ventas de Reservo",
+  "version": "1.0.0",
+  "description": "Cuando se realiza una venta en Reservo, la registra en la caja de Cialo Hub.",
+  "permissions": ["storage", "webRequest", "notifications", "alarms"],
+  "host_permissions": ["https://reservo.cl/*", "https://administracion.cialo.cl/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["https://reservo.cl/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Cialo Hub · Ventas de Reservo",
+    "default_icon": { "128": "icono.png" }
+  },
+  "icons": { "128": "icono.png" }
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cialo Hub · Ventas de Reservo</title>
+<style>
+  :root {
+    --bg: #F8F7F5; --surface: #fff; --text: #1A1918; --muted: #7A7066; --muted-2: #9A8F84;
+    --primary: #7C6247; --border: #E5E0D8; --green: #4A7A5A; --orange: #C97B4B;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 320px; font: 13px/1.45 "Segoe UI", system-ui, sans-serif; color: var(--text); background: var(--bg); }
+  header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  header h1 { margin: 0; font-size: 14px; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+  main { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+  input { border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; font: inherit; color: var(--text); }
+  input:focus { outline: none; border-color: var(--primary); }
+  button { border: none; border-radius: 6px; padding: 8px 12px; font: inherit; cursor: pointer; }
+  .primario { background: var(--primary); color: #fff; }
+  .secundario { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  .fila { display: flex; gap: 8px; }
+  .fila button { flex: 1; }
+  .aviso { font-size: 12px; padding: 8px 10px; border-radius: 6px; }
+  .aviso.error { background: #FBF0EB; color: var(--orange); }
+  .aviso.ok { background: #EDF5EF; color: var(--green); }
+  h2 { margin: 0 0 6px; font-size: 12px; color: var(--muted-2); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  li { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; font-size: 12px; }
+  li .sub { color: var(--muted); display: block; margin-top: 1px; }
+  li.error .sub { color: var(--orange); }
+  .vacio { color: var(--muted-2); font-size: 12px; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Ventas de Reservo → Cialo Hub</h1>
+    <p id="estado">Cargando…</p>
+  </header>
+  <main id="contenido"></main>
+  <script src="popup.js"></script>
+</body>
+</html>

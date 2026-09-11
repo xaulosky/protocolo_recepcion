@@ -98,6 +98,12 @@ const schema = z.object({
   // esquema lo exige aunque la Resolucion 74 de 2020 eliminara el libro.
   SII_FOLIO_NOTIFICACION: z.coerce.number().int().positive().default(1),
 
+  // Las ventas importadas desde Reservo emiten boleta solo si esto esta
+  // encendido (ademas de BOLETAS_HABILITADAS). Separado a proposito: si en
+  // Reservo tambien se marca boleta, se emitirian dos documentos por la misma
+  // venta, asi que se enciende solo cuando recepcion deje de hacerlo alla.
+  BOLETAS_VENTAS_EXTERNAS: boolEnv(false),
+
   // Cada cuantos minutos la cola empuja las boletas pendientes al SII y
   // consulta las enviadas. 0 apaga el envio automatico.
   BOLETAS_COLA_INTERVAL_MIN: z.coerce.number().int().min(0).default(0),
