@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { NAV } from '../lib/nav';
 import type { ViewId } from '../lib/nav';
@@ -24,6 +24,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const first = NAV.flatMap((s) => s.items).find((it) => allowed.has(it.id));
     return first?.id ?? 'dashboard';
   });
+  // Abierta por la extensión de Reservo para registrar una venta: directo a la
+  // caja. Como efecto y no en el valor inicial porque, si la sesión había
+  // vencido, el usuario existe recién después del login.
+  useEffect(() => {
+    if (!user) return;
+    if (new URLSearchParams(window.location.search).get('importar') !== 'reservo') return;
+    if (allowedViews(user).has('caja')) setView('caja');
+  }, [user]);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const go = useCallback((next: ViewId) => setView(next), []);

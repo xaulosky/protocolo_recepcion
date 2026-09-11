@@ -1,13 +1,11 @@
 /*
- * Popup de la extensión: iniciar sesión en Cialo Hub y ver qué pasó con las
- * ventas importadas (enviadas, en cola, con error).
+ * Popup de la extensión: ventas confirmadas en Reservo que todavía no se
+ * registran en Cialo Hub (para volver a abrirlas), las últimas registradas y
+ * el registro de lo que hizo la extensión.
  *
- * La sesión es la de un usuario normal de Cialo Hub, con su rol: sólo ADMIN y
- * RECEPCION pueden registrar ventas, igual que en la caja.
+ * No hay login: la venta la registra la app de Cialo Hub con la sesión que ya
+ * tiene abierta, así que la extensión no guarda contraseñas ni tokens.
  */
-const API = 'https://administracion.cialo.cl/api';
-const ROLES_CAJA = ['ADMIN', 'RECEPCION'];
-
 const $contenido = document.getElementById('contenido');
 const $estado = document.getElementById('estado');
 
@@ -26,124 +24,47 @@ function el(tag, attrs = {}, ...hijos) {
 }
 
 async function render() {
-  const { sesion, cola = [], enviadas = [] } = await chrome.storage.local.get(['sesion', 'cola', 'enviadas']);
+  const { pendientes = [], historial = [], registro = [] } = await chrome.storage.local.get(['pendientes', 'historial', 'registro']);
   $contenido.replaceChildren();
+  $estado.textContent = pendientes.length
+    ? `${pendientes.length} venta(s) por registrar en Cialo Hub`
+    : 'Al realizar una venta en Reservo se abre Cialo Hub con la venta cargada.';
 
-  if (!sesion) {
-    $estado.textContent = 'Sin sesión: las ventas quedan en cola hasta que ingreses.';
-    renderLogin(cola.length);
-    await renderRegistro();
-    return;
-  }
-
-  const { user } = sesion;
-  $estado.textContent = `Conectado como ${user.nombre}`;
-
-  if (!ROLES_CAJA.includes(user.role)) {
-    $contenido.append(el('div', { class: 'aviso error' }, `Tu usuario (${user.role}) no puede registrar ventas. Ingresa con uno de recepción o administración.`));
-  }
-
-  // Cola
   $contenido.append(el('section', {},
-    el('h2', {}, `En cola (${cola.length})`),
-    cola.length
-      ? el('ul', {}, cola.map((c) => el('li', { class: 'error' },
-          `${c.venta.cliente ?? 'Sin cliente'} · ${pesos(c.venta.totalReservo)}`,
-          el('span', { class: 'sub' }, c.ultimoError ? `${c.ultimoError} (${c.intentos} intento${c.intentos === 1 ? '' : 's'})` : 'Esperando envío'))))
+    el('h2', {}, `Por registrar (${pendientes.length})`),
+    pendientes.length
+      ? el('ul', {}, pendientes.map((p) => el('li', {},
+          `${p.venta.cliente ?? 'Sin cliente'} · ${pesos(p.venta.totalReservo)}`,
+          el('span', { class: 'sub' }, `${p.venta.items.length} ítem(s) · ${hora(p.en)}`),
+          el('button', { class: 'primario', style: 'margin-top:6px;width:100%', onclick: () => abrir(p.venta.idExterno) }, 'Abrir en Cialo Hub'))))
       : el('p', { class: 'vacio' }, 'Nada pendiente.'),
   ));
 
-  // Últimas
   $contenido.append(el('section', {},
-    el('h2', {}, 'Últimas ventas'),
-    enviadas.length
-      ? el('ul', {}, enviadas.slice(0, 6).map((e) => e.error
-          ? el('li', { class: 'error' }, e.cliente ?? 'Sin cliente', el('span', { class: 'sub' }, `No importada: ${e.error}`))
-          : el('li', {}, `N° ${e.numero} · ${pesos(e.total)}${e.duplicada ? ' (ya estaba)' : ''}`,
-              el('span', { class: 'sub' }, `${e.cliente ?? 'Sin cliente'} · ${hora(e.en)}`))))
-      : el('p', { class: 'vacio' }, 'Todavía no se importó ninguna venta.'),
+    el('h2', {}, 'Últimas'),
+    historial.length
+      ? el('ul', {}, historial.slice(0, 6).map((h) => el('li', {},
+          h.estado === 'registrada' ? `N° ${h.numero} · ${pesos(h.total)}` : `Descartada · ${pesos(h.total)}`,
+          el('span', { class: 'sub' }, `${h.cliente ?? 'Sin cliente'} · ${hora(h.en)}`))))
+      : el('p', { class: 'vacio' }, 'Todavía no se registró ninguna venta.'),
   ));
 
-  $contenido.append(el('div', { class: 'fila' },
-    el('button', { class: 'primario', onclick: reintentar }, 'Reintentar ahora'),
-    el('button', { class: 'secundario', onclick: salir }, 'Cerrar sesión'),
-  ));
-
-  await renderRegistro();
-}
-
-/** Qué hizo la extensión, paso a paso: lo primero que hay que mirar si algo falla. */
-async function renderRegistro() {
-  const { registro = [] } = await chrome.storage.local.get('registro');
   const detalles = el('details', {},
     el('summary', {}, `Registro (${registro.length})`),
     registro.length
       ? el('ul', {}, registro.slice(0, 15).map((r) => el('li', {},
           `${hora(r.en)} · ${r.evento}`,
           r.detalle ? el('span', { class: 'sub' }, r.detalle) : null)))
-      : el('p', { class: 'vacio' }, 'Sin actividad todavía. Haz una venta en Reservo.'),
+      : el('p', { class: 'vacio' }, 'Sin actividad todavía.'),
   );
   detalles.style.cssText = 'font-size:12px;color:var(--muted)';
   $contenido.append(detalles);
 }
 
-function renderLogin(pendientes) {
-  const email = el('input', { type: 'email', autocomplete: 'username', required: '' });
-  const clave = el('input', { type: 'password', autocomplete: 'current-password', required: '' });
-  const aviso = el('div');
-
-  const form = el('form', {
-    onsubmit: async (e) => {
-      e.preventDefault();
-      aviso.replaceChildren();
-      try {
-        const r = await fetch(`${API}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email.value.trim(), password: clave.value }),
-        });
-        const body = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(body.error || 'No se pudo ingresar');
-        await chrome.storage.local.set({
-          sesion: { accessToken: body.accessToken, refreshToken: body.refreshToken, user: body.user },
-        });
-        await reintentar();
-      } catch (err) {
-        aviso.replaceChildren(el('div', { class: 'aviso error' }, err.message));
-      }
-    },
-  },
-    el('label', {}, 'Correo de Cialo Hub', email),
-    el('label', {}, 'Contraseña', clave),
-    aviso,
-    el('button', { class: 'primario', type: 'submit' }, 'Ingresar'),
-  );
-  form.style.cssText = 'display:flex;flex-direction:column;gap:10px';
-
-  if (pendientes) {
-    $contenido.append(el('div', { class: 'aviso error' }, `${pendientes} venta(s) esperando que ingreses.`));
-  }
-  $contenido.append(form);
+async function abrir(idExterno) {
+  await chrome.runtime.sendMessage({ tipo: 'abrir', idExterno });
+  window.close();
 }
 
-async function reintentar() {
-  $estado.textContent = 'Enviando…';
-  await chrome.runtime.sendMessage({ tipo: 'reintentar' });
-  await render();
-}
-
-async function salir() {
-  const { sesion } = await chrome.storage.local.get('sesion');
-  if (sesion?.refreshToken) {
-    // Se invalida también en el servidor; si falla, igual se cierra acá.
-    fetch(`${API}/auth/logout`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: sesion.refreshToken }),
-    }).catch(() => {});
-  }
-  await chrome.storage.local.remove('sesion');
-  await render();
-}
-
+chrome.storage.onChanged.addListener(() => void render());
 void render();

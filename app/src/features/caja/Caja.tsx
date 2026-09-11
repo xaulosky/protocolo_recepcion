@@ -6,6 +6,7 @@ import { Icon } from '../../lib/icons';
 import type { Turno } from '../../lib/types';
 import { AbrirCaja } from './AbrirCaja';
 import { VenderTab } from './VenderTab';
+import { ImportarReservo, hayImportacionReservo } from './ImportarReservo';
 import { HistorialTurnoTab } from './HistorialTurnoTab';
 import { CerrarCaja } from './CerrarCaja';
 import { ReporteVentasTab } from './ReporteVentasTab';
@@ -19,6 +20,9 @@ export function Caja() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('vender');
   const [cerrando, setCerrando] = useState(false);
+  // Venta de Reservo que trae la extensión (?importar=reservo): se revisa y
+  // registra antes de volver a la venta normal.
+  const [importando, setImportando] = useState(hayImportacionReservo);
 
   const cargarTurno = useCallback(async () => {
     try {
@@ -92,8 +96,19 @@ export function Caja() {
 
       {tab === 'vender' && (
         turno
-          ? <VenderTab onVenta={cargarTurno} />
-          : <AbrirCaja onAbierto={(t) => { setTurno(t); }} />
+          ? (importando
+              ? <ImportarReservo onVenta={cargarTurno} onTerminar={() => setImportando(false)} />
+              : <VenderTab onVenta={cargarTurno} />)
+          : (
+            <>
+              {importando && (
+                <div className="no-print card" style={{ padding: '12px 16px', marginBottom: 14, fontSize: 13, color: 'var(--text-2)' }}>
+                  Hay una venta de Reservo esperando: abre la caja para registrarla.
+                </div>
+              )}
+              <AbrirCaja onAbierto={(t) => { setTurno(t); }} />
+            </>
+          )
       )}
       {tab === 'historial' && (
         turno
