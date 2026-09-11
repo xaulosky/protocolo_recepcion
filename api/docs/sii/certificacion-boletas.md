@@ -46,3 +46,22 @@ impresa en el voucher son parte del entregable, no un extra.
 - Boletas: https://www.sii.cl/factura_electronica/boletas_elec.pdf
 - Libro de boletas: https://www.sii.cl/factura_electronica/libros_boletas.pdf
 - Consumo de folios: https://www.sii.cl/factura_electronica/consumo_folios.pdf
+
+## Estado (11-09-2026)
+
+| Paso | Estado |
+|---|---|
+| Set de pruebas enviado (API REST) | track **32153189**, EPR, 3/3 aceptadas (folios 4-6) |
+| RVD del día subido (DTEUpload) | track **258364540**, tipo 41, 6 documentos |
+| Representación impresa del set | `salida-sii/certificacion/set-de-pruebas.pdf` |
+| Libro de boletas | `salida-sii/certificacion/LibroBoletas.xml` |
+| 10 muestras impresas | `salida-sii/certificacion/muestras-impresas.pdf` (folios 16-25) |
+| Sitio de consulta | https://administracion.cialo.cl/boleta, publicado |
+| Correo a SII_BE_Certificacion@sii.cl | redactado en `salida-sii/certificacion/correo.txt` |
+
+CAF usados en certificación: folios 1-15 (primer CAF) y 16-35 (segundo). Los
+folios 1-3 se perdieron en envíos rechazados mientras se ajustaba el formato.
+
+Pendiente después del visto bueno del SII: declaración de cumplimiento, cambio
+de modelo de emisión por parte del contador, CAF de producción y encender
+`BOLETAS_HABILITADAS`.
