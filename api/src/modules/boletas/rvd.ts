@@ -2,7 +2,7 @@ import { prisma } from '../../db.ts';
 import { env } from '../../env.ts';
 import { codigoSii } from './boletas.service.ts';
 import { construirRcof } from './rcof.ts';
-import { cargarCertificado } from './firma.ts';
+import { cargarCertificado, type Certificado } from './firma.ts';
 import { enviarClasico, obtenerTokenClasico, SiiError } from './envio-sii.ts';
 import type { Caratula, DatosBoleta } from './dte.ts';
 
@@ -70,6 +70,31 @@ async function tiposConFolios(): Promise<(39 | 41)[]> {
   return tipos.length ? tipos : [41];
 }
 
+/**
+ * Arma y firma el reporte de un día, sin enviarlo. Lo usan tanto el envío
+ * automático como el diagnóstico, para que lo que se revisa sea exactamente
+ * lo que se manda.
+ */
+export async function armarRvd(fecha: string, secuencia: number, cert: Certificado) {
+  const { emitidas, anulados } = await boletasDelDia(fecha);
+  // Los tipos que la clínica está autorizada a emitir se informan siempre,
+  // aunque ese día no se haya vendido nada.
+  const tiposInformados = await tiposConFolios();
+
+  const caratula: Caratula = {
+    fchResol: env.SII_FCH_RESOL,
+    nroResol: env.SII_NRO_RESOL,
+    rutEnvia: cert.rut ?? '',
+  };
+
+  const xml = construirRcof(
+    { fecha, secuenciaEnvio: secuencia, boletas: emitidas, anulados, tiposInformados },
+    caratula,
+    cert,
+  );
+  return { xml, emitidas, anulados };
+}
+
 export interface ResultadoRvd {
   fecha: string;
   enviado: boolean;
@@ -96,26 +121,12 @@ export async function enviarRvdDelDia(fecha: string, { forzar = false } = {}): P
 
   // El SII numera desde 1; una corrección incrementa.
   const secuencia = (previos[0]?.secuencia ?? 0) + 1;
-  const { emitidas, anulados } = await boletasDelDia(fecha);
-  // Los tipos que la clínica está autorizada a emitir se informan siempre,
-  // aunque ese día no se haya vendido nada.
-  const tiposInformados = await tiposConFolios();
 
   const cert = await cargarCertificado();
   if (!cert.rut) return { fecha, enviado: false, motivo: 'El certificado no trae RUT' };
 
-  const caratula: Caratula = {
-    fchResol: env.SII_FCH_RESOL,
-    nroResol: env.SII_NRO_RESOL,
-    rutEnvia: cert.rut,
-  };
-
   try {
-    const xml = construirRcof(
-      { fecha, secuenciaEnvio: secuencia, boletas: emitidas, anulados, tiposInformados },
-      caratula,
-      cert,
-    );
+    const { xml, emitidas, anulados } = await armarRvd(fecha, secuencia, cert);
     const token = await obtenerTokenClasico(cert);
     const r = await enviarClasico({
       archivo: Buffer.from(xml, 'latin1'),

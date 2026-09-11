@@ -13,11 +13,8 @@ import { writeFileSync } from 'node:fs';
 import { prisma } from '../src/db.ts';
 import { env } from '../src/env.ts';
 import { estadoBoletas } from '../src/modules/boletas/boletas.service.ts';
-import { construirRcof } from '../src/modules/boletas/rcof.ts';
 import { cargarCertificado } from '../src/modules/boletas/firma.ts';
-import { ayer } from '../src/modules/boletas/rvd.ts';
-import { codigoSii } from '../src/modules/boletas/boletas.service.ts';
-import type { DatosBoleta } from '../src/modules/boletas/dte.ts';
+import { armarRvd, ayer } from '../src/modules/boletas/rvd.ts';
 
 async function main() {
   const fecha = process.argv[2] ?? ayer();
@@ -74,40 +71,20 @@ async function main() {
     console.log(`  ${e.fecha} sec ${e.secuencia} ${e.estado} ${e.trackId ?? ''} ${e.detalle ?? ''}`);
   }
 
-  // Se arma el reporte del día pedido, sin enviarlo, para ver que salga bien.
-  const documentos = await prisma.documentoTributario.findMany({
-    where: {
-      fechaEmision: { gte: new Date(`${fecha}T00:00:00`), lte: new Date(`${fecha}T23:59:59.999`) },
-    },
-    select: { tipo: true, folio: true, neto: true, iva: true, exento: true, total: true, estado: true },
-    orderBy: { folio: 'asc' },
-  });
-
-  const emitidas: DatosBoleta[] = documentos
-    .filter((d) => d.estado !== 'ANULADA')
-    .map((d) => ({
-      tipoDte: codigoSii(d.tipo), folio: d.folio, fechaEmision: fecha, items: [],
-      neto: d.neto, iva: d.iva, exento: d.exento, total: d.total,
-    }));
-  const anulados = documentos
-    .filter((d) => d.estado === 'ANULADA')
-    .map((d) => ({ tipoDte: codigoSii(d.tipo), folio: d.folio }));
-
+  // Se arma el reporte del día pedido con el MISMO código que usa el envío
+  // automático, sin mandarlo: así lo que se revisa es lo que se enviaría.
   console.log(`\n— RVD de ${fecha} (simulado, NO se envía) —`);
-  console.log(`  ${emitidas.length} emitidas, ${anulados.length} anuladas, total $${emitidas.reduce((s, b) => s + b.total, 0).toLocaleString('es-CL')}`);
-
-  if (env.SII_CERT_PATH) {
+  if (!env.SII_CERT_PATH) {
+    console.log('  (sin certificado configurado: no se arma el XML)');
+  } else {
     const cert = await cargarCertificado();
-    const xml = construirRcof(
-      { fecha, secuenciaEnvio: 1, boletas: emitidas, anulados },
-      { fchResol: env.SII_FCH_RESOL, nroResol: env.SII_NRO_RESOL, rutEnvia: cert.rut ?? '' },
-      cert,
-    );
+    const { xml, emitidas, anulados } = await armarRvd(fecha, 1, cert);
+    const total = emitidas.reduce((s, b) => s + b.total, 0);
+    console.log(`  ${emitidas.length} emitidas, ${anulados.length} anuladas, total $${total.toLocaleString('es-CL')}`);
     const salida = `/tmp/rvd-${fecha}.xml`;
     writeFileSync(salida, xml, 'latin1');
     console.log(`  XML armado y firmado, ${xml.length} bytes → ${salida}`);
-  } else {
-    console.log('  (sin certificado configurado: no se arma el XML)');
+    console.log(`  Validar con: python docs/sii/verificar-envio.py ${salida} ConsumoFolio_v10.xsd`);
   }
 
   await prisma.$disconnect();
