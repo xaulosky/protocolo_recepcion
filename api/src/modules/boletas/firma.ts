@@ -172,7 +172,13 @@ export function parsearCaf(contenido: string): Caf {
   }
 
   return {
-    xml: bloque[0],
+    // El SII verifica la firma del timbre (FRMT) sobre el <DD> "aplanado": sin
+    // blancos ni saltos de línea entre etiquetas. El archivo de folios viene
+    // con un elemento por línea, así que se aplana acá y el CAF se embebe y se
+    // firma ya plano; si no, el timbre vuelve con reparo 510 "Firma Timbre
+    // Electrónico Incorrecta" (trackid 32153184). Los textos (llaves, firma
+    // del SII) no cambian: sólo se toca lo que hay entre '>' y '<'.
+    xml: bloque[0].replace(/>\s+</g, '><'),
     tipoDte: Number(dato('TD')),
     desde,
     hasta,

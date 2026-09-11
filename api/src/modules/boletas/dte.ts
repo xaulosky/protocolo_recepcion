@@ -365,21 +365,15 @@ export function construirEnvio(
     `<TmstFirmaEnv>${marcaDeTiempo()}</TmstFirmaEnv>` +
     `<SubTotDTE><TpoDTE>${tipoDte}</TpoDTE><NroDTE>${dtesFirmados.length}</NroDTE></SubTotDTE>` +
     `</Caratula>` +
-    // Cada DTE se firmó suelto declarando el namespace por defecto; dentro del
-    // sobre esa declaración es redundante (la hereda de EnvioBOLETA). Se quita
-    // para que no queden declaraciones superfluas: C14N 1.0 las omite y así no
-    // hay margen para que dos canonicalizadores discrepen. La firma del DTE
-    // sigue válida porque sus digests dependen de los namespaces EN ALCANCE,
-    // que son los mismos.
-    dtesFirmados
-      .map((d) =>
-        d
-          .replace(/^<\?xml[^>]*\?>\s*/, '')
-          // Ambas declaraciones (defecto y xsi) las hereda ya de EnvioBOLETA.
-          .replace(/^<DTE([^>]*?)\sxmlns="http:\/\/www\.sii\.cl\/SiiDte"/, '<DTE$1')
-          .replace(/^<DTE([^>]*?)\sxmlns:xsi="[^"]*"/, '<DTE$1'),
-      )
-      .join('') +
+    // Cada DTE va embebido TAL CUAL se firmó, con sus declaraciones xmlns y
+    // xmlns:xsi aunque dentro del sobre sean redundantes. El SII verifica la
+    // firma de cada DTE extrayéndolo literalmente del sobre (<DTE>…</DTE>) y
+    // canonicalizando ese fragmento suelto: sólo cuentan los namespaces que el
+    // fragmento declara por sí mismo. Quitarlos deja al Documento sin
+    // namespaces al extraerlo y el digest ya no coincide: "505 Firma DTE
+    // Incorrecta" (trackid 32153177). Para el digest del sobre no cambia nada:
+    // C14N 1.0 omite en <DTE> las declaraciones iguales a las del ancestro.
+    dtesFirmados.map((d) => d.replace(/^<\?xml[^>]*\?>\s*/, '')).join('') +
     `</SetDTE>` +
     `</EnvioBOLETA>`;
 

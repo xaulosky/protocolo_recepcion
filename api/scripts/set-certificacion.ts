@@ -43,9 +43,9 @@ function cafSintetico(): string {
 }
 
 async function main() {
-  const [arg, salidaArg] = process.argv.slice(2);
+  const [arg, salidaArg, desdeArg] = process.argv.slice(2);
   if (!arg) {
-    console.error('Uso: npm run sii:set -- <CAF.xml | --sintetico> [carpeta-salida]');
+    console.error('Uso: npm run sii:set -- <CAF.xml | --sintetico> [carpeta-salida] [folio-inicial]');
     process.exit(2);
   }
 
@@ -84,10 +84,24 @@ async function main() {
   const fecha = new Date().toISOString().slice(0, 10);
   const caratula: Caratula = { fchResol: env.SII_FCH_RESOL, nroResol: env.SII_NRO_RESOL, rutEnvia: cert.rut };
 
-  const boletas = boletasDelSet(caf.desde, fecha);
+  // Folio inicial del set. Si un envío anterior del mismo día ya dejó folios
+  // registrados en el SII (aceptados, aunque sea con reparos), el siguiente
+  // intento tiene que usar los folios que siguen o vuelve "DTE Repetido".
+  const desde = desdeArg ? Number(desdeArg) : caf.desde;
+  if (!Number.isInteger(desde) || desde < caf.desde || desde + 2 > caf.hasta) {
+    console.error(`El folio inicial ${desdeArg} no deja tres folios dentro del CAF (${caf.desde}-${caf.hasta}).`);
+    process.exit(1);
+  }
+
+  const boletas = boletasDelSet(desde, fecha);
   const firmadas = boletas.map((b) => generarBoleta(b, caf, cert));
   const envio = construirEnvio(firmadas, 41, caratula, cert);
-  const rcof = construirRcof({ fecha, secuenciaEnvio: 0, boletas }, caratula, cert);
+
+  // El RCOF es del día completo: cubre también los sets anteriores del CAF
+  // que ya quedaron registrados hoy (mismos casos y montos, en bloques de 3).
+  const boletasDelDia = [];
+  for (let f = caf.desde; f <= desde; f += 3) boletasDelDia.push(...boletasDelSet(f, fecha));
+  const rcof = construirRcof({ fecha, secuenciaEnvio: 0, boletas: boletasDelDia }, caratula, cert);
 
   const salida = resolve(salidaArg ?? join('salida-sii', fecha + (sintetico ? '-sintetico' : '')));
   mkdirSync(salida, { recursive: true });
@@ -103,6 +117,7 @@ async function main() {
     ...boletas.map((b) => `  folio ${b.folio}  ${b.casoSet}  $${b.total.toLocaleString('es-CL')}  ${b.items.map((i) => `${i.cantidad}×${i.nombre}`).join(', ')}`),
     '',
     `Total del set: $${boletas.reduce((s, b) => s + b.total, 0).toLocaleString('es-CL')}`,
+    `RCOF del día: folios ${caf.desde}-${desde + 2} (${boletasDelDia.length} boletas, $${boletasDelDia.reduce((s, b) => s + b.total, 0).toLocaleString('es-CL')})`,
   ].join('\n');
   writeFileSync(join(salida, 'resumen.txt'), resumen, 'utf8');
 
