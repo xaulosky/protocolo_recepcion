@@ -94,12 +94,16 @@ export async function cargarCertificado(): Promise<Certificado> {
   return cache;
 }
 
-/** Convierte un BigInteger de forge a base64 con complemento de signo. */
+/**
+ * Convierte un BigInteger de forge a base64 como ds:CryptoBinary: entero sin
+ * signo, big-endian, SIN octetos cero iniciales (XMLDSig §4.0.1). Anteponer el
+ * 0x00 "de signo" que usan ASN.1/Java hace que el SII rechace el envío con
+ * "Clave Publica no Corresponde a Certificado": compara el Modulus byte a
+ * byte con el que saca del certificado.
+ */
 function bigIntABase64(n: forge.jsbn.BigInteger): string {
-  let hex = n.toString(16);
+  let hex = n.toString(16).replace(/^0+/, '');
   if (hex.length % 2) hex = '0' + hex;
-  // Un byte inicial >= 0x80 se leería como negativo: se antepone 0x00.
-  if (parseInt(hex.slice(0, 2), 16) >= 0x80) hex = '00' + hex;
   return Buffer.from(hex, 'hex').toString('base64');
 }
 

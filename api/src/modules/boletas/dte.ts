@@ -213,6 +213,38 @@ export function canonicalizar(nodo: XNode, { conXsi = true } = {}): string {
 }
 
 /**
+ * Largo máximo de línea que tolera el parser del SII. Un envío con una línea
+ * más larga vuelve como "CHR-00002: Line too long (4090)" —o, en el uploader
+ * web, como un SCH-00001 que despista—, así que los documentos se generan con
+ * un elemento por línea y el base64 de las firmas partido a 76 columnas.
+ */
+const LARGO_MAX_LINEA = 4000;
+
+/** Parte un base64 en líneas de 76 columnas (XMLDSig admite blancos dentro). */
+function partirBase64(b64: string): string {
+  return b64.replace(/(.{76})/g, '$1\n');
+}
+
+/**
+ * Un elemento por línea. El TED se deja intacto: su <DD> se firmó como string
+ * literal y el CAF viene tal cual del SII, cualquier blanco extra los invalida.
+ */
+export function conSaltosDeLinea(xml: string): string {
+  return xml
+    .split(/(<TED[\s\S]*?<\/TED>)/)
+    .map((parte, i) => (i % 2 ? parte : parte.replace(/></g, '>\n<')))
+    .join('');
+}
+
+/** Lanza si alguna línea supera lo que el SII acepta. */
+export function verificarLargoDeLineas(xml: string): void {
+  const larga = xml.split('\n').find((l) => l.length > LARGO_MAX_LINEA);
+  if (larga) {
+    throw new Error(`Línea de ${larga.length} caracteres; el SII rechaza sobre ${LARGO_MAX_LINEA}: ${larga.slice(0, 60)}…`);
+  }
+}
+
+/**
  * Firma un fragmento XML con XMLDSig según el perfil del SII: SHA-1, RSA-SHA1,
  * C14N 1.0 y un ÚNICO transform enveloped-signature por referencia. La firma
  * queda como último hijo de `nodoPadre`, hermana del nodo referenciado.
@@ -236,8 +268,12 @@ export function firmarXml(
   referenciaId: string,
   cert: Certificado,
   nodoPadre: string,
-  { conXsi = true } = {},
+  { conXsi = true, enLineas = true } = {},
 ): string {
+  // Separador entre elementos de la firma. El getToken de la API va compacto:
+  // su parser exige la firma en la misma línea que el documento.
+  const nl = enLineas ? '\n' : '';
+  const b64 = enLineas ? partirBase64 : (s: string) => s;
   const doc = new DOMParser().parseFromString(xml, 'text/xml');
   const referenciado = referenciaId
     ? Array.from(doc.getElementsByTagName('*')).find((e) => e.getAttribute('ID') === referenciaId)
@@ -250,15 +286,17 @@ export function firmarXml(
     .update(canonicalizar(referenciado as XNode, { conXsi }), 'utf8')
     .digest('base64');
 
+  // Los blancos entre elementos forman parte de lo que se canonicaliza y firma:
+  // el string que se inserta en el documento es el mismo que se firma.
   const signedInfo =
-    `<SignedInfo>` +
-    `<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>` +
-    `<SignatureMethod Algorithm="${NS_DSIG}rsa-sha1"/>` +
-    `<Reference URI="${referenciaId ? '#' + referenciaId : ''}">` +
-    `<Transforms><Transform Algorithm="${NS_DSIG}enveloped-signature"/></Transforms>` +
-    `<DigestMethod Algorithm="${NS_DSIG}sha1"/>` +
-    `<DigestValue>${digest}</DigestValue>` +
-    `</Reference>` +
+    `<SignedInfo>${nl}` +
+    `<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>${nl}` +
+    `<SignatureMethod Algorithm="${NS_DSIG}rsa-sha1"/>${nl}` +
+    `<Reference URI="${referenciaId ? '#' + referenciaId : ''}">${nl}` +
+    `<Transforms>${nl}<Transform Algorithm="${NS_DSIG}enveloped-signature"/>${nl}</Transforms>${nl}` +
+    `<DigestMethod Algorithm="${NS_DSIG}sha1"/>${nl}` +
+    `<DigestValue>${digest}</DigestValue>${nl}` +
+    `</Reference>${nl}` +
     `</SignedInfo>`;
 
   // Se canonicaliza con el namespace que heredará de <Signature> en el documento
@@ -271,19 +309,22 @@ export function firmarXml(
   const firma = firmarSha1(signedInfoCanon, cert.key);
 
   const signature =
-    `<Signature xmlns="${NS_DSIG}">` +
+    `<Signature xmlns="${NS_DSIG}">${nl}` +
     signedInfo +
-    `<SignatureValue>${firma}</SignatureValue>` +
-    `<KeyInfo>` +
-    `<KeyValue><RSAKeyValue><Modulus>${cert.modulusBase64}</Modulus><Exponent>${cert.exponentBase64}</Exponent></RSAKeyValue></KeyValue>` +
-    `<X509Data><X509Certificate>${cert.certBase64}</X509Certificate></X509Data>` +
-    `</KeyInfo>` +
+    `${nl}<SignatureValue>${nl}${b64(firma)}${nl}</SignatureValue>${nl}` +
+    `<KeyInfo>${nl}` +
+    `<KeyValue>${nl}<RSAKeyValue>${nl}<Modulus>${nl}${b64(cert.modulusBase64)}${nl}</Modulus>${nl}` +
+    `<Exponent>${cert.exponentBase64}</Exponent>${nl}</RSAKeyValue>${nl}</KeyValue>${nl}` +
+    `<X509Data>${nl}<X509Certificate>${nl}${b64(cert.certBase64)}${nl}</X509Certificate>${nl}</X509Data>${nl}` +
+    `</KeyInfo>${nl}` +
     `</Signature>`;
 
   const cierre = `</${nodoPadre}>`;
   const pos = xml.lastIndexOf(cierre);
   if (pos < 0) throw new Error(`No se encontró el cierre de <${nodoPadre}> para insertar la firma`);
-  return xml.slice(0, pos) + signature + xml.slice(pos);
+  const firmado = xml.slice(0, pos) + signature + nl + xml.slice(pos);
+  if (enLineas) verificarLargoDeLineas(firmado);
+  return firmado;
 }
 
 export interface Caratula {
@@ -333,7 +374,7 @@ export function construirEnvio(
     dtesFirmados
       .map((d) =>
         d
-          .replace(/^<\?xml[^>]*\?>/, '')
+          .replace(/^<\?xml[^>]*\?>\s*/, '')
           // Ambas declaraciones (defecto y xsi) las hereda ya de EnvioBOLETA.
           .replace(/^<DTE([^>]*?)\sxmlns="http:\/\/www\.sii\.cl\/SiiDte"/, '<DTE$1')
           .replace(/^<DTE([^>]*?)\sxmlns:xsi="[^"]*"/, '<DTE$1'),
@@ -342,11 +383,11 @@ export function construirEnvio(
     `</SetDTE>` +
     `</EnvioBOLETA>`;
 
-  return firmarXml(sobre, 'SetDoc', cert, 'EnvioBOLETA');
+  return firmarXml(conSaltosDeLinea(sobre), 'SetDoc', cert, 'EnvioBOLETA');
 }
 
 /** Genera un DTE completo y firmado. */
 export function generarBoleta(datos: DatosBoleta, caf: Caf, cert: Certificado): string {
   const { xml, id } = construirDocumento(datos, caf);
-  return firmarXml(xml, id, cert, 'DTE');
+  return firmarXml(conSaltosDeLinea(xml), id, cert, 'DTE');
 }

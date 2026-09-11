@@ -84,8 +84,9 @@ for i, sig in enumerate(firmas, 1):
     digest_calc = base64.b64encode(hashlib.sha1(canon_como_raiz(objetivo)).digest()).decode()
     d_ok = digest_calc == ref.find('{%s}DigestValue' % DS).text.strip()
     si = sig.find('{%s}SignedInfo' % DS)
-    sv = base64.b64decode(sig.find('{%s}SignatureValue' % DS).text.strip())
-    cb = sig.find('.//{%s}X509Certificate' % DS).text.strip()
+    sv = base64.b64decode(''.join(sig.find('{%s}SignatureValue' % DS).text.split()))
+    # El base64 puede venir partido en lineas (XMLDSig lo admite): se junta antes de rearmar el PEM.
+    cb = ''.join(sig.find('.//{%s}X509Certificate' % DS).text.split())
     pem = '-----BEGIN CERTIFICATE-----\n' + '\n'.join(cb[j:j + 64] for j in range(0, len(cb), 64)) + '\n-----END CERTIFICATE-----\n'
     s_ok = rsa_ok(pem, canon_como_raiz(si), sv)
     print(f'  firma {i} ref=#{uri:7}  digest {"OK" if d_ok else "DIFIERE"}   RSA {"OK" if s_ok else "FALLA"}')

@@ -79,7 +79,9 @@ export async function obtenerSemilla(): Promise<string> {
  */
 export function construirGetToken(semilla: string, cert: Certificado): string {
   const xml = `<getToken><item><Semilla>${semilla}</Semilla></item></getToken>`;
-  return '<?xml version="1.0" encoding="UTF-8"?>\n' + firmarXml(xml, '', cert, 'getToken', { conXsi: false });
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>\n' + firmarXml(xml, '', cert, 'getToken', { conXsi: false, enLineas: false })
+  );
 }
 
 export async function obtenerToken(cert: Certificado): Promise<string> {

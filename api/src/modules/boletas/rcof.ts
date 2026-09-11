@@ -1,5 +1,5 @@
 import { datosEmisor } from './emisor.ts';
-import { firmarXml, marcaDeTiempo, NS_XSI, type Caratula, type DatosBoleta } from './dte.ts';
+import { conSaltosDeLinea, firmarXml, marcaDeTiempo, NS_XSI, type Caratula, type DatosBoleta } from './dte.ts';
 import type { Certificado } from './firma.ts';
 
 /**
@@ -112,5 +112,5 @@ export function construirRcof(datos: DatosRcof, caratula: Caratula, cert: Certif
     `</DocumentoConsumoFolios>` +
     `</ConsumoFolios>`;
 
-  return firmarXml(xml, id, cert, 'ConsumoFolios');
+  return firmarXml(conSaltosDeLinea(xml), id, cert, 'ConsumoFolios');
 }
