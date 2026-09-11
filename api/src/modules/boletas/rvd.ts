@@ -60,6 +60,16 @@ async function boletasDelDia(fecha: string): Promise<{ emitidas: DatosBoleta[]; 
   return { emitidas, anulados };
 }
 
+/**
+ * Tipos de boleta que la clínica tiene autorizados, según los CAF cargados.
+ * Si todavía no hay ninguno se informa la exenta, que es la que emite.
+ */
+async function tiposConFolios(): Promise<(39 | 41)[]> {
+  const cafs = await prisma.caf.findMany({ where: { activo: true }, distinct: ['tipo'], select: { tipo: true } });
+  const tipos = cafs.map((c) => codigoSii(c.tipo));
+  return tipos.length ? tipos : [41];
+}
+
 export interface ResultadoRvd {
   fecha: string;
   enviado: boolean;
@@ -87,6 +97,9 @@ export async function enviarRvdDelDia(fecha: string, { forzar = false } = {}): P
   // El SII numera desde 1; una corrección incrementa.
   const secuencia = (previos[0]?.secuencia ?? 0) + 1;
   const { emitidas, anulados } = await boletasDelDia(fecha);
+  // Los tipos que la clínica está autorizada a emitir se informan siempre,
+  // aunque ese día no se haya vendido nada.
+  const tiposInformados = await tiposConFolios();
 
   const cert = await cargarCertificado();
   if (!cert.rut) return { fecha, enviado: false, motivo: 'El certificado no trae RUT' };
@@ -98,7 +111,11 @@ export async function enviarRvdDelDia(fecha: string, { forzar = false } = {}): P
   };
 
   try {
-    const xml = construirRcof({ fecha, secuenciaEnvio: secuencia, boletas: emitidas, anulados }, caratula, cert);
+    const xml = construirRcof(
+      { fecha, secuenciaEnvio: secuencia, boletas: emitidas, anulados, tiposInformados },
+      caratula,
+      cert,
+    );
     const token = await obtenerTokenClasico(cert);
     const r = await enviarClasico({
       archivo: Buffer.from(xml, 'latin1'),

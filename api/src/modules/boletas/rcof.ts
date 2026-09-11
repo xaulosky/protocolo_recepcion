@@ -25,6 +25,14 @@ export interface DatosRcof {
   boletas: DatosBoleta[];
   /** Folios anulados ese día, si los hay. */
   anulados?: { tipoDte: 39 | 41; folio: number }[];
+  /**
+   * Tipos que deben aparecer aunque no hayan tenido movimiento.
+   *
+   * El reporte es diario y obligatorio también los días sin ventas, en cuyo
+   * caso va con valores en cero — y el esquema exige al menos un `<Resumen>`,
+   * así que sin esto un día sin boletas produce un XML inválido.
+   */
+  tiposInformados?: (39 | 41)[];
 }
 
 /** Rangos contiguos [inicial, final] a partir de una lista de folios. */
@@ -44,6 +52,7 @@ function resumenes(datos: DatosRcof): string {
   const tipos = [...new Set([
     ...datos.boletas.map((b) => b.tipoDte),
     ...(datos.anulados ?? []).map((a) => a.tipoDte),
+    ...(datos.tiposInformados ?? []),
   ])].sort();
 
   return tipos
@@ -63,6 +72,20 @@ function resumenes(datos: DatosRcof): string {
           ? `<MntNeto>${neto}</MntNeto><MntIva>${iva}</MntIva><TasaIVA>19</TasaIVA>` +
             (exento > 0 ? `<MntExento>${exento}</MntExento>` : '')
           : `<MntExento>${exento}</MntExento>`;
+
+      // Un día sin movimiento va igual, con todo en cero y sin rangos.
+      if (!emitidas.length && !anulados.length) {
+        return (
+          `<Resumen>` +
+          `<TipoDocumento>${tipo}</TipoDocumento>` +
+          montos +
+          `<MntTotal>0</MntTotal>` +
+          `<FoliosEmitidos>0</FoliosEmitidos>` +
+          `<FoliosAnulados>0</FoliosAnulados>` +
+          `<FoliosUtilizados>0</FoliosUtilizados>` +
+          `</Resumen>`
+        );
+      }
 
       const utilizados = rangos(emitidas.map((b) => b.folio))
         .map(([i, f]) => `<RangoUtilizados><Inicial>${i}</Inicial><Final>${f}</Final></RangoUtilizados>`)
