@@ -16,10 +16,17 @@ import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { env } from '../src/env.ts';
 import { cargarCertificado } from '../src/modules/boletas/firma.ts';
-import { consultarEnvio, enviarArchivo, obtenerToken, SiiError } from '../src/modules/boletas/envio-sii.ts';
+import {
+  consultarEnvio,
+  enviarArchivo,
+  enviarRvd,
+  obtenerToken,
+  obtenerTokenClasico,
+  SiiError,
+} from '../src/modules/boletas/envio-sii.ts';
 
 function uso(): never {
-  console.error('Uso: npm run sii:enviar -- token | enviar <EnvioBOLETA.xml> | estado <trackid>');
+  console.error('Uso: npm run sii:enviar -- token | enviar <EnvioBOLETA.xml> | estado <trackid> | rvd <RCOF.xml>');
   process.exit(2);
 }
 
@@ -31,6 +38,19 @@ async function main() {
   console.log(
     `Ambiente ${env.SII_AMBIENTE} · emisor ${env.SII_RUT_EMISOR} · certificado de ${cert.rut} (vence ${cert.notAfter.toISOString().slice(0, 10)})`,
   );
+
+  // El RVD va por el canal clásico, que tiene su propio token.
+  if (comando === 'rvd') {
+    if (!arg) uso();
+    const ruta = resolve(arg);
+    const tokenClasico = await obtenerTokenClasico(cert);
+    console.log(`Token clásico obtenido: ${tokenClasico.slice(0, 4)}…${tokenClasico.slice(-2)}`);
+    const r = await enviarRvd(ruta, cert, tokenClasico);
+    writeFileSync(`${ruta}.envio.json`, JSON.stringify(r, null, 2));
+    console.log(`\nRVD recibido — track ID ${r.trackId} (archivo ${r.archivo ?? 'sin nombre'})`);
+    console.log('Estado: https://maullin.sii.cl/cgi_dte/UPL/DTEauth?12');
+    return;
+  }
 
   const token = await obtenerToken(cert);
   console.log(`Token obtenido: ${token.slice(0, 4)}…${token.slice(-2)}`);

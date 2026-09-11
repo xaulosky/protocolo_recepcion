@@ -25,8 +25,13 @@ Descargados desde la documentación pública del SII (diciembre 2024):
   API REST de boletas (semilla → token → envío → estado). Las boletas NO van
   por el uploader web clásico de facturas: ese responde SCH-00001 a un
   `EnvioBOLETA`. Hosts según `SII_AMBIENTE`: certificación `apicert.sii.cl` +
-  `pangal.sii.cl`; producción `api.sii.cl` + `rahue.sii.cl`. El RCOF sí se
-  sube por el canal clásico.
+  `pangal.sii.cl`; producción `api.sii.cl` + `rahue.sii.cl`.
+- `npm run sii:enviar -- rvd <RCOF.xml>` — Resumen de Ventas Diarias (ex RCOF)
+  por el canal clásico: token SOAP (`CrSeed`/`GetTokenFromSeed`) y multipart a
+  `cgi_dte/UPL/DTEUpload` en maullin (certificación) o palena (producción).
+  Ojo: el formulario web "Enviar DTE y libros" rechaza el mismo archivo con
+  SCH-00001; por DTEUpload entra. El archivo se manda como `ConsumoFolios.xml`
+  y en latin1, que es la codificación que declara el XML.
 
 Fuente: https://www.sii.cl/servicios_online/3532-formato_xml-3811.html
 - Esquemas: `factura_electronica/factura_mercado/schema_envio_bol.zip`

@@ -22,8 +22,8 @@ import type { Certificado } from './firma.ts';
  */
 
 const HOSTS = {
-  certificacion: { api: 'https://apicert.sii.cl', envio: 'https://pangal.sii.cl' },
-  produccion: { api: 'https://api.sii.cl', envio: 'https://rahue.sii.cl' },
+  certificacion: { api: 'https://apicert.sii.cl', envio: 'https://pangal.sii.cl', clasico: 'https://maullin.sii.cl' },
+  produccion: { api: 'https://api.sii.cl', envio: 'https://rahue.sii.cl', clasico: 'https://palena.sii.cl' },
 } as const;
 
 /** El SII exige literalmente este User-Agent en el envío; otro devuelve 400. */
@@ -181,6 +181,127 @@ export async function consultarEnvio(rutEmisor: string, trackid: number, token: 
   } catch {
     throw new SiiError('Estado: la respuesta no es JSON', cuerpo);
   }
+}
+
+// ───────────────────── canal clásico (RVD ex RCOF) ─────────────────────
+
+/**
+ * El Resumen de Ventas Diarias NO tiene API REST: va por el canal clásico de
+ * DTE, el mismo `cgi_dte/UPL/DTEUpload` que usa el formulario web, con un token
+ * distinto al de boletas (servicios SOAP `CrSeed`/`GetTokenFromSeed`).
+ *
+ * El formulario web rechaza el archivo con SCH-00001 aunque el XML valide
+ * contra `ConsumoFolio_v10.xsd`; enviado por DTEUpload el mismo archivo entra.
+ */
+function desescapar(xml: string): string {
+  return xml
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+
+function escapar(xml: string): string {
+  return xml.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+async function soap(url: string, cuerpo: string): Promise<string> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/xml; charset=utf-8', SOAPAction: '' },
+    body: `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body>${cuerpo}</soapenv:Body></soapenv:Envelope>`,
+  });
+  const texto = await res.text();
+  if (!res.ok) throw new SiiError(`SOAP ${url}: HTTP ${res.status}`, texto);
+  // La respuesta trae el XML del SII escapado dentro del sobre SOAP.
+  return desescapar(texto);
+}
+
+/** Token del canal clásico. Es otro token que el de la API de boletas. */
+export async function obtenerTokenClasico(cert: Certificado): Promise<string> {
+  const base = `${hosts().clasico}/DTEWS`;
+  const semillaXml = await soap(`${base}/CrSeed.jws`, '<getSeed/>');
+  const semilla = texto(semillaXml, 'SEMILLA');
+  if (!semilla) throw new SiiError('Semilla SOAP: la respuesta no trae SEMILLA', semillaXml);
+
+  const firmado = construirGetToken(semilla, cert);
+  const tokenXml = await soap(`${base}/GetTokenFromSeed.jws`, `<getToken><pszXml>${escapar(firmado)}</pszXml></getToken>`);
+  const token = texto(tokenXml, 'TOKEN');
+  if (!token) {
+    throw new SiiError(`Token SOAP: ESTADO ${texto(tokenXml, 'ESTADO')} — ${texto(tokenXml, 'GLOSA') ?? 'sin glosa'}`, tokenXml);
+  }
+  return token;
+}
+
+export interface ResultadoClasico {
+  trackId: number;
+  estado: number;
+  archivo: string | null;
+}
+
+/**
+ * Sube un documento por el canal clásico (RVD, libros, EnvioDTE de facturas).
+ *
+ * El multipart se arma a mano y se serializa en latin1: el XML se declara
+ * ISO-8859-1 y el SII compara bytes, así que pasarlo por UTF-8 rompe los
+ * acentos y devuelve CHR-00001.
+ */
+export async function enviarClasico(p: EnvioParams): Promise<ResultadoClasico> {
+  const emisor = partirRut(p.rutEmisor);
+  const envia = partirRut(p.rutEnvia);
+  const borde = `----cialoBoundary${Date.now().toString(36)}`;
+
+  const campo = (nombre: string, valor: string) =>
+    `--${borde}\r\nContent-Disposition: form-data; name="${nombre}"\r\n\r\n${valor}\r\n`;
+
+  const cabecera =
+    campo('rutSender', String(envia.rut)) +
+    campo('dvSender', envia.dv) +
+    campo('rutCompany', String(emisor.rut)) +
+    campo('dvCompany', emisor.dv) +
+    `--${borde}\r\nContent-Disposition: form-data; name="archivo"; filename="${p.nombreArchivo}"\r\n` +
+    `Content-Type: text/xml\r\n\r\n`;
+
+  const cuerpo = Buffer.concat([
+    Buffer.from(cabecera, 'latin1'),
+    p.archivo,
+    Buffer.from(`\r\n--${borde}--\r\n`, 'latin1'),
+  ]);
+
+  const res = await fetch(`${hosts().clasico}/cgi_dte/UPL/DTEUpload`, {
+    method: 'POST',
+    headers: {
+      Cookie: `TOKEN=${p.token}`,
+      'Content-Type': `multipart/form-data; boundary=${borde}`,
+      'User-Agent': USER_AGENT,
+      Accept: '*/*',
+    },
+    body: cuerpo,
+  });
+  const respuesta = await res.text();
+  if (!res.ok) throw new SiiError(`Envío clásico: HTTP ${res.status}`, respuesta);
+
+  const estado = Number(texto(respuesta, 'STATUS'));
+  const trackId = Number(texto(respuesta, 'TRACKID'));
+  if (estado !== 0 || !Number.isInteger(trackId)) {
+    const detalle = texto(respuesta, 'ERROR') ?? texto(respuesta, 'DETAIL') ?? '';
+    throw new SiiError(`Envío clásico rechazado: STATUS ${estado} ${detalle}`, respuesta);
+  }
+  return { trackId, estado, archivo: texto(respuesta, 'FILE') };
+}
+
+/** Sube un RVD (ex RCOF) que ya está en disco, por el canal clásico. */
+export async function enviarRvd(ruta: string, cert: Certificado, token: string): Promise<ResultadoClasico> {
+  if (!cert.rut) throw new SiiError('El certificado no trae RUT; rutSender quedaría vacío');
+  return enviarClasico({
+    archivo: readFileSync(ruta),
+    // El SII identifica el tipo de documento por el nombre del archivo.
+    nombreArchivo: 'ConsumoFolios.xml',
+    rutEmisor: env.SII_RUT_EMISOR,
+    rutEnvia: cert.rut,
+    token,
+  });
 }
 
 /** Atajo para subir un EnvioBOLETA que ya está en disco. */
