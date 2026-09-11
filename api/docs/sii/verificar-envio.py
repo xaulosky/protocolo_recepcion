@@ -73,20 +73,24 @@ def rsa_ok(pem: str, datos: bytes, firma: bytes) -> bool:
         return 'Verified OK' in r.stdout
 
 
-firmas = root.findall('.//{%s}Signature' % DS)
+# LibroBOLETA_v10.xsd declara su propio <Signature> dentro del namespace del
+# SII en vez de importar el de XMLDSig, asi que se busca en ambos.
+SIIDTE = 'http://www.sii.cl/SiiDte'
+firmas = root.findall('.//{%s}Signature' % DS) or root.findall('.//{%s}Signature' % SIIDTE)
+NS = DS if root.findall('.//{%s}Signature' % DS) else SIIDTE
 ok = 0
 for i, sig in enumerate(firmas, 1):
-    ref = sig.find('.//{%s}Reference' % DS)
+    ref = sig.find('.//{%s}Reference' % NS)
     uri = ref.get('URI').lstrip('#')
     objetivo = root.xpath('//*[@ID=$id]', id=uri)[0]
     # enveloped-signature no altera nada si la firma es hermana del nodo referenciado.
     assert sig not in list(objetivo.iter()), 'la firma está dentro de su nodo referenciado; este verificador no cubre ese caso'
     digest_calc = base64.b64encode(hashlib.sha1(canon_como_raiz(objetivo)).digest()).decode()
-    d_ok = digest_calc == ref.find('{%s}DigestValue' % DS).text.strip()
-    si = sig.find('{%s}SignedInfo' % DS)
-    sv = base64.b64decode(''.join(sig.find('{%s}SignatureValue' % DS).text.split()))
+    d_ok = digest_calc == ref.find('{%s}DigestValue' % NS).text.strip()
+    si = sig.find('{%s}SignedInfo' % NS)
+    sv = base64.b64decode(''.join(sig.find('{%s}SignatureValue' % NS).text.split()))
     # El base64 puede venir partido en lineas (XMLDSig lo admite): se junta antes de rearmar el PEM.
-    cb = ''.join(sig.find('.//{%s}X509Certificate' % DS).text.split())
+    cb = ''.join(sig.find('.//{%s}X509Certificate' % NS).text.split())
     pem = '-----BEGIN CERTIFICATE-----\n' + '\n'.join(cb[j:j + 64] for j in range(0, len(cb), 64)) + '\n-----END CERTIFICATE-----\n'
     s_ok = rsa_ok(pem, canon_como_raiz(si), sv)
     print(f'  firma {i} ref=#{uri:7}  digest {"OK" if d_ok else "DIFIERE"}   RSA {"OK" if s_ok else "FALLA"}')

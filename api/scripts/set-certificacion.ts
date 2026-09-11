@@ -25,6 +25,7 @@ import { validarEmisor } from '../src/modules/boletas/emisor.ts';
 import { cargarCertificado, parsearCaf } from '../src/modules/boletas/firma.ts';
 import { generarBoleta, construirEnvio, type Caratula } from '../src/modules/boletas/dte.ts';
 import { construirRcof } from '../src/modules/boletas/rcof.ts';
+import { construirLibro } from '../src/modules/boletas/libro.ts';
 import { boletasDelSet } from '../src/modules/boletas/set-pruebas.ts';
 
 /** CAF de mentira con una llave RSA propia: misma estructura, folios 1-3. */
@@ -102,12 +103,20 @@ async function main() {
   const boletasDelDia = [];
   for (let f = caf.desde; f <= desde; f += 3) boletasDelDia.push(...boletasDelSet(f, fecha));
   const rcof = construirRcof({ fecha, secuenciaEnvio: 0, boletas: boletasDelDia }, caratula, cert);
+  // El libro cubre sólo las boletas de este set: es el que pide la
+  // certificación "asociado a las boletas del set de prueba".
+  const libro = construirLibro(
+    { periodo: fecha.slice(0, 7), boletas, folioNotificacion: env.SII_FOLIO_NOTIFICACION },
+    caratula,
+    cert,
+  );
 
   const salida = resolve(salidaArg ?? join('salida-sii', fecha + (sintetico ? '-sintetico' : '')));
   mkdirSync(salida, { recursive: true });
   // ISO-8859-1: es la codificación declarada en el XML y la que espera el SII.
   writeFileSync(join(salida, 'EnvioBOLETA.xml'), envio, 'latin1');
   writeFileSync(join(salida, 'RCOF.xml'), rcof, 'latin1');
+  writeFileSync(join(salida, 'LibroBoletas.xml'), libro, 'latin1');
 
   const resumen = [
     `Set de certificación boleta exenta — ${fecha}${sintetico ? ' (CAF SINTÉTICO, no subir)' : ''}`,
@@ -122,7 +131,10 @@ async function main() {
   writeFileSync(join(salida, 'resumen.txt'), resumen, 'utf8');
 
   console.log(resumen);
-  console.log(`\nArchivos en ${salida}:\n  EnvioBOLETA.xml (${envio.length} bytes)\n  RCOF.xml (${rcof.length} bytes)`);
+  console.log(
+    `\nArchivos en ${salida}:\n  EnvioBOLETA.xml (${envio.length} bytes)` +
+      `\n  RCOF.xml (${rcof.length} bytes)\n  LibroBoletas.xml (${libro.length} bytes)`,
+  );
   process.exit(0);
 }
 

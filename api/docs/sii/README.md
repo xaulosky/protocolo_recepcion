@@ -10,6 +10,9 @@ Descargados desde la documentación pública del SII (diciembre 2024):
   canonicalización C14N 1.0 queda implícita.
 - `ConsumoFolio_v10.xsd` — Reporte de Consumo de Folios (RCOF). Documento
   aparte del envío de boletas; incluye a `SiiTypes_v10.xsd`.
+- `LibroBOLETA_v10.xsd` — Libro de Boletas. Es autocontenido y, a diferencia
+  de los otros, declara su propio `<Signature>` DENTRO del namespace del SII
+  en vez de importar el de XMLDSig: la firma no lleva `xmlns` propio.
 - `SiiTypes_v10.xsd` — tipos comunes (RUT, folio, montos) que usa el RCOF.
 
 `certificacion-boletas.md` describe el trámite ante el SII (es distinto al de
@@ -23,7 +26,8 @@ factura: el avance se informa por correo, no por el menú de postulación).
   pasar `ConsumoFolio_v10.xsd`.
 - `npm run sii:set -- <CAF.xml> [salida]` (en `api/`) — genera el set de
   certificación: tres boletas exentas, sobre `EnvioBOLETA.xml` y `RCOF.xml`.
-  Con `--sintetico` usa un CAF de prueba, sin gastar folios reales.
+  Con `--sintetico` usa un CAF de prueba, sin gastar folios reales. Deja
+  también `LibroBoletas.xml`, el adjunto 4 del correo de certificación.
 - `npm run sii:enviar -- token | enviar <EnvioBOLETA.xml> | estado <trackid>` —
   API REST de boletas (semilla → token → envío → estado). Las boletas NO van
   por el uploader web clásico de facturas: ese responde SCH-00001 a un

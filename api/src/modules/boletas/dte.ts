@@ -183,7 +183,9 @@ export function construirDocumento(datos: DatosBoleta, caf: Caf): { xml: string;
   return { xml, id };
 }
 
-const NS_DSIG = 'http://www.w3.org/2000/09/xmldsig#';
+export const NS_DSIG = 'http://www.w3.org/2000/09/xmldsig#';
+/** Namespace por defecto de todos los documentos del SII. */
+export const NS_SIIDTE = 'http://www.sii.cl/SiiDte';
 export const NS_XSI = 'http://www.w3.org/2001/XMLSchema-instance';
 
 /**
@@ -268,8 +270,14 @@ export function firmarXml(
   referenciaId: string,
   cert: Certificado,
   nodoPadre: string,
-  { conXsi = true, enLineas = true } = {},
+  { conXsi = true, enLineas = true, nsFirma = NS_DSIG } = {},
 ): string {
+  // En qué namespace vive <Signature>. EnvioBOLETA y ConsumoFolios importan
+  // el de XMLDSig, así que hay que declararlo; LibroBOLETA_v10.xsd declara su
+  // propio elemento Signature dentro del namespace del SII, y ahí declararlo
+  // sería un error de esquema: se hereda del documento.
+  const declaraNs = nsFirma !== NS_SIIDTE;
+
   // Separador entre elementos de la firma. El getToken de la API va compacto:
   // su parser exige la firma en la misma línea que el documento.
   const nl = enLineas ? '\n' : '';
@@ -302,14 +310,14 @@ export function firmarXml(
   // Se canonicaliza con el namespace que heredará de <Signature> en el documento
   // final: es exactamente lo que canonicalizará el verificador.
   const signedInfoCanon = canonicalizar(
-    new DOMParser().parseFromString(signedInfo.replace('<SignedInfo>', `<SignedInfo xmlns="${NS_DSIG}">`), 'text/xml')
+    new DOMParser().parseFromString(signedInfo.replace('<SignedInfo>', `<SignedInfo xmlns="${nsFirma}">`), 'text/xml')
       .documentElement as XNode,
     { conXsi },
   );
   const firma = firmarSha1(signedInfoCanon, cert.key);
 
   const signature =
-    `<Signature xmlns="${NS_DSIG}">${nl}` +
+    `<Signature${declaraNs ? ` xmlns="${NS_DSIG}"` : ''}>${nl}` +
     signedInfo +
     `${nl}<SignatureValue>${nl}${b64(firma)}${nl}</SignatureValue>${nl}` +
     `<KeyInfo>${nl}` +

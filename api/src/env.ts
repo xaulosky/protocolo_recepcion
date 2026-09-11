@@ -94,6 +94,10 @@ const schema = z.object({
   // (<CodRef>SET, <RazonRef>CASO-N). En produccion esa referencia no va.
   SII_SET_PRUEBAS: boolEnv(false),
 
+  // Folio de la notificacion con que el SII pide el libro de boletas. El
+  // esquema lo exige aunque la Resolucion 74 de 2020 eliminara el libro.
+  SII_FOLIO_NOTIFICACION: z.coerce.number().int().positive().default(1),
+
   // Copiloto IA (chat con function-calling sobre DeepSeek, API compatible con OpenAI).
   DEEPSEEK_API_KEY: z.string().default(''),
   DEEPSEEK_MODEL: z.string().default('deepseek-v4-flash'),
