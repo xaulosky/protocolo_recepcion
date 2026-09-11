@@ -45,10 +45,20 @@ for e in schema.error_log:
     print('   *', e.message[:140])
 
 
+NS_XSI = 'http://www.w3.org/2001/XMLSchema-instance'
+
+
 def canon_como_raiz(el) -> bytes:
     # tostring(el) re-emite las declaraciones de namespace que el nodo necesita;
     # parseado como documento propio, la c14n de raíz de libxml2 es fiable.
-    return etree.tostring(etree.fromstring(etree.tostring(el)), method='c14n', exclusive=False, with_comments=False)
+    # Pero omite un prefijo en alcance que el nodo no usa (xsi, declarado en la
+    # raíz para xsi:schemaLocation), y la C14N 1.0 en contexto SÍ lo emite en
+    # el ápice: se inyecta a mano para reproducir la canonicalización real.
+    raw = etree.tostring(el)
+    fin = raw.index(b'>')
+    if b'xmlns:xsi=' not in raw[:fin]:
+        raw = raw[:fin] + b' xmlns:xsi="' + NS_XSI.encode() + b'"' + raw[fin:]
+    return etree.tostring(etree.fromstring(raw), method='c14n', exclusive=False, with_comments=False)
 
 
 def rsa_ok(pem: str, datos: bytes, firma: bytes) -> bool:

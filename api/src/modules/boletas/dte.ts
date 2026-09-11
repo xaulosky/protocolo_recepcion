@@ -153,13 +153,14 @@ export function construirDocumento(datos: DatosBoleta, caf: Caf): { xml: string;
       ? `<Referencia><NroLinRef>1</NroLinRef><CodRef>SET</CodRef><RazonRef>${esc(recortar(datos.casoSet, 90))}</RazonRef></Referencia>`
       : '';
 
-  // Sólo el namespace por defecto, ningún prefijo. La c14n inclusiva emite en
-  // cada nodo firmado TODOS los namespaces en alcance, y xml-crypto canonicaliza
-  // el SignedInfo antes de insertarlo, sin ver los que heredaría de sus
-  // ancestros. Un xmlns:xsi en alcance hace que firma y verificación (la del
-  // SII incluida) canonicalicen bytes distintos y la firma RSA no valide.
+  // El DTE declara xmlns:xsi aunque no lo use: dentro del sobre EnvioBOLETA
+  // ese prefijo está en alcance (la raíz lleva xsi:schemaLocation, que el
+  // uploader del SII exige para identificar el esquema), y la C14N 1.0 emite
+  // en el nodo firmado TODOS los namespaces en alcance. Declararlo también
+  // aquí deja al DTE suelto con el mismo conjunto en alcance que embebido, así
+  // el digest firmado suelto coincide con el que el SII calcula ya embebido.
   const xml =
-    `<DTE version="1.0" xmlns="http://www.sii.cl/SiiDte">` +
+    `<DTE version="1.0" xmlns="http://www.sii.cl/SiiDte" xmlns:xsi="${NS_XSI}">` +
     `<Documento ID="${id}">` +
     `<Encabezado>` +
     `<IdDoc>` +
@@ -183,17 +184,28 @@ export function construirDocumento(datos: DatosBoleta, caf: Caf): { xml: string;
 }
 
 const NS_DSIG = 'http://www.w3.org/2000/09/xmldsig#';
+export const NS_XSI = 'http://www.w3.org/2001/XMLSchema-instance';
 
 /**
  * Canonicalización inclusiva (C14N 1.0) de un nodo, como la hará el SII.
  *
- * Se re-serializa el nodo en un documento propio (xmldom le agrega la
- * declaración de namespace que hereda) y se canonicaliza como raíz. Equivale a
- * la c14n en contexto porque en estos documentos no hay ningún prefijo en
- * alcance: sólo el namespace por defecto, que el nodo pasa a declarar él mismo.
+ * Se re-serializa el nodo en un documento propio y se canonicaliza como raíz.
+ * Para que equivalga a la c14n EN CONTEXTO hay que reproducir en el ápice
+ * todos los namespaces que el nodo tiene en alcance dentro del documento
+ * final: el serializador re-emite el namespace por defecto (lo necesitan los
+ * nombres de los elementos), pero omite un prefijo que no se usa, como xsi.
+ * C14N 1.0 sí lo emite en el ápice, así que se inyecta a mano. En estos
+ * documentos el conjunto en alcance es siempre {defecto, xsi}, declarado en
+ * la raíz del sobre, del DTE y del RCOF.
  */
 function canonicalizar(nodo: XNode): string {
-  const solo = new DOMParser().parseFromString(new XMLSerializer().serializeToString(nodo), 'text/xml');
+  let serializado = new XMLSerializer().serializeToString(nodo);
+  const finTag = serializado.indexOf('>');
+  const primerTag = serializado.slice(0, finTag);
+  if (!/\sxmlns:xsi=/.test(primerTag)) {
+    serializado = `${primerTag} xmlns:xsi="${NS_XSI}"${serializado.slice(finTag)}`;
+  }
+  const solo = new DOMParser().parseFromString(serializado, 'text/xml');
   return new C14nCanonicalization().process(solo.documentElement as XNode, {}) as string;
 }
 
@@ -277,10 +289,12 @@ export function construirEnvio(
 
   const sobre =
     `<?xml version="1.0" encoding="ISO-8859-1"?>` +
-    // Sin xmlns:xsi ni xsi:schemaLocation, por la misma razón que en el DTE:
-    // un prefijo en alcance descuadra la c14n del SignedInfo entre quien firma
-    // y quien verifica. schemaLocation es sólo una pista: el XSD valida igual.
-    `<EnvioBOLETA xmlns="http://www.sii.cl/SiiDte" version="1.0">` +
+    // xsi:schemaLocation NO es opcional para el SII: su uploader identifica el
+    // esquema por este atributo y sin él rechaza con SCH-00001 "Invalid Schema
+    // Name", antes siquiera de mirar firmas o folios. Un validador XSD genérico
+    // lo trata como pista y por eso el XSD validaba sin él; el SII no.
+    `<EnvioBOLETA xmlns="http://www.sii.cl/SiiDte" xmlns:xsi="${NS_XSI}" ` +
+    `xsi:schemaLocation="http://www.sii.cl/SiiDte EnvioBOLETA_v11.xsd" version="1.0">` +
     `<SetDTE ID="SetDoc">` +
     `<Caratula version="1.0">` +
     `<RutEmisor>${e.rut}</RutEmisor>` +
@@ -298,7 +312,13 @@ export function construirEnvio(
     // sigue válida porque sus digests dependen de los namespaces EN ALCANCE,
     // que son los mismos.
     dtesFirmados
-      .map((d) => d.replace(/^<\?xml[^>]*\?>/, '').replace(/^<DTE([^>]*)\sxmlns="http:\/\/www\.sii\.cl\/SiiDte"/, '<DTE$1'))
+      .map((d) =>
+        d
+          .replace(/^<\?xml[^>]*\?>/, '')
+          // Ambas declaraciones (defecto y xsi) las hereda ya de EnvioBOLETA.
+          .replace(/^<DTE([^>]*?)\sxmlns="http:\/\/www\.sii\.cl\/SiiDte"/, '<DTE$1')
+          .replace(/^<DTE([^>]*?)\sxmlns:xsi="[^"]*"/, '<DTE$1'),
+      )
       .join('') +
     `</SetDTE>` +
     `</EnvioBOLETA>`;

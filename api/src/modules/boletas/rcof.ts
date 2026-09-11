@@ -1,5 +1,5 @@
 import { datosEmisor } from './emisor.ts';
-import { firmarXml, marcaDeTiempo, type Caratula, type DatosBoleta } from './dte.ts';
+import { firmarXml, marcaDeTiempo, NS_XSI, type Caratula, type DatosBoleta } from './dte.ts';
 import type { Certificado } from './firma.ts';
 
 /**
@@ -94,7 +94,9 @@ export function construirRcof(datos: DatosRcof, caratula: Caratula, cert: Certif
 
   const xml =
     `<?xml version="1.0" encoding="ISO-8859-1"?>` +
-    `<ConsumoFolios xmlns="http://www.sii.cl/SiiDte" version="1.0">` +
+    // xsi:schemaLocation es obligatorio para el uploader del SII (ver dte.ts).
+    `<ConsumoFolios xmlns="http://www.sii.cl/SiiDte" xmlns:xsi="${NS_XSI}" ` +
+    `xsi:schemaLocation="http://www.sii.cl/SiiDte ConsumoFolio_v10.xsd" version="1.0">` +
     `<DocumentoConsumoFolios ID="${id}">` +
     `<Caratula version="1.0">` +
     `<RutEmisor>${e.rut}</RutEmisor>` +
