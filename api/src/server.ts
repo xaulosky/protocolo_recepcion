@@ -15,6 +15,8 @@ import { firmaRoutes } from './modules/firma/firma.routes.ts';
 import { citasRoutes } from './modules/citas/citas.routes.ts';
 import { boletasRoutes } from './modules/boletas/boletas.routes.ts';
 import { sincronizarAgenda } from './modules/citas/citas.service.ts';
+import { actualizarEnviadas, enviarPendientes } from './modules/boletas/cola.ts';
+import { ponerseAlDia } from './modules/boletas/rvd.ts';
 import { iso } from './lib/reservo.ts';
 import { quotesRoutes } from './modules/quotes/quotes.routes.ts';
 import { giftcardsRoutes } from './modules/giftcards/giftcards.routes.ts';
@@ -81,6 +83,45 @@ if (env.RESERVO_SYNC_INTERVAL_MIN > 0 && env.RESERVO_API_URL) {
   };
   setTimeout(correr, 30_000).unref(); // primera pasada tras arrancar
   setInterval(correr, cadaMs).unref();
+}
+
+// Boletas: la cola empuja al SII lo que la caja dejó timbrado y consulta el
+// veredicto de lo ya enviado. Cobrar y declarar van por separado a propósito,
+// así una caída del SII no frena la caja.
+if (env.BOLETAS_HABILITADAS && env.BOLETAS_COLA_INTERVAL_MIN > 0) {
+  const correr = async () => {
+    try {
+      const enviadas = await enviarPendientes();
+      if (enviadas.enviados) app.log.info({ enviadas }, 'boletas enviadas al SII');
+      if (enviadas.error) app.log.warn({ err: enviadas.error }, 'fallo el envio de boletas');
+      const consulta = await actualizarEnviadas();
+      if (consulta.envios) app.log.info({ consulta }, 'estados de boletas actualizados');
+    } catch (e) {
+      app.log.error({ err: (e as Error)?.message }, 'falló la cola de boletas');
+    }
+  };
+  setTimeout(correr, 60_000).unref();
+  setInterval(correr, env.BOLETAS_COLA_INTERVAL_MIN * 60_000).unref();
+}
+
+// Resumen de Ventas Diarias: obligación diaria, incluso sin ventas. Se revisa
+// cada hora en vez de agendar una sola alarma para que un reinicio a la hora
+// equivocada no se salte el reporte del día.
+if (env.BOLETAS_HABILITADAS && env.RVD_HORA >= 0) {
+  const revisar = async () => {
+    if (new Date().getHours() < env.RVD_HORA) return;
+    try {
+      const r = await ponerseAlDia();
+      for (const envio of r) {
+        if (envio.enviado) app.log.info({ envio }, 'RVD enviado al SII');
+        else app.log.warn({ envio }, 'RVD no se pudo enviar');
+      }
+    } catch (e) {
+      app.log.error({ err: (e as Error)?.message }, 'falló el envío del RVD');
+    }
+  };
+  setTimeout(revisar, 120_000).unref();
+  setInterval(revisar, 60 * 60_000).unref();
 }
 
 try {

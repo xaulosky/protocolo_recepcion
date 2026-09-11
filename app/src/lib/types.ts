@@ -451,6 +451,10 @@ export interface DocumentoTributario {
   iva: number;
   total: number;
   estado: 'PENDIENTE' | 'ENVIADA' | 'ACEPTADA' | 'RECHAZADA' | 'ANULADA';
+  /** Identificador del envío al SII, una vez enviado. */
+  trackId?: string | null;
+  /** Motivo del rechazo o del fallo de envío, si lo hubo. */
+  ultimoError?: string | null;
 }
 
 export interface Venta {

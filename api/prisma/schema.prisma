@@ -1218,3 +1218,22 @@ model ReglaConsentimiento {
   @@unique([patron, consentId])
   @@index([activo])
 }
+
+/// Envio del Resumen de Ventas Diarias (ex RCOF) al SII. El SII lo exige una
+/// vez al dia; el registro evita mandarlo dos veces y lleva la secuencia que
+/// el propio reporte declara en <SecEnvio>.
+model EnvioRvd {
+  id        String   @id @default(cuid())
+  /// Dia que cubre el reporte, AAAA-MM-DD.
+  fecha     String
+  /// SecEnvio: 1 la primera vez, 2 si se corrige, etc.
+  secuencia Int
+  trackId   String?
+  /// ENVIADO | ERROR
+  estado    String
+  detalle   String?
+  createdAt DateTime @default(now())
+
+  @@unique([fecha, secuencia])
+  @@index([fecha])
+}

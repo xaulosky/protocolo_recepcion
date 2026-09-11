@@ -7,6 +7,10 @@ const METODO_LABEL: Record<string, string> = {
   EFECTIVO: 'Efectivo', TARJETA: 'Tarjeta', TRANSFERENCIA: 'Transferencia',
 };
 
+const API = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:4000';
+/** Sitio de consulta impreso bajo el timbre; debe coincidir con SII_URL_CONSULTA. */
+const URL_CONSULTA = `${window.location.origin}/boleta`;
+
 const TIPO_DTE_LABEL: Record<string, string> = {
   BOLETA_AFECTA: 'Boleta electrónica',
   BOLETA_EXENTA: 'Boleta electrónica exenta',
@@ -175,6 +179,23 @@ export function Comprobante({ venta, onNueva, accionLabel = 'Nueva venta', accio
             <span>TOTAL</span><span>{money(venta.total)}</span>
           </div>
         </div>
+
+        {/* Timbre electrónico: el PDF417 con el TED firmado, y bajo él la
+            dirección de consulta. Ambos son obligatorios en la representación
+            impresa de una boleta electrónica; el SII verifica que ese sitio
+            exista. Si el documento quedó sin timbre, la imagen se oculta sola. */}
+        {doc && !anulada && (
+          <div style={{ textAlign: 'center', marginTop: 14 }}>
+            <img
+              src={`${API}/boletas/${doc.id}/timbre.png`}
+              alt="Timbre electrónico SII"
+              style={{ width: '100%', maxWidth: 260, display: 'block', margin: '0 auto' }}
+              onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
+            />
+            <div style={{ fontSize: 9.5, color: 'var(--muted-2)', marginTop: 3 }}>Timbre Electrónico SII</div>
+            <div style={{ fontSize: 9.5, color: 'var(--muted-2)' }}>Verifique documento: {URL_CONSULTA}</div>
+          </div>
+        )}
 
         {/* Pie tributario */}
         {doc ? (

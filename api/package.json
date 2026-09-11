@@ -14,7 +14,8 @@
     "db:reset": "prisma migrate reset --force",
     "sii:set": "tsx scripts/set-certificacion.ts",
     "sii:enviar": "tsx scripts/enviar-sii.ts",
-    "sii:muestras": "tsx scripts/muestras-impresas.ts"
+    "sii:muestras": "tsx scripts/muestras-impresas.ts",
+    "sii:diagnostico": "tsx scripts/boletas-diagnostico.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

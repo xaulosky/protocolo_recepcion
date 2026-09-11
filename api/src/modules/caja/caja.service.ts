@@ -26,7 +26,15 @@ const ventaInclude = {
   vendedor: { select: { id: true, nombre: true } },
   anuladaPor: { select: { id: true, nombre: true } },
   items: true,
-  documento: true,
+  // Campos livianos del documento: el XML firmado pesa más de 20 KB y no lo
+  // necesita nadie en el navegador. El timbre se pide aparte, como imagen.
+  documento: {
+    select: {
+      id: true, tipo: true, folio: true, fechaEmision: true,
+      neto: true, exento: true, iva: true, total: true,
+      estado: true, trackId: true, ultimoError: true,
+    },
+  },
 } as const;
 
 const turnoInclude = {
@@ -273,6 +281,7 @@ export async function createVenta(input: CreateVentaInput, vendedorId: string) {
         descuento: venta.descuento,
         items: venta.items.map((vi) => ({
           treatmentId: vi.treatmentId,
+          nombre: vi.nombre,
           precioUnitario: vi.precioUnitario,
           cantidad: vi.cantidad,
         })),

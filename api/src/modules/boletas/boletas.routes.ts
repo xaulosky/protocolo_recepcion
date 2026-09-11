@@ -2,8 +2,11 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
-import { estadoBoletas, codigoSii } from './boletas.service.ts';
+import { estadoBoletas, codigoSii, enviarAlSii } from './boletas.service.ts';
 import { datosEmisor } from './emisor.ts';
+import { timbrePdf417 } from './impresion.ts';
+import { actualizarEnviadas, enviarPendientes } from './cola.ts';
+import { enviarRvdDelDia, ponerseAlDia } from './rvd.ts';
 
 /**
  * Administración de boletas electrónicas: carga de CAF y seguimiento.
@@ -104,6 +107,54 @@ export async function boletasRoutes(app: FastifyInstance) {
     return {
       documentos: documentos.map((d) => ({ ...d, codigoSii: codigoSii(d.tipo) })),
     };
+  });
+
+  /**
+   * GET /boletas/:id/timbre.png — timbre electrónico como PDF417.
+   *
+   * Público y sin token: es exactamente lo que va impreso en el papel, no hay
+   * nada que proteger, y así el comprobante puede mostrarlo con un <img> sin
+   * arrastrar la sesión ni el XML completo del documento al navegador.
+   */
+  app.get('/:id/timbre.png', async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const doc = await prisma.documentoTributario.findUnique({ where: { id }, select: { ted: true } });
+    if (!doc?.ted) return reply.code(404).send({ error: 'El documento no tiene timbre' });
+
+    const dataUri = await timbrePdf417(doc.ted);
+    const png = Buffer.from(dataUri.slice(dataUri.indexOf(',') + 1), 'base64');
+    // El timbre de un folio no cambia nunca: se puede cachear sin miedo.
+    return reply.type('image/png').header('Cache-Control', 'public, max-age=31536000, immutable').send(png);
+  });
+
+  // POST /boletas/:id/reintentar — reencolar un documento trabado o rechazado
+  app.post('/:id/reintentar', adminOnly, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const existe = await prisma.documentoTributario.findUnique({ where: { id }, select: { id: true } });
+    if (!existe) return reply.code(404).send({ error: 'Documento no encontrado' });
+    return { resultado: await enviarAlSii(id) };
+  });
+
+  // POST /boletas/cola — empujar la cola a mano y consultar los envíos abiertos
+  app.post('/cola', adminOnly, async () => {
+    const enviadas = await enviarPendientes();
+    const consulta = await actualizarEnviadas();
+    return { enviadas, consulta };
+  });
+
+  // GET /boletas/rvd — historial de resúmenes diarios enviados al SII
+  app.get('/rvd', { preHandler: app.authenticate }, async () => {
+    const envios = await prisma.envioRvd.findMany({ orderBy: { fecha: 'desc' }, take: 60 });
+    return { envios };
+  });
+
+  // POST /boletas/rvd — enviar (o reenviar, con `forzar`) el reporte de un día
+  app.post('/rvd', adminOnly, async (req) => {
+    const { fecha, forzar } = (req.body ?? {}) as { fecha?: string; forzar?: boolean };
+    if (fecha && /^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      return { resultado: await enviarRvdDelDia(fecha, { forzar: Boolean(forzar) }) };
+    }
+    return { resultados: await ponerseAlDia() };
   });
 
   // POST /boletas/caf — cargar un rango de folios descargado del SII

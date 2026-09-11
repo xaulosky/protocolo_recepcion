@@ -39,6 +39,9 @@ factura: el avance se informa por correo, no por el menú de postulación).
   PDF417 del TED y la leyenda del sitio de consulta. Son los adjuntos 3 y 5 del
   correo de certificación. Verificar que el timbre se lea antes de mandarlo:
   rasterizar el PDF y decodificarlo debe devolver el TED tal cual.
+- `npm run sii:diagnostico -- [AAAA-MM-DD]` — sólo lectura: configuración,
+  folios, documentos por estado, qué mandaría la cola y el RVD del día armado
+  sin enviarlo. Es lo primero que hay que mirar cuando algo no sale.
 - `npm run sii:enviar -- rvd <RCOF.xml>` — Resumen de Ventas Diarias (ex RCOF)
   por el canal clásico: token SOAP (`CrSeed`/`GetTokenFromSeed`) y multipart a
   `cgi_dte/UPL/DTEUpload` en maullin (certificación) o palena (producción).

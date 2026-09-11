@@ -98,6 +98,13 @@ const schema = z.object({
   // esquema lo exige aunque la Resolucion 74 de 2020 eliminara el libro.
   SII_FOLIO_NOTIFICACION: z.coerce.number().int().positive().default(1),
 
+  // Cada cuantos minutos la cola empuja las boletas pendientes al SII y
+  // consulta las enviadas. 0 apaga el envio automatico.
+  BOLETAS_COLA_INTERVAL_MIN: z.coerce.number().int().min(0).default(0),
+  // Hora local a la que se envia el Resumen de Ventas Diarias del dia anterior.
+  // El SII lo espera antes de las 08:00. Negativo apaga el envio automatico.
+  RVD_HORA: z.coerce.number().int().min(-1).max(23).default(-1),
+
   // Copiloto IA (chat con function-calling sobre DeepSeek, API compatible con OpenAI).
   DEEPSEEK_API_KEY: z.string().default(''),
   DEEPSEEK_MODEL: z.string().default('deepseek-v4-flash'),
