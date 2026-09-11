@@ -21,6 +21,12 @@ Descargados desde la documentación pública del SII (diciembre 2024):
 - `npm run sii:set -- <CAF.xml> [salida]` (en `api/`) — genera el set de
   certificación: tres boletas exentas, sobre `EnvioBOLETA.xml` y `RCOF.xml`.
   Con `--sintetico` usa un CAF de prueba, sin gastar folios reales.
+- `npm run sii:enviar -- token | enviar <EnvioBOLETA.xml> | estado <trackid>` —
+  API REST de boletas (semilla → token → envío → estado). Las boletas NO van
+  por el uploader web clásico de facturas: ese responde SCH-00001 a un
+  `EnvioBOLETA`. Hosts según `SII_AMBIENTE`: certificación `apicert.sii.cl` +
+  `pangal.sii.cl`; producción `api.sii.cl` + `rahue.sii.cl`. El RCOF sí se
+  sube por el canal clásico.
 
 Fuente: https://www.sii.cl/servicios_online/3532-formato_xml-3811.html
 - Esquemas: `factura_electronica/factura_mercado/schema_envio_bol.zip`

@@ -197,12 +197,15 @@ export const NS_XSI = 'http://www.w3.org/2001/XMLSchema-instance';
  * C14N 1.0 sí lo emite en el ápice, así que se inyecta a mano. En estos
  * documentos el conjunto en alcance es siempre {defecto, xsi}, declarado en
  * la raíz del sobre, del DTE y del RCOF.
+ *
+ * `conXsi: false` es para documentos donde xsi NO está en alcance (el getToken
+ * de la API, sin namespace alguno): inyectarlo ahí cambiaría los bytes.
  */
-function canonicalizar(nodo: XNode): string {
+export function canonicalizar(nodo: XNode, { conXsi = true } = {}): string {
   let serializado = new XMLSerializer().serializeToString(nodo);
   const finTag = serializado.indexOf('>');
   const primerTag = serializado.slice(0, finTag);
-  if (!/\sxmlns:xsi=/.test(primerTag)) {
+  if (conXsi && !/\sxmlns:xsi=/.test(primerTag)) {
     serializado = `${primerTag} xmlns:xsi="${NS_XSI}"${serializado.slice(finTag)}`;
   }
   const solo = new DOMParser().parseFromString(serializado, 'text/xml');
@@ -222,21 +225,36 @@ function canonicalizar(nodo: XNode): string {
  * transform c14n explícito lo hace bien, pero xmldsignature_v10.xsd admite un
  * solo <Transform>. La clase C14nCanonicalization sí es correcta —produce los
  * mismos bytes que libxml2—, así que se usa directamente.
+ *
+ * Con `referenciaId` vacío la referencia es `URI=""` (el documento completo):
+ * es lo que pide el getToken de la API. Ahí la firma sí queda DENTRO del nodo
+ * referenciado, pero como se calcula el digest antes de insertarla, el
+ * resultado es el mismo que aplicar enveloped-signature.
  */
-export function firmarXml(xml: string, referenciaId: string, cert: Certificado, nodoPadre: string): string {
+export function firmarXml(
+  xml: string,
+  referenciaId: string,
+  cert: Certificado,
+  nodoPadre: string,
+  { conXsi = true } = {},
+): string {
   const doc = new DOMParser().parseFromString(xml, 'text/xml');
-  const referenciado = Array.from(doc.getElementsByTagName('*')).find((e) => e.getAttribute('ID') === referenciaId);
+  const referenciado = referenciaId
+    ? Array.from(doc.getElementsByTagName('*')).find((e) => e.getAttribute('ID') === referenciaId)
+    : doc.documentElement;
   if (!referenciado) throw new Error(`No existe un nodo con ID="${referenciaId}" para firmar`);
 
   // La firma será hermana del nodo referenciado, así que enveloped-signature
   // no tiene nada que quitar de su subárbol: el digest va sobre el nodo tal cual.
-  const digest = createHash('sha1').update(canonicalizar(referenciado as XNode), 'utf8').digest('base64');
+  const digest = createHash('sha1')
+    .update(canonicalizar(referenciado as XNode, { conXsi }), 'utf8')
+    .digest('base64');
 
   const signedInfo =
     `<SignedInfo>` +
     `<CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>` +
     `<SignatureMethod Algorithm="${NS_DSIG}rsa-sha1"/>` +
-    `<Reference URI="#${referenciaId}">` +
+    `<Reference URI="${referenciaId ? '#' + referenciaId : ''}">` +
     `<Transforms><Transform Algorithm="${NS_DSIG}enveloped-signature"/></Transforms>` +
     `<DigestMethod Algorithm="${NS_DSIG}sha1"/>` +
     `<DigestValue>${digest}</DigestValue>` +
@@ -248,6 +266,7 @@ export function firmarXml(xml: string, referenciaId: string, cert: Certificado, 
   const signedInfoCanon = canonicalizar(
     new DOMParser().parseFromString(signedInfo.replace('<SignedInfo>', `<SignedInfo xmlns="${NS_DSIG}">`), 'text/xml')
       .documentElement as XNode,
+    { conXsi },
   );
   const firma = firmarSha1(signedInfoCanon, cert.key);
 

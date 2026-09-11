@@ -12,7 +12,8 @@
     "prisma:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
-    "sii:set": "tsx scripts/set-certificacion.ts"
+    "sii:set": "tsx scripts/set-certificacion.ts",
+    "sii:enviar": "tsx scripts/enviar-sii.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
