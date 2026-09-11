@@ -7,15 +7,18 @@ import { ResetPassword } from './features/auth/ResetPassword.tsx'
 import { FirmaPublica } from './features/firma/FirmaPublica.tsx'
 import { ImprimirConsentimiento } from './features/imprimir/ImprimirConsentimiento.tsx'
 import { InventarioPWA } from './features/inventario/InventarioPWA.tsx'
+import { BoletaPublica } from './features/boleta/BoletaPublica.tsx'
 
 // Rutas especiales: /mensajeria (PWA kiosko), /inv (PWA inventario),
-// /reset (restablecer contraseña), /firma/:token (firma pública) e /imprimir/:token (impresión).
+// /reset (restablecer contraseña), /firma/:token (firma pública), /imprimir/:token
+// (impresión) y /boleta (consulta pública de boletas, exigida por el SII).
 const path = window.location.pathname
 const isMensajeria = path.startsWith('/mensajeria')
 const isInv = path.startsWith('/inv')
 const isReset = path.startsWith('/reset')
 const isFirma = path.startsWith('/firma')
 const isImprimir = path.startsWith('/imprimir')
+const isBoleta = path.startsWith('/boleta')
 
 if (isMensajeria) {
   const link = document.createElement('link')
@@ -42,6 +45,6 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {isImprimir ? <ImprimirConsentimiento /> : isFirma ? <FirmaPublica /> : isReset ? <ResetPassword /> : isInv ? <InventarioPWA /> : isMensajeria ? <Mensajeria /> : <App />}
+    {isBoleta ? <BoletaPublica /> : isImprimir ? <ImprimirConsentimiento /> : isFirma ? <FirmaPublica /> : isReset ? <ResetPassword /> : isInv ? <InventarioPWA /> : isMensajeria ? <Mensajeria /> : <App />}
   </StrictMode>,
 )

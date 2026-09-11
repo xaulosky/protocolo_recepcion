@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Role } from '@prisma/client';
 import { prisma } from '../../db.ts';
 import { estadoBoletas, codigoSii } from './boletas.service.ts';
+import { datosEmisor } from './emisor.ts';
 
 /**
  * Administración de boletas electrónicas: carga de CAF y seguimiento.
@@ -28,6 +29,65 @@ const cafSchema = z
 
 export async function boletasRoutes(app: FastifyInstance) {
   const adminOnly = { preHandler: app.authorize([Role.ADMIN]) };
+
+  /**
+   * GET /boletas/consulta — consulta pública de una boleta emitida.
+   *
+   * Sin sesión, a propósito: el SII obliga a publicar las boletas en un sitio
+   * web donde el cliente pueda verlas durante los tres meses siguientes a la
+   * emisión, y esa URL va impresa bajo el timbre (ver
+   * docs/sii/certificacion-boletas.md). Es requisito para que autoricen.
+   *
+   * Pide folio Y monto total: los dos están en el papel, pero juntos evitan
+   * que alguien recorra los folios uno por uno. No se devuelve nada del
+   * cliente ni de la venta interna, sólo el documento tributario.
+   */
+  app.get('/consulta', async (req, reply) => {
+    const q = req.query as { folio?: string; total?: string; tipo?: string };
+    const folio = Number(q.folio);
+    const total = Number(q.total);
+    if (!Number.isInteger(folio) || folio < 1 || !Number.isFinite(total)) {
+      return reply.code(400).send({ error: 'Indica el folio y el monto total de la boleta' });
+    }
+
+    const tipo = q.tipo === '39' ? 'BOLETA_AFECTA' : 'BOLETA_EXENTA';
+    const doc = await prisma.documentoTributario.findUnique({
+      where: { tipo_folio: { tipo, folio } },
+      select: {
+        tipo: true, folio: true, fechaEmision: true, estado: true,
+        neto: true, iva: true, exento: true, total: true,
+        venta: { select: { items: { select: { nombre: true, cantidad: true, precioUnitario: true } } } },
+      },
+    });
+
+    // Mismo error para "no existe" y "el monto no cuadra": distinguirlos
+    // permitiría averiguar qué folios existen.
+    if (!doc || doc.total !== Math.round(total)) {
+      return reply.code(404).send({ error: 'No encontramos una boleta con ese folio y monto' });
+    }
+
+    const emisor = datosEmisor();
+    return {
+      boleta: {
+        tipo: doc.tipo,
+        codigoSii: codigoSii(doc.tipo),
+        folio: doc.folio,
+        fechaEmision: doc.fechaEmision,
+        estado: doc.estado,
+        neto: doc.neto,
+        iva: doc.iva,
+        exento: doc.exento,
+        total: doc.total,
+        items: doc.venta.items,
+        emisor: {
+          rut: emisor.rut,
+          razonSocial: emisor.razonSocial,
+          giro: emisor.giro,
+          direccion: `${emisor.dirOrigen}, ${emisor.cmnaOrigen}`,
+        },
+      },
+    };
+  });
 
   // GET /boletas/estado — folios disponibles y documentos por resolver
   app.get('/estado', { preHandler: app.authenticate }, async () => estadoBoletas());
