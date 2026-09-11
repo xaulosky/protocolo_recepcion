@@ -1,7 +1,7 @@
 /*
  * Cialo Hub · captura de ventas en Reservo.
  *
- * Corre en todas las páginas de reservo.cl pero sólo actúa en dos momentos:
+ * Corre en todas las páginas de reservo.cl pero sólo actúa en tres momentos:
  *
  *  1. En el formulario de venta, al apretar "Realizar venta" (button#confirmar),
  *     toma una foto de lo que hay en pantalla: ítems, profesional, pagos, total.
@@ -12,6 +12,9 @@
  *     sabe si Reservo aceptó la venta (la pestaña salió del formulario) o la
  *     rechazó (se quedó en él), y recién ahí la envía.
  *
+ *  3. Cuando el fondo termina, muestra el resultado aquí mismo, en un aviso en
+ *     la esquina: recepción está mirando Reservo, no las notificaciones.
+ *
  * Se lee lo que se ve en pantalla y no el código interno de Reservo: los nombres
  * de los servicios y profesionales en texto son justo lo que Cialo Hub necesita,
  * y resiste mejor que depender de funciones que Reservo puede cambiar.
@@ -19,6 +22,27 @@
 (() => {
   const RUTA_FORMULARIO = '/ventamultiple/crearatencionlast/';
   const esFormularioVenta = location.pathname.startsWith(RUTA_FORMULARIO);
+
+  /** Aviso flotante. Los de éxito se van solos; los de error esperan un clic. */
+  function mostrarAviso(ok, texto, duracionMs = ok ? 8000 : 0) {
+    const aviso = document.createElement('div');
+    aviso.textContent = texto;
+    aviso.title = 'Cialo Hub · clic para cerrar';
+    Object.assign(aviso.style, {
+      position: 'fixed', top: '16px', right: '16px', zIndex: '2147483647', maxWidth: '380px',
+      padding: '12px 16px', borderRadius: '8px', font: '14px/1.4 "Segoe UI", system-ui, sans-serif',
+      color: '#fff', background: ok ? '#4A7A5A' : '#C97B4B', boxShadow: '0 4px 16px rgba(0,0,0,.25)', cursor: 'pointer',
+    });
+    aviso.addEventListener('click', () => aviso.remove());
+    document.body.appendChild(aviso);
+    if (duracionMs) setTimeout(() => aviso.remove(), duracionMs);
+  }
+
+  // El resultado llega en la página a la que Reservo lleva tras confirmar, así
+  // que el oyente se registra en todas las páginas, no sólo en el formulario.
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg?.tipo === 'resultado') mostrarAviso(msg.ok, msg.texto);
+  });
 
   try {
     chrome.runtime.sendMessage({ tipo: 'pagina', url: location.href, esFormularioVenta });
@@ -171,6 +195,7 @@
         chrome.runtime.sendMessage({ tipo: 'venta-capturada', venta: capturar() });
       } catch (err) {
         console.warn('[Cialo Hub] no se pudo capturar la venta', err);
+        mostrarAviso(false, 'Cialo Hub: la extensión se actualizó. Recarga esta página (F5) antes de vender.');
       }
     },
     true,

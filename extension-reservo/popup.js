@@ -32,6 +32,7 @@ async function render() {
   if (!sesion) {
     $estado.textContent = 'Sin sesión: las ventas quedan en cola hasta que ingreses.';
     renderLogin(cola.length);
+    await renderRegistro();
     return;
   }
 
@@ -67,6 +68,23 @@ async function render() {
     el('button', { class: 'primario', onclick: reintentar }, 'Reintentar ahora'),
     el('button', { class: 'secundario', onclick: salir }, 'Cerrar sesión'),
   ));
+
+  await renderRegistro();
+}
+
+/** Qué hizo la extensión, paso a paso: lo primero que hay que mirar si algo falla. */
+async function renderRegistro() {
+  const { registro = [] } = await chrome.storage.local.get('registro');
+  const detalles = el('details', {},
+    el('summary', {}, `Registro (${registro.length})`),
+    registro.length
+      ? el('ul', {}, registro.slice(0, 15).map((r) => el('li', {},
+          `${hora(r.en)} · ${r.evento}`,
+          r.detalle ? el('span', { class: 'sub' }, r.detalle) : null)))
+      : el('p', { class: 'vacio' }, 'Sin actividad todavía. Haz una venta en Reservo.'),
+  );
+  detalles.style.cssText = 'font-size:12px;color:var(--muted)';
+  $contenido.append(detalles);
 }
 
 function renderLogin(pendientes) {

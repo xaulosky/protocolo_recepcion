@@ -12,6 +12,10 @@
  *
  * Lo que no se pudo enviar (Cialo Hub caído, caja cerrada, sesión vencida) queda
  * en cola y se reintenta cada minuto: nunca se pierde una venta en silencio.
+ *
+ * Cada paso queda en un registro que se ve en el popup, y el resultado se
+ * muestra en la misma página de Reservo: las notificaciones de Windows se pasan
+ * por alto con facilidad, y "no hizo nada" no se puede diagnosticar.
  */
 
 const API = 'https://administracion.cialo.cl/api';
@@ -47,6 +51,10 @@ async function leerCola() {
 
 async function guardarCola(cola) {
   await chrome.storage.local.set({ cola });
+  await actualizarIcono(cola);
+}
+
+async function actualizarIcono(cola) {
   await chrome.action.setBadgeBackgroundColor({ color: cola.length ? '#C97B4B' : '#4A7A5A' });
   await chrome.action.setBadgeText({ text: cola.length ? String(cola.length) : '' });
 }
@@ -57,21 +65,52 @@ async function registrarEnviada(item) {
   await chrome.storage.local.set({ enviadas: enviadas.slice(0, 20) });
 }
 
+/** Bitácora de pasos, para saber qué pasó cuando algo "no hace nada". */
+async function registrar(evento, detalle = '') {
+  const { registro = [] } = await chrome.storage.local.get('registro');
+  registro.unshift({ en: Date.now(), evento, detalle: String(detalle).slice(0, 300) });
+  await chrome.storage.local.set({ registro: registro.slice(0, 60) });
+}
+
 function avisar(titulo, mensaje) {
   chrome.notifications.create({ type: 'basic', iconUrl: 'icono.png', title: titulo, message: mensaje, priority: 1 });
 }
 
+/** Aviso dentro de la página de Reservo, que es donde está mirando recepción. */
+function avisarPestana(tabId, ok, texto) {
+  if (tabId == null) return;
+  chrome.tabs.sendMessage(tabId, { tipo: 'resultado', ok, texto }).catch(() => {
+    // La pestaña se cerró o navegó a otro sitio: queda la notificación y el popup.
+  });
+}
+
 // ───────────────────────── captura ─────────────────────────
 
-chrome.runtime.onMessage.addListener((msg, sender) => {
+chrome.runtime.onMessage.addListener((msg, sender, responder) => {
+  if (msg?.tipo === 'reintentar') {
+    procesarCola().then(() => responder({ ok: true }));
+    return true;
+  }
+
   const tabId = sender.tab?.id;
-  if (tabId == null) return;
+  if (tabId == null) return undefined;
+
   if (msg.tipo === 'venta-capturada') {
     // Un segundo clic (Reservo pidió corregir algo) reemplaza la foto anterior.
-    void guardarPendiente(tabId, { venta: msg.venta, clicEn: Date.now() });
+    void (async () => {
+      await guardarPendiente(tabId, { venta: msg.venta, clicEn: Date.now() });
+      const v = msg.venta;
+      await registrar('clic', `${v.items.length} ítem(s), total $${v.total}, cliente ${v.cliente ?? '—'}`);
+      // Si no hay sesión se avisa ya, en la misma pantalla: si no, la venta
+      // queda en cola y nadie se entera hasta mucho después.
+      const { sesion: s } = await chrome.storage.local.get('sesion');
+      if (!s) avisarPestana(tabId, false, 'Cialo Hub: no has iniciado sesión en la extensión. La venta quedará en cola hasta que ingreses.');
+      else if (!v.items.length) avisarPestana(tabId, false, 'Cialo Hub: no pude leer los ítems de la venta.');
+    })();
   } else if (msg.tipo === 'pagina') {
     void revisarPagina(tabId, msg);
   }
+  return undefined;
 });
 
 /** Del POST sólo se guarda lo útil para auditar; nada de datos personales. */
@@ -92,8 +131,12 @@ chrome.webRequest.onBeforeRequest.addListener(
     if (d.method !== 'POST' || d.tabId < 0) return;
     void (async () => {
       const p = await leerPendiente(d.tabId);
-      if (!p) return;
+      if (!p) {
+        await registrar('post-sin-clic', 'Reservo envió una venta pero no se capturó el clic en "Realizar venta"');
+        return;
+      }
       await guardarPendiente(d.tabId, { ...p, postEn: Date.now(), formulario: resumenFormulario(d.requestBody) });
+      await registrar('post', `${d.type} a Reservo`);
     })();
   },
   { urls: [URL_POST] },
@@ -116,7 +159,10 @@ chrome.webRequest.onCompleted.addListener(
     if (d.tabId < 0) return;
     void (async () => {
       const p = await leerPendiente(d.tabId);
-      if (p) await guardarPendiente(d.tabId, { ...p, estadoPost: d.statusCode });
+      if (p) {
+        await guardarPendiente(d.tabId, { ...p, estadoPost: d.statusCode });
+        await registrar('post-respuesta', `HTTP ${d.statusCode}`);
+      }
     })();
   },
   { urls: [URL_POST] },
@@ -124,7 +170,9 @@ chrome.webRequest.onCompleted.addListener(
 
 chrome.webRequest.onErrorOccurred.addListener(
   (d) => {
-    if (d.tabId >= 0) void borrarPendiente(d.tabId);
+    if (d.tabId < 0) return;
+    void borrarPendiente(d.tabId);
+    void registrar('post-error', d.error);
   },
   { urls: [URL_POST] },
 );
@@ -139,6 +187,7 @@ async function revisarPagina(tabId, { url, esFormularioVenta }) {
 
   if (Date.now() - p.clicEn > VENTANA_MS) {
     await borrarPendiente(tabId);
+    await registrar('vencida', 'Pasaron más de 2 minutos sin confirmación de Reservo');
     return;
   }
   // Todavía no hubo POST: es la misma carga del formulario, o una navegación ajena.
@@ -151,9 +200,13 @@ async function revisarPagina(tabId, { url, esFormularioVenta }) {
   const rechazada = esFormularioVenta || ruta.startsWith(RUTA_POST) || ruta.startsWith(RUTA_FORMULARIO);
 
   await borrarPendiente(tabId);
-  if (falloPost || rechazada) return;
+  if (falloPost || rechazada) {
+    await registrar('rechazada', `Reservo no confirmó la venta (quedó en ${ruta}${falloPost ? `, HTTP ${p.estadoPost}` : ''})`);
+    return;
+  }
 
-  await encolar(aVentaExterna(p, p.redirect || url));
+  await registrar('aceptada', `Reservo confirmó; siguiente página ${ruta}`);
+  await encolar(aVentaExterna(p, p.redirect || url), tabId);
   await procesarCola();
 }
 
@@ -220,9 +273,9 @@ function aVentaExterna(p, referencia) {
 
 // ───────────────────────── envío a Cialo Hub ─────────────────────────
 
-async function encolar(venta) {
+async function encolar(venta, tabId) {
   const cola = await leerCola();
-  cola.push({ venta, intentos: 0, ultimoError: null, encoladaEn: Date.now() });
+  cola.push({ venta, tabId, intentos: 0, ultimoError: null, encoladaEn: Date.now() });
   await guardarCola(cola);
 }
 
@@ -231,23 +284,59 @@ async function sesion() {
   return s;
 }
 
+/** Vencimiento del token de acceso, leído del propio JWT. */
+function venceEn(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return (payload.exp ?? 0) * 1000;
+  } catch {
+    return 0;
+  }
+}
+
 async function renovar(s) {
-  const r = await fetch(`${API}/auth/refresh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken: s.refreshToken }),
-  });
-  if (!r.ok) return null;
-  const body = await r.json();
-  const nueva = { accessToken: body.accessToken, refreshToken: body.refreshToken, user: body.user };
-  await chrome.storage.local.set({ sesion: nueva });
+  try {
+    const r = await fetch(`${API}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: s.refreshToken }),
+    });
+    if (!r.ok) {
+      await registrar('sesion', `No se pudo renovar la sesión (HTTP ${r.status})`);
+      return null;
+    }
+    const body = await r.json();
+    const nueva = { accessToken: body.accessToken, refreshToken: body.refreshToken, user: body.user };
+    await chrome.storage.local.set({ sesion: nueva });
+    return nueva;
+  } catch (e) {
+    await registrar('sesion', `Error al renovar la sesión: ${e.message}`);
+    return null;
+  }
+}
+
+const sinSesion = (mensaje) => Object.assign(new Error(mensaje), { sinSesion: true });
+
+/**
+ * Sesión con un token que no esté por vencer. El de acceso dura 15 minutos y
+ * entre una venta y otra suele pasar más que eso, así que se renueva antes de
+ * usarlo en vez de esperar el 401.
+ */
+async function sesionVigente() {
+  const s = await sesion();
+  if (!s) throw sinSesion('No has iniciado sesión en la extensión');
+  if (venceEn(s.accessToken) - Date.now() > 60_000) return s;
+  const nueva = await renovar(s);
+  if (!nueva) {
+    await chrome.storage.local.remove('sesion');
+    throw sinSesion('La sesión venció: vuelve a ingresar en la extensión');
+  }
   return nueva;
 }
 
-/** POST autenticado; si el token venció lo renueva una vez y reintenta. */
+/** POST autenticado; ante un 401 inesperado renueva una vez y reintenta. */
 async function postApi(ruta, cuerpo) {
-  let s = await sesion();
-  if (!s) throw Object.assign(new Error('Sin sesión en Cialo Hub'), { sinSesion: true });
+  let s = await sesionVigente();
 
   const enviar = (token) =>
     fetch(`${API}${ruta}`, {
@@ -261,12 +350,16 @@ async function postApi(ruta, cuerpo) {
     s = await renovar(s);
     if (!s) {
       await chrome.storage.local.remove('sesion');
-      throw Object.assign(new Error('La sesión venció'), { sinSesion: true });
+      throw sinSesion('La sesión venció: vuelve a ingresar en la extensión');
     }
     r = await enviar(s.accessToken);
   }
   const body = await r.json().catch(() => ({}));
-  if (!r.ok) throw Object.assign(new Error(body.error || `HTTP ${r.status}`), { status: r.status });
+  if (!r.ok) {
+    // Con un 400 el servidor dice qué campo falló: se muestra, no sólo "Datos inválidos".
+    const campos = body.detalles?.fieldErrors ? Object.keys(body.detalles.fieldErrors).join(', ') : '';
+    throw Object.assign(new Error(`${body.error || `HTTP ${r.status}`}${campos ? ` (${campos})` : ''}`), { status: r.status });
+  }
   return body;
 }
 
@@ -288,24 +381,26 @@ async function procesarCola() {
           duplicada: Boolean(r.duplicada),
           en: Date.now(),
         });
+        await registrar('enviada', `N° ${r.venta?.numero}${r.duplicada ? ' (ya estaba)' : ''}`);
         if (!r.duplicada) {
-          avisar('Venta registrada en Cialo Hub', `N° ${r.venta?.numero} · ${pesos(r.venta?.total ?? 0)}${item.venta.cliente ? ` · ${item.venta.cliente}` : ''}`);
+          const texto = `Venta registrada en Cialo Hub · N° ${r.venta?.numero} · ${pesos(r.venta?.total ?? 0)}`;
+          avisarPestana(item.tabId, true, texto);
+          avisar('Venta registrada en Cialo Hub', `${texto}${item.venta.cliente ? ` · ${item.venta.cliente}` : ''}`);
         }
       } catch (e) {
         // Un 400 es un dato malo que no se arregla reintentando; el resto
         // (sin conexión, caja cerrada, sesión vencida) sí puede resolverse.
         const definitivo = e.status === 400;
-        const conError = { ...item, intentos: item.intentos + 1, ultimoError: e.message };
+        await registrar(definitivo ? 'descartada' : 'en-cola', e.message);
         if (definitivo) {
+          avisarPestana(item.tabId, false, `Cialo Hub no aceptó la venta: ${e.message}`);
           avisar('Venta no importada', `${item.venta.cliente ?? 'Sin cliente'}: ${e.message}`);
           await registrarEnviada({ error: e.message, cliente: item.venta.cliente, en: Date.now() });
         } else {
-          quedan.push(conError);
+          quedan.push({ ...item, intentos: item.intentos + 1, ultimoError: e.message });
           if (item.intentos === 0) {
-            avisar(
-              'Venta pendiente de enviar',
-              e.sinSesion ? 'Inicia sesión en la extensión de Cialo Hub.' : `${e.message}. Se reintentará sola.`,
-            );
+            avisarPestana(item.tabId, false, `Cialo Hub: ${e.message}. La venta quedó en cola y se enviará sola.`);
+            avisar('Venta pendiente de enviar', e.message);
           }
         }
       }
@@ -318,23 +413,17 @@ async function procesarCola() {
 
 // ───────────────────────── reintentos ─────────────────────────
 
+// Al instalar, actualizar o recargar la extensión la cola NO se toca: ahí
+// pueden estar ventas que todavía no llegan a Cialo Hub. Sólo se repinta el
+// número del ícono.
 chrome.runtime.onInstalled.addListener(() => {
   chrome.alarms.create('cola', { periodInMinutes: 1 });
-  void guardarCola([]).then(() => leerCola());
+  void leerCola().then(actualizarIcono);
 });
 chrome.runtime.onStartup.addListener(() => {
   chrome.alarms.create('cola', { periodInMinutes: 1 });
-  void leerCola().then(guardarCola);
+  void leerCola().then(actualizarIcono);
 });
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === 'cola') void procesarCola();
-});
-
-// El popup pide reintentar o login.
-chrome.runtime.onMessage.addListener((msg, _sender, responder) => {
-  if (msg.tipo === 'reintentar') {
-    procesarCola().then(() => responder({ ok: true }));
-    return true;
-  }
-  return undefined;
 });
